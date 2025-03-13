@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from db_connection import create_connection
+
 app = FastAPI()
+
+
 
 @app.get("/")
 def home():
