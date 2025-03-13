@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { fetchDatabases } from "./api";
+// example
+// import page from './pages/page';
+// to use -
+// <a href="/page">Page</a>
 
 function App() {
   const [databases, setDatabases] = useState([]);
