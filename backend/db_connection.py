@@ -1,15 +1,16 @@
 import mysql.connector
+from config import DB_CONFIG
+
 
 # Example of creating a connection to the database
 def create_connection():
-    conn = mysql.connector.connect(
-        host="your_database_host",
-        user="your_username",
-        password="your_password",
-        database="your_database"
-    )
-    return conn
-
+    """Establish and return a database connection."""
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        return connection
+    except mysql.connector.Error as err:
+        print(f"Database connection error: {err}")
+        return None
 # Generic function to create a table
 def create_table(table_name, columns):
     """
@@ -23,6 +24,8 @@ def create_table(table_name, columns):
         None
     """
     conn = create_connection()
+    if conn is  None:
+        return
     cursor = conn.cursor()
 
     # Prepare column definitions for SQL query
@@ -41,10 +44,10 @@ def create_table(table_name, columns):
         cursor.close()
         conn.close()
 
-# Example usage:
-create_table('students', {
-    'id': 'INT PRIMARY KEY AUTO_INCREMENT',
-    'name': 'VARCHAR(100)',
-    'email': 'VARCHAR(100)',
-    'age': 'INT'
-})
+# # Example usage:
+# create_table('students', {
+#     'id': 'INT PRIMARY KEY AUTO_INCREMENT',
+#     'name': 'VARCHAR(100)',
+#     'email': 'VARCHAR(100)',
+#     'age': 'INT'
+# })

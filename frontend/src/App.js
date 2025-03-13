@@ -16,9 +16,9 @@ function App() {
 
   return (
       <div>
-        <h1>Databases</h1>
+        <h1>We are the best - team 14</h1>
         <ul>
-          {databases.map(db => <li key={db}>{db}</li>)}
+          {/*{databases.map(db => <li key={db}>{db}</li>)}*/}
         </ul>
       </div>
   );

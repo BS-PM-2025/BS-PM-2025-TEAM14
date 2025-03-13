@@ -2,5 +2,5 @@ DB_CONFIG = {
     "host": "database-1.cho8cqo8ezzg.eu-north-1.rds.amazonaws.com",
     "user": "admin",
     "password": "Aa1122335!",
-    "database": "your_database_name"  # Change this to your real database name
+    "database": "students"  # Change this to your real database name
 }
