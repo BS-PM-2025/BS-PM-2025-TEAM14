@@ -9,7 +9,7 @@ env/
 .venv/
 
 # Log files
-*.log
+*.logf
 logs/
 
 # Python-specific ignores
@@ -60,7 +60,6 @@ pip-wheel-metadata/
 *.next/
 .next/
 out/
-public/
 
 # AWS & Terraform (if relevant)
 *.tfstate
