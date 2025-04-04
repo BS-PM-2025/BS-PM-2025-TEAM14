@@ -1,0 +1,95 @@
+/* הוספה לקובץ StudentRequestsPanel.css */
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    direction: rtl;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    background-color: #e0e0e0;
+    top: 0;
+    bottom: 0;
+    right: 19px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 15px;
+    padding-right: 40px;
+}
+
+.timeline-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.timeline-content {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    right: 13px;
+    top: 5px;
+    border-radius: 50%;
+    background-color: #007bff;
+    border: 3px solid white;
+    z-index: 1;
+}
+
+/* כרטיסיה - תוספת אנימציות */
+.request-card {
+    transition: all 0.3s ease;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
