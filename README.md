@@ -58,18 +58,15 @@ npm install
 
 ## איך להריץ את הפרויקט
 
-### 1. **הגדרת הקבצים כניתנים להפעלה**
+### 1. **הרצת הקוד**
 ```bash
-chmod +x start.sh stop.sh
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+```bash
+cd frontend
+npm start
 ```
 
-### 2. **הפעלת השרתים**
-להתחיל את השרתים של ה-Backend ו-Frontend, פשוט הרץ את הסקריפט `start.sh`:
-```bash
-./start.sh
-```
-### 3. **הפסקת השרתים**
-```bash
-./stop.sh
-```
+
 
