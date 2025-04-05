@@ -8,6 +8,7 @@ from starlette.requests import Request
 from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from db_connection import *
+from datetime import datetime
 
 app = FastAPI()
 
@@ -206,3 +207,39 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
 
     # Return a list of student details
     return [{"id": student.id, "name": student.name, "email": student.email} for student in course.students]
+
+# Create a general request
+@app.post("/general_request/create")
+async def create_general_request(
+    request: Request,
+    session: AsyncSession = Depends(get_session)
+):
+    data = await request.json()
+    title = data.get("title")
+    student_id = data.get("student_id")
+    details = data.get("details")
+    files = data.get("files", {})
+
+    if not title or not student_id or not details:
+        raise HTTPException(status_code=400, detail="Missing required fields")
+    
+    timeline = {
+        "created": datetime.now().isoformat(),
+        "status_changes": [{
+            "status": "not read",
+            "date": datetime.now().isoformat()
+        }]
+    }
+
+    new_request = await add_request(
+        session=session,
+        title=title,
+        student_id=student_id,
+        details=details,
+        files=files,
+        status="not read",
+        created_date=datetime.now().date(),
+        timeline=timeline
+    )
+
+    return {"message": "Request created successfully", "request_id": new_request.id}
