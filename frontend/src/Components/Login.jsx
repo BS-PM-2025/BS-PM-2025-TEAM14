@@ -6,6 +6,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(null);
 
     const userData = {
         Email: userId,
@@ -16,8 +17,10 @@ const Login = () => {
         e.preventDefault(); // Prevent default form submission behavior
         setLoading(true);
         setError(null);
+        setSuccess(null);
 
         console.log("login");
+        console.log(userData);
 
         try {
             // Replace with your backend login endpoint URL
@@ -29,15 +32,14 @@ const Login = () => {
                 body: JSON.stringify(userData),
             });
 
-            console.log(userData);
-
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('access_token', data.access_token);
-                console.log("Login successful:", data["message"]);
+                console.log("Login successful:", data.message);
+                setSuccess(data.message);
             } else {
                 const errorData = await response.json();
-                setError(errorData.detail || 'Login failed');
+                setError(errorData.detail /*|| 'Login failed'*/);
             }
         } catch (err) {
             setError('An error occurred. Please try again.');
@@ -47,38 +49,40 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h2>Login</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="username">Email:</label>
+        <div className="container mt-5">
+        <h2 className="text-center mb-4">Login</h2>
+            {error && <p className="text-danger text-center">{error}</p>}
+            {success && <p className="text-success text-center">{success}</p>}
+            <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
+                <div className="mb-3">
+                    <label htmlFor="username" className="form-label">Email:</label>
                     <input
                         type="text"
                         id="userId"
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
+                        className="form-control"
                         required
                     />
                 </div>
-                <div>
-                    <label htmlFor="password">Password:</label>
+                <div className="mb-3">
+                    <label htmlFor="password" className="form-label">Password:</label>
                     <input
                         type="password"
                         id="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        className="form-control"
                         required
                     />
                 </div>
-                <div>
-                    <button type="submit" disabled={loading}>
+                <div className="d-grid">
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </div>
             </form>
-        </div>
-    );
+    </div>)
 };
 
 export default Login
