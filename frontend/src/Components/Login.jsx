@@ -33,7 +33,8 @@ const Login = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Login successful:", data);
+                localStorage.setItem('access_token', data.access_token);
+                console.log("Login successful:", data["message"]);
             } else {
                 const errorData = await response.json();
                 setError(errorData.detail || 'Login failed');

@@ -30,6 +30,7 @@ function App() {
                 {/* Public route for login */}
                 <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
                 <Route path="/create_user" element={<CreateUser />} />
+                <Route path="/courses/:course_id/submit_grades" element={<InsertGrades />} />
                 {/* Protected routes: if not authenticated, the user is redirected to /login */}
 
             </Routes>

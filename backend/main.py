@@ -1,6 +1,7 @@
 import os
 import urllib.parse
-from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, literal, literal_column, ColumnElement
 from sqlalchemy.orm import selectinload
@@ -10,6 +11,55 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db_connection import *
 import bcrypt
 import cryptography
+import jwt
+from jwt import PyJWTError
+from typing import Optional
+import datetime
+
+# Session Management and Authentication #
+SECRET_KEY = "0534224700"  # In production, use a secure secret key
+ALGORITHM = "HS256"
+
+def create_access_token(user_data: dict):
+    to_encode = user_data.copy()
+    expire = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    to_encode.update({"exp": int(expire.timestamp())})
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM, headers={"alg": "HS256", "typ": "JWT"})
+    print("genered token:", token)
+    return token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+def verify_token(token: str = Depends(oauth2_scheme)):
+    '''
+    try:
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        print("Unverified payload:", unverified_payload)
+    except Exception as ex:
+        print("Error decoding unverified token:", ex)
+    '''
+    try:
+        print('Token from header:', token)  # Debug line
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False})
+        print('after decode', payload)
+        user_email: str = payload.get("user_email")
+        role: str = payload.get("role")
+        if user_email is None or role is None:
+            print("user-email:", user_email, "role:", role)
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+        return payload
+    except PyJWTError:
+        print("Invalid token - PyJWTError")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+
+def verify_token_professor(token_data: dict = Depends(verify_token)):
+    if token_data.get("role") != "professor":
+        print("Bad role in token")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Professor role required")
+    print("Authorized as professor!!!!!!!!")
+    return token_data
+
+###
 
 app = FastAPI()
 
@@ -30,12 +80,15 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
     email = data.get("Email")
     password = data.get("Password")
+
     res_user = await session.execute(select(Users).where(Users.email == email))
     user = res_user.scalars().first()
     if user:
         stored_password = user.password_hash
         if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
-            return {"message": "Login successful"}
+            access_token = create_access_token({"user_email": user.email, "role": user.role, "username": user.username})
+            # return {"message": "Login successful"}
+            return {"access_token": access_token, "token_type": "bearer", "message": "Login successful"}
         else:
             raise HTTPException(status_code=401, detail="Invalid password")
     else:
@@ -164,7 +217,8 @@ async def get_user(UserId : int, session: AsyncSession = Depends(get_session)):
     return user
 
 @app.get("/professor/courses/{professor_id}")
-async def get_courses(professor_id: int, session: AsyncSession = Depends(get_session)):
+async def get_courses(professor_id: int, session: AsyncSession = Depends(get_session),
+                      token_data: dict = Depends(verify_token_professor)):
     result = await session.execute(select(Professors).filter(Professors.id == professor_id))
     professor = result.scalars().first()
     if not professor:
@@ -186,7 +240,8 @@ async def get_courses(professor_id: int, session: AsyncSession = Depends(get_ses
     return {"courses": courses_data}
 
 @app.post("/courses/{course_id}/submit_grades")
-async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session)):
+async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session),
+                        token_data: dict = Depends(verify_token_professor)):
     for entry in grades:
         student_id = entry["student_id"]
         grade = entry["grade"]
@@ -210,7 +265,8 @@ async def submit_grades(course_id: int, grades: list[dict], session: AsyncSessio
     return {"message": "Grades submitted successfully"}
 
 @app.get("/course/{course_id}/students")
-async def get_students(course_id: str, session: AsyncSession = Depends(get_session)):
+async def get_students(course_id: str, session: AsyncSession = Depends(get_session),
+                       token_data: dict = Depends(verify_token_professor)):
     print("in the func")
     # Fetch the course with the given ID and eagerly load students
     result = await session.execute(
