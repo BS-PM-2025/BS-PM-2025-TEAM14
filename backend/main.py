@@ -2,12 +2,14 @@ import os
 import urllib.parse
 from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import select, literal, literal_column, ColumnElement
 from sqlalchemy.orm import selectinload
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from db_connection import *
+import bcrypt
+import cryptography
 
 app = FastAPI()
 
@@ -22,6 +24,22 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {"message": "Welcome to FastAPI Backend!"}
+
+@app.post("/login")
+async def login(request: Request, session: AsyncSession = Depends(get_session)):
+    data = await request.json()
+    email = data.get("Email")
+    password = data.get("Password")
+    res_user = await session.execute(select(Users).where(Users.email == email))
+    user = res_user.scalars().first()
+    if user:
+        stored_password = user.password_hash
+        if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
+            return {"message": "Login successful"}
+        else:
+            raise HTTPException(status_code=401, detail="Invalid password")
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
 
 @app.get("/databases")
 def list_databases():
@@ -88,13 +106,14 @@ async def get_requests(UserId: str, session: AsyncSession = Depends(get_session)
         return session.query(Requests).filter(Requests.student_id == UserId).all()
 
 @app.post("/create_user")
-async def create_user(request :Request, session: AsyncSession = Depends(get_session)):
+async def create_user(request: Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     role = data.get("role")
-    new_user = await add_user(session, username, email, password, role)
+    new_user = await add_user(session, username, email, hashed_password.decode('utf-8'), role)
     new_student = await add_student(session,new_user.id, username, email, dict())
 
 @app.post("/Users/getUsers")

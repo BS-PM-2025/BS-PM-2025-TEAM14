@@ -7,6 +7,7 @@ import StudentRequestsPanel from "./Components/StudentRequestsPanel";
 import CreateUser from "./Components/CreateUser";
 import UsersList from "./Components/UsersList";
 import UserDetails from "./Components/UserDetails";
+import Login from "./Components/Login";
 import InsertGrades from "./Components/InsertGrades";
 // example
 // import page from './pages/page';
@@ -16,23 +17,25 @@ import InsertGrades from "./Components/InsertGrades";
 function App() {
   const [databases, setDatabases] = useState([]);
   const [users, setUsers] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     fetchDatabases().then(data => setDatabases(data.databases));
   }, []);
 
-  return (
-      <div>
-        <h1>Welcome</h1>
-        <ul>
-          {/*{databases.map(db => <li key={db}>{db}</li>)}*/}
-          {/*  <UploadFile userId="206676850" />*/}
-            {/*<ReloadFiles UserId="206676850" />*/}
-            {/*<UsersList />*/}
-            <InsertGrades Professor_Id={1}/>
-        </ul>
-      </div>
-  );
+
+    return (
+        <Router>
+            <Routes>
+                {/* Public route for login */}
+                <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+                <Route path="/create_user" element={<CreateUser />} />
+                {/* Protected routes: if not authenticated, the user is redirected to /login */}
+
+            </Routes>
+        </Router>
+    );
 }
+
 
 export default App;
