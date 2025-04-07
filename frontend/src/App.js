@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { fetchDatabases } from "./api";
 import { UploadFile } from "./Components/UploadFile";
 import ReloadFiles from "./Components/ReloadFiles";
@@ -11,7 +11,6 @@ import SubmitGrades from "./Components/SubmitGrades";
 import GeneralRequestForm from "./Components/GeneralRequestForm";
 import Navigation from "./Components/Navigation";
 import Login from "./Components/Login";
-import InsertGrades from "./Components/InsertGrades";
 import Home from "./Components/Home";
 // example
 // import page from './pages/page';
@@ -33,13 +32,9 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <div>
-                <h1>Welcome</h1>
-                <ul>{/*databases.map(db => <li key={db}>{db}</li>)*/}</ul>
-              </div>
-            }
+            element={<Navigate to="/home" replace />}
           />
+          <Route path="/home" element={<Home />} />
           <Route path="/general_request" element={<GeneralRequestForm studentId={1} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<UploadFile userId="206676850" />} />

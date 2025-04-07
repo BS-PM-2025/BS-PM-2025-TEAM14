@@ -45,11 +45,8 @@ const Login = () => {
                     setToken(data.access_token);
                     console.log("Token stored in localStorage");
                     
-                    // Force a reload of the home page to ensure it picks up the new token
-                    setTimeout(() => {
-                        navigate('/', { replace: true });
-                        window.location.reload();
-                    }, 100);
+                    // Navigate to home page without forcing a reload
+                    navigate('/home', { replace: true });
                 } else {
                     setError('No access token received from server');
                 }
