@@ -45,17 +45,43 @@ def list_tables(database_name: str):
 def list_users():
     return {"users": None}
 
-@app.post("/uploadfile/{userId}")
-async def upload_file(userId: str, file: UploadFile = File(...), fileType: str = Form(...)):
-    save_path = os.path.join("Documents", userId, fileType)
+@app.post("/uploadfile/{userEmail}")
+async def upload_file(
+    userEmail: str, 
+    file: UploadFile = File(...), 
+    fileType: str = Form(...)
+):
+    try:
+        # Validate file size (example: 10MB limit)
+        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
+        file_size = 0
+        file_content = await file.read()
+        file_size = len(file_content)
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400, 
+                detail="File size too large. Maximum size is 10MB"
+            )
 
-    os.makedirs(save_path, exist_ok=True)
-    file_path = os.path.join(save_path, file.filename)
+        # Create directory if it doesn't exist
+        save_path = os.path.join("Documents", userEmail, fileType)
+        os.makedirs(save_path, exist_ok=True)
+        
+        # Save the file
+        file_path = os.path.join(save_path, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(file_content)
 
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-
-    return {"message": "File uploaded successfully"}
+        return {
+            "message": "File uploaded successfully",
+            "path": f"{userEmail}/{fileType}/{file.filename}"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading file: {str(e)}"
+        )
 
 @app.get("/reloadFiles/{userId}")
 async def reload_files(userId: str):
@@ -250,7 +276,7 @@ async def create_general_request(
     timeline = {
         "created": datetime.now().isoformat(),
         "status_changes": [{
-            "status": "not read",
+            "status": "pending",
             "date": datetime.now().isoformat()
         }]
     }
@@ -261,7 +287,7 @@ async def create_general_request(
         student_email=student_email,
         details=details,
         files=files,
-        status="not read",
+        status="pending",
         created_date=datetime.now().date(),
         timeline=timeline
     )

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../CSS/GeneralRequestForm.css";
+import { useNavigate } from "react-router-dom"; // Add this import
 
-const RequestForm = ({ studentId }) => {
+
+const RequestForm = ({ studentEmail }) => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [files, setFiles] = useState([]);
@@ -17,41 +20,56 @@ const RequestForm = ({ studentId }) => {
     e.preventDefault();
     setError("");
     setMessage("");
-
+  
     if (!title || !details) {
       setError("Title or details are missing.");
       return;
     }
-
+  
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("student_id", studentId);
-      formData.append("details", details);
-
+      // First, upload all files if any exist
+      const uploadedFiles = [];
       if (files.length > 0) {
-        files.forEach((file) => {
-          formData.append("files", file);
-        });
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("fileType", "general"); // This will create Documents/email/general/
+  
+          // Upload each file
+          await axios.post(
+            `http://localhost:8000/uploadfile/${studentEmail}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          uploadedFiles.push(file.name);
+        }
       }
-
-      const repsonse = await axios.post(
+  
+      // Then create the request with file information
+      const response = await axios.post(
         "http://localhost:8000/general_request/create",
         {
           title,
-          student_id: studentId,
+          student_email: studentEmail,
           details,
-          files: files.length > 0 ? files.map((file) => file.name) : [],
+          files: uploadedFiles.length > 0 ? uploadedFiles : [],
         }
       );
-
+  
       setMessage("Request created successfully");
+      setTimeout(() => {
+        navigate('/'); // Redirect to home page
+      }, 1000);
       setTitle("");
       setDetails("");
       setFiles([]);
     } catch (error) {
       setError(
-        error.repsonse?.data?.detail ||
+        error.response?.data?.detail ||
           "An error occurred while creating the request"
       );
     }

@@ -33,7 +33,7 @@ function App() {
               </div>
             }
           />
-          <Route path="/general_request" element={<GeneralRequestForm studentId={1} />} />
+          <Route path="/general_request" element={<GeneralRequestForm studentEmail={"ariel@gmail.com"} />} />
           <Route path="/upload" element={<UploadFile userId="206676850" />} />
           <Route path="/reload" element={<ReloadFiles UserId="206676850" />} />
           <Route path="/users" element={<UsersList />} />
