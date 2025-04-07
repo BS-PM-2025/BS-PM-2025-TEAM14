@@ -1,16 +1,68 @@
 import os
 import urllib.parse
-from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import select, literal, literal_column, ColumnElement
 from sqlalchemy.orm import selectinload
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from db_connection import *
+import bcrypt
+import cryptography
+import jwt
+from jwt import PyJWTError
+from typing import Optional
+from datetime import datetime, timedelta
+
+# Session Management and Authentication #
+SECRET_KEY = "0534224700"  # In production, use a secure secret key
+ALGORITHM = "HS256"
+
+def create_access_token(user_data: dict):
+    to_encode = user_data.copy()
+    expire = datetime.utcnow() + timedelta(hours=1)
+    to_encode["exp"] = int(expire.timestamp())
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM, headers={"alg": "HS256", "typ": "JWT"})
+    print("generated token:", token)
+    return token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+def verify_token(token: str = Depends(oauth2_scheme)):
+    '''
+    try:
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        print("Unverified payload:", unverified_payload)
+    except Exception as ex:
+        print("Error decoding unverified token:", ex)
+    '''
+    try:
+        print('Token from header:', token)  # Debug line
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False})
+        print('after decode', payload)
+        user_email: str = payload.get("user_email")
+        role: str = payload.get("role")
+        if user_email is None or role is None:
+            print("user-email:", user_email, "role:", role)
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+        return payload
+    except PyJWTError:
+        print("Invalid token - PyJWTError")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+
+def verify_token_professor(token_data: dict = Depends(verify_token)):
+    if token_data.get("role") != "professor":
+        print("Bad role in token")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Professor role required")
+    print("Authorized as professor!!!!!!!!")
+    return token_data
+
+###
 from datetime import datetime
 from contextlib import asynccontextmanager
-
+'''
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database on startup
@@ -18,8 +70,11 @@ async def lifespan(app: FastAPI):
     yield
     # Clean up on shutdown (if needed)
     pass
+'''
 
-app = FastAPI(lifespan=lifespan)
+#app = FastAPI(lifespan=lifespan)
+
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +87,26 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {"message": "Welcome to FastAPI Backend!"}
+
+@app.post("/login")
+async def login(request: Request, session: AsyncSession = Depends(get_session)):
+    data = await request.json()
+    email = data.get("Email")
+    password = data.get("Password")
+
+    res_user = await session.execute(select(Users).where(Users.email == email))
+    user = res_user.scalars().first()
+    if user:
+        stored_password = user.hashed_password
+        if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
+            access_token = create_access_token({"user_email": user.email, "role": user.role, "first_name": user.first_name,
+                                                "last_name": user.last_name})
+            # return {"message": "Login successful"}
+            return {"access_token": access_token, "token_type": "bearer", "message": "Login successful"}
+        else:
+            raise HTTPException(status_code=401, detail="Invalid password")
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
 
 @app.get("/databases")
 def list_databases():
@@ -104,8 +179,9 @@ async def create_user(request :Request, session: AsyncSession = Depends(get_sess
     last_name = data.get("last_name")
     email = data.get("email")
     password = data.get("password")
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     role = data.get("role")
-    new_user = await add_user(session, email, first_name, last_name, password, role)
+    new_user = await add_user(session, email, first_name, last_name, hashed_password, role)
     if role == "student":
         new_student = await add_student(session, email)
     elif role == "professor":
@@ -160,7 +236,8 @@ async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)
     return user
 
 @app.get("/professor/courses/{professor_email}")
-async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session)):
+async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session),
+                      token_data: dict = Depends(verify_token_professor)):
     result = await session.execute(select(Professors).filter(Professors.email == professor_email))
     professor = result.scalars().first()
     if not professor:
@@ -181,7 +258,8 @@ async def get_courses(professor_email: str, session: AsyncSession = Depends(get_
     return {"courses": courses_data}
 
 @app.post("/courses/{course_id}/submit_grades")
-async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session)):
+async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session),
+                        token_data: dict = Depends(verify_token_professor)):
     for entry in grades:
         student_email = entry["student_email"]
         grade_component = entry["grade_component"]
@@ -193,7 +271,7 @@ async def submit_grades(course_id: int, grades: list[dict], session: AsyncSessio
 
         existing_grade = await session.execute(
             select(StudentCourses).filter(
-                StudentCourses.student_email == student_email, 
+                StudentCourses.student_email == student_email,
                 StudentCourses.course_id == course_id,
                 StudentCourses.grade_component == grade_component
             )
@@ -216,7 +294,8 @@ async def submit_grades(course_id: int, grades: list[dict], session: AsyncSessio
     return {"message": "Grades submitted successfully"}
 
 @app.get("/course/{course_id}/students")
-async def get_students(course_id: str, session: AsyncSession = Depends(get_session)):
+async def get_students(course_id: str, session: AsyncSession = Depends(get_session),
+                       token_data: dict = Depends(verify_token_professor)):
     print("in the func")
     # Fetch the course with the given ID and eagerly load students
     result = await session.execute(
@@ -246,7 +325,7 @@ async def create_general_request(
 
     if not title or not student_email or not details:
         raise HTTPException(status_code=400, detail="Missing required fields")
-    
+
     timeline = {
         "created": datetime.now().isoformat(),
         "status_changes": [{
