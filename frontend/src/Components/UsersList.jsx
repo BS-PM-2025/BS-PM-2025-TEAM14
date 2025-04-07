@@ -24,9 +24,9 @@ export default function UsersList() {
         }
     };
 
-    const fetchUserDetails = async (userId) => {
+    const fetchUserDetails = async (UserEmail) => {
         try {
-            const response = await fetch(`http://localhost:8000/Users/getUser/${userId}`, {
+            const response = await fetch(`http://localhost:8000/Users/getUser/${UserEmail}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" }
             });
@@ -39,8 +39,8 @@ export default function UsersList() {
         }
     };
 
-    const handleUserClick = (userId) => {
-        fetchUserDetails(userId);
+    const handleUserClick = (UserEmail) => {
+        fetchUserDetails(UserEmail);
     };
 
     const handleClosePopup = () => {
@@ -52,7 +52,7 @@ export default function UsersList() {
             const response = await fetch("http://localhost:8000/Users/setRole", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ UserId: selectedUser.id, role: newRole })
+                body: JSON.stringify({ UserEmail: selectedUser.email, role: newRole })
             });
             if (!response.ok) throw new Error("Failed to update role.");
             alert("User role updated successfully!");
@@ -77,7 +77,8 @@ export default function UsersList() {
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Username</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
                     <th>Email</th>
                     <th>Role</th>
                 </tr>
@@ -85,10 +86,11 @@ export default function UsersList() {
                 <tbody>
                 {users.length > 0 ? (
                     users.map(user => (
-                        <tr key={user.id} className="clickable-row" onClick={() => handleUserClick(user.id)}>
-                            <td>{user.id}</td>
-                            <td>{user.username}</td>
+                        <tr key={user.email} className="clickable-row" onClick={() => handleUserClick(user.email)}>
                             <td>{user.email}</td>
+                            <td>{user.id}</td>
+                            <td>{user.first_name}</td>
+                            <td>{user.last_name}</td>
                             <td>{user.role}</td>
                         </tr>
                     ))
@@ -105,9 +107,10 @@ export default function UsersList() {
                     <div className="popup-content">
                         <button className="close-button" onClick={handleClosePopup}>×</button>
                         <h3>User Details</h3>
-                        <p><strong>ID:</strong> {selectedUser.id}</p>
-                        <p><strong>Username:</strong> {selectedUser.username}</p>
                         <p><strong>Email:</strong> {selectedUser.email}</p>
+                        <p><strong>ID:</strong> {selectedUser.id}</p>
+                        <p><strong>First Name:</strong> {selectedUser.first_name}</p>
+                        <p><strong>Last Name:</strong> {selectedUser.last_name}</p>
                         <p><strong>Role:</strong>
                             <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
                                 <option value="admin">Admin</option>
