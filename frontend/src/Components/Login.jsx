@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {jwtDecode} from "jwt-decode";
 
 
 const Login = () => {
@@ -37,6 +38,7 @@ const Login = () => {
                 localStorage.setItem('access_token', data.access_token);
                 console.log("Login successful:", data.message);
                 setSuccess(data.message);
+                console.log(jwtDecode(data.access_token));
             } else {
                 const errorData = await response.json();
                 setError(errorData.detail /*|| 'Login failed'*/);
@@ -47,6 +49,7 @@ const Login = () => {
         }
         setLoading(false);
     };
+
 
     return (
         <div className="container mt-5">
