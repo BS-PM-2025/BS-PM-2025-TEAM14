@@ -9,8 +9,17 @@ from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from db_connection import *
 from datetime import datetime
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database on startup
+    await init_db()
+    yield
+    # Clean up on shutdown (if needed)
+    pass
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,17 +95,22 @@ async def get_requests(UserId: str, session: AsyncSession = Depends(get_session)
     if UserId == "all":
         return session.query(Requests).all()
     else:
-        return session.query(Requests).filter(Requests.student_id == UserId).all()
+        return session.query(Requests).filter(Requests.student_email == UserId).all()
 
 @app.post("/create_user")
 async def create_user(request :Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
-    username = data.get("username")
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
     email = data.get("email")
     password = data.get("password")
     role = data.get("role")
-    new_user = await add_user(session, username, email, password, role)
-    new_student = await add_student(session,new_user.id, username, email, dict())
+    new_user = await add_user(session, email, first_name, last_name, password, role)
+    if role == "student":
+        new_student = await add_student(session, email)
+    elif role == "professor":
+        new_professor = await add_professor(session, email, data.get("department", ""))
+    return {"message": "User created successfully", "user_email": new_user.email}
 
 @app.post("/Users/getUsers")
 async def get_users(session: AsyncSession = Depends(get_session)):
@@ -108,60 +122,59 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 async def set_role(request: Request, session: AsyncSession = Depends(get_session)):
     print("in the set role function")
     data = await request.json()
-    user_id = data.get("UserId")
+    user_email = data.get("UserEmail")
     role = data.get("role")
 
-    res = await session.execute(select(Users).filter(Users.id == user_id))
+    res = await session.execute(select(Users).filter(Users.email == user_email))
     user = res.scalars().first()
 
     if user:
         user.role = role  # Update the role
         await session.commit()  # Commit changes
-        return {"message": "Role updated successfully", "user": {"id": user.id, "role": user.role}}
+        return {"message": "Role updated successfully", "user": {"email": user.email, "role": user.role}}
     else:
         return {"error": "User not found"}
 
 
 
 
-@app.post("/Users/getUser/{UserId}")
-async def get_user(UserId : int, session: AsyncSession = Depends(get_session)):
-    print("in the func", UserId)
-    res_user = await session.execute(select(Users).filter(Users.id == UserId))
+@app.post("/Users/getUser/{UserEmail}")
+async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)):
+    print("in the func", UserEmail)
+    res_user = await session.execute(select(Users).filter(Users.id == UserEmail))
     user = res_user.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     # Fetch role-specific data
     if user.role == "student":
-        student_data = await session.execute(select(Students).filter(Students.user_id == UserId))
+        student_data = await session.execute(select(Students).filter(Students.email == user.email))
         student = student_data.scalars().first()
         return {**user.__dict__, "student_data": student}
 
     if user.role == "professor":
-        professor_data = await session.execute(select(Professors).filter(Professors.user_id == UserId))
+        professor_data = await session.execute(select(Professors).filter(Professors.email == user.email))
         professor = professor_data.scalars().first()
         return {**user.__dict__, "professor_data": professor}
 
     return user
 
-@app.get("/professor/courses/{professor_id}")
-async def get_courses(professor_id: int, session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(Professors).filter(Professors.id == professor_id))
+@app.get("/professor/courses/{professor_email}")
+async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session)):
+    result = await session.execute(select(Professors).filter(Professors.email == professor_email))
     professor = result.scalars().first()
     if not professor:
         raise HTTPException(status_code=404, detail="Professor not found")
 
-    result = await session.execute(select(Courses).filter(Courses.professor_id == professor_id))
+    result = await session.execute(select(Courses).filter(Courses.professor_email == professor_email))
     courses = result.scalars().all()
 
     courses_data = [{
         "id": course.id,
         "name": course.name,
         "description": course.description,
-        "code": course.code,
         "credits": course.credits,
-        "professor_id": course.professor_id
+        "professor_email": course.professor_email
     } for course in courses]
     courses_names = [course.name for course in courses]
 
@@ -170,22 +183,33 @@ async def get_courses(professor_id: int, session: AsyncSession = Depends(get_ses
 @app.post("/courses/{course_id}/submit_grades")
 async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session)):
     for entry in grades:
-        student_id = entry["student_id"]
+        student_email = entry["student_email"]
+        grade_component = entry["grade_component"]
         grade = entry["grade"]
-        result = await session.execute(select(Students).filter(Students.id == student_id))
+        result = await session.execute(select(Students).filter(Students.email == student_email))
         student = result.scalars().first()
         if not student:
-            raise HTTPException(status_code=404, detail=f"Student {student_id} not found in course {course_id}")
+            raise HTTPException(status_code=404, detail=f"Student {student_email} not found in course {course_id}")
 
         existing_grade = await session.execute(
-            select(Grades).filter(Grades.student_id == student_id, Grades.course_id == course_id)
+            select(StudentCourses).filter(
+                StudentCourses.student_email == student_email, 
+                StudentCourses.course_id == course_id,
+                StudentCourses.grade_component == grade_component
+            )
         )
         grade_record = existing_grade.scalars().first()
 
         if grade_record:
             grade_record.grade = grade
         else:
-            new_grade = Grades(student_id=student_id, course_id=course_id, grade=grade)
+            new_grade = StudentCourses(
+                student_email=student_email,
+                course_id=course_id,
+                professor_email=entry["professor_email"],
+                grade_component=grade_component,
+                grade=grade
+            )
             session.add(new_grade)
 
     await session.commit()
@@ -197,7 +221,7 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
     # Fetch the course with the given ID and eagerly load students
     result = await session.execute(
         select(Courses)
-        .filter(Courses.code == course_id)
+        .filter(Courses.id == course_id)
         .options(selectinload(Courses.students))  # Eagerly load the students
     )
     course = result.scalars().first()
@@ -206,7 +230,7 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
         raise HTTPException(status_code=404, detail="Course not found")
 
     # Return a list of student details
-    return [{"id": student.id, "name": student.name, "email": student.email} for student in course.students]
+    return [{"email": student.email, "name": f"{student.first_name} {student.last_name}"} for student in course.students]
 
 # Create a general request
 @app.post("/general_request/create")
@@ -216,11 +240,11 @@ async def create_general_request(
 ):
     data = await request.json()
     title = data.get("title")
-    student_id = data.get("student_id")
+    student_email = data.get("student_email")
     details = data.get("details")
     files = data.get("files", {})
 
-    if not title or not student_id or not details:
+    if not title or not student_email or not details:
         raise HTTPException(status_code=400, detail="Missing required fields")
     
     timeline = {
@@ -234,7 +258,7 @@ async def create_general_request(
     new_request = await add_request(
         session=session,
         title=title,
-        student_id=student_id,
+        student_email=student_email,
         details=details,
         files=files,
         status="not read",

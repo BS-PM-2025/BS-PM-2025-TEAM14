@@ -7,7 +7,7 @@ import StudentRequestsPanel from "./Components/StudentRequestsPanel";
 import CreateUser from "./Components/CreateUser";
 import UsersList from "./Components/UsersList";
 import UserDetails from "./Components/UserDetails";
-import InsertGrades from "./Components/InsertGrades";
+import SubmitGrades from "./Components/SubmitGrades";
 import GeneralRequestForm from "./Components/GeneralRequestForm";
 import Navigation from "./Components/Navigation";
 
@@ -37,7 +37,7 @@ function App() {
           <Route path="/upload" element={<UploadFile userId="206676850" />} />
           <Route path="/reload" element={<ReloadFiles UserId="206676850" />} />
           <Route path="/users" element={<UsersList />} />
-          <Route path="/grades" element={<InsertGrades Professor_Id={1} />} />
+          <Route path="/grades" element={<SubmitGrades Professor_Id={1} />} />
         </Routes>
       </div>
     </Router>
