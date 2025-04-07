@@ -1,10 +1,11 @@
 import asyncio
 import os
-from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table
+from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from config import DATABASE_URL
 from datetime import datetime
+from sqlalchemy.sql import text
 
 # Define the base class
 Base = declarative_base()
@@ -12,121 +13,158 @@ Base = declarative_base()
 # User table
 class Users(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String(100), unique=True, nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    role = Column(String(50), nullable=False)
+    email = Column(String(100), unique=True, nullable=False, primary_key=True, index=True)
+    id = Column(Integer, index=True, autoincrement=True)
+    first_name = Column(String(100), unique=False, nullable=False)
+    last_name = Column(String(100), unique=False, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    role = Column(String(50), nullable=False) 
+
 
 # Student table
 class Students(Base):
     __tablename__ = 'students'
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
-    name = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    grades = Column(JSON, nullable=True)
-    user = relationship("Users", back_populates="student_profile")
+    email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
+    
     courses = relationship("Courses", secondary="student_courses", back_populates="students")
+    student_courses = relationship("StudentCourses", back_populates="student")
+    requests = relationship("Requests", back_populates="student")
 
 # Professor table
 class Professors(Base):
     __tablename__ = 'professors'
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
+    email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
     department = Column(String(100), nullable=False)
-
-    user = relationship("Users", back_populates="professor_profile")
+    
     courses = relationship("Courses", back_populates="professor")
+    student_courses = relationship("StudentCourses", back_populates="professor")
 
 # Requests table
 class Requests(Base):
     __tablename__ = 'requests'
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String(100), nullable=False)
-    student_id = Column(Integer, ForeignKey('students.id'), nullable=False)
+    student_email = Column(String(100), ForeignKey('students.email'), nullable=False)
     details = Column(String(500))
     files = Column(JSON, nullable=True)
     status = Column(String(100), default='not read')
     created_date = Column(Date, nullable=False)
     timeline = Column(JSON, nullable=True)
-
+    
+    # Relationships
     student = relationship("Students", back_populates="requests")
 
-class Grades(Base):
-    __tablename__ = "grades"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    student_id = Column(Integer, ForeignKey("students.id"))
-    course_id = Column(Integer, ForeignKey("courses.id"))
+# Student-Courses table
+class StudentCourses(Base):
+    __tablename__ = 'student_courses'
+    student_email = Column(String(100), ForeignKey('students.email'), primary_key=True)
+    course_id = Column(String(20), ForeignKey('courses.id'), primary_key=True)
+    professor_email = Column(String(100), ForeignKey('professors.email'), primary_key=True)
+    grade_component = Column(String(100), nullable=False, primary_key=True)
     grade = Column(Integer, nullable=False)
-
-# Many-to-Many relationship table between Students and Courses
-student_courses = Table(
-    'student_courses', Base.metadata,
-    Column('student_id', Integer, ForeignKey('students.id'), primary_key=True),
-    Column('course_id', Integer, ForeignKey('courses.id'), primary_key=True)
-)
+    
+    # Relationships
+    student = relationship("Students", back_populates="student_courses")
+    course = relationship("Courses", back_populates="student_courses")
+    professor = relationship("Professors", back_populates="student_courses")
 
 # Courses table
 class Courses(Base):
     __tablename__ = 'courses'
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(20), unique=True, nullable=False, primary_key=True)
     name = Column(String(100), nullable=False)
-    code = Column(String(20), unique=True, nullable=False)
     description = Column(String(500), nullable=True)
-    credits = Column(Integer, nullable=False)
-    professor_id = Column(Integer, ForeignKey('professors.id'), nullable=False)
+    credits = Column(Float, nullable=False)
+    professor_email = Column(String(100), ForeignKey('professors.email'), nullable=False)
+    
+    # Relationships
     professor = relationship("Professors", back_populates="courses")
-    students = relationship("Students", secondary=student_courses, back_populates="courses")
+    students = relationship("Students", secondary="student_courses", back_populates="courses")
+    student_courses = relationship("StudentCourses", back_populates="course")
 
-# Back-populating relationships for Users
-Users.student_profile = relationship("Students", back_populates="user", uselist=False)
-Users.professor_profile = relationship("Professors", back_populates="user", uselist=False)
-
-# Back-populating relationships for Requests
-Students.requests = relationship("Requests", back_populates="student")
-
-
-async def add_user(session: AsyncSession, username: str, email: str, password_hash: str, role: str):
-    new_user = Users(username=username, email=email, password_hash=password_hash, role=role)
+async def add_user(session: AsyncSession, email: str, first_name: str, last_name: str, hashed_password: str, role: str):
+    new_user = Users(
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        hashed_password=hashed_password,
+        role=role
+    )
+    if role == "student":
+        await add_student(session, email)
+    elif role == "professor":
+        await add_professor(session, email, "NULL")
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
     return new_user
 
-async def add_student(session: AsyncSession, user_id: int, name: str, email: str, grades: dict ):
-    new_student = Students(user_id=user_id, name=name, email=email, grades=grades)
+async def add_student(session: AsyncSession, email: str):
+    new_student = Students(email=email)
     session.add(new_student)
     await session.commit()
     await session.refresh(new_student)
     return new_student
 
-async def add_professor(session: AsyncSession, user_id: int, department: str):
-    new_professor = Professors(user_id=user_id, department=department)
+async def add_professor(session: AsyncSession, email: str, department: str):
+    new_professor = Professors(email=email, department=department)
     session.add(new_professor)
     await session.commit()
     await session.refresh(new_professor)
     return new_professor
 
-async def add_request(session: AsyncSession, title: str, student_id: int, details: str, files: dict, status: str, created_date: Date, timeline: dict):
-    new_request = Requests(title=title, student_id=student_id, details=details, files=files, status=status, created_date=created_date, timeline=timeline)
+async def update_professor_department(session: AsyncSession, email: str, department: str):
+    professor = await session.get(Professors, email)
+    if professor:
+        professor.department = department
+        await session.commit()
+        await session.refresh(professor)
+        return professor
+    return None
+
+async def add_request(session: AsyncSession, title: str, student_email: str, details: str, files: dict = None, status: str = 'not read', created_date: Date = None, timeline: dict = None):
+    if created_date is None:
+        created_date = datetime.now().date()
+    
+    new_request = Requests(
+        title=title,
+        student_email=student_email,
+        details=details,
+        files=files,
+        status=status,
+        created_date=created_date,
+        timeline=timeline
+    )
     session.add(new_request)
     await session.commit()
     await session.refresh(new_request)
     return new_request
 
-async def add_course(session: AsyncSession, name: str, code: str, description: str, credits: int, professor_id: int):
-    new_course = Courses(name=name, code=code, description=description, credits=credits, professor_id=professor_id)
+async def add_course(session: AsyncSession, id: str, name: str, description: str, credits: float, professor_email: str):
+    new_course = Courses(
+        id=id,
+        name=name,
+        description=description,
+        credits=credits,
+        professor_email=professor_email
+    )
     session.add(new_course)
     await session.commit()
     await session.refresh(new_course)
     return new_course
 
-
-
-
-
-
+async def add_student_course(session: AsyncSession, student_email: str, course_id: str, professor_email: str, grade_component: str, grade: int):
+    new_student_course = StudentCourses(
+        student_email=student_email,
+        course_id=course_id,
+        professor_email=professor_email,
+        grade_component=grade_component,
+        grade=grade
+    )
+    session.add(new_student_course)
+    await session.commit()
+    await session.refresh(new_student_course)
+    return new_student_course
 
 # Create the asynchronous engine
 engine = create_async_engine(DATABASE_URL, echo=True, future=True)
@@ -134,9 +172,14 @@ engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 # Create the asynchronous session maker
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-
 async def init_db():
-    # Create the tables in the database (if they don't exist already)
+    # First create the database if it doesn't exist
+    temp_engine = create_async_engine(DATABASE_URL.rsplit('/', 1)[0], echo=True, future=True)
+    async with temp_engine.begin() as conn:
+        await conn.execute(text("CREATE DATABASE IF NOT EXISTS students"))
+    await temp_engine.dispose()
+
+    # Now create the tables in the database
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
