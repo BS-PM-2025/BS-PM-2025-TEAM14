@@ -9,6 +9,7 @@ import UsersList from "./Components/UsersList";
 import UserDetails from "./Components/UserDetails";
 import Login from "./Components/Login";
 import InsertGrades from "./Components/InsertGrades";
+import Home from "./Components/Home";
 // example
 // import page from './pages/page';
 // to use -
@@ -27,6 +28,8 @@ function App() {
     return (
         <Router>
             <Routes>
+                {/* Home page route */}
+                <Route path="/" element={<Home />} />
                 {/* Public route for login */}
                 <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
                 <Route path="/create_user" element={<CreateUser />} />

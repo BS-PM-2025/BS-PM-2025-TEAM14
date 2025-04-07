@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
+import { setToken } from '../utils/auth';
 
 const Login = () => {
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const userData = {
         Email: userId,
@@ -17,7 +19,7 @@ const Login = () => {
         setLoading(true);
         setError(null);
 
-        console.log("login");
+        console.log("Attempting login with:", userData);
 
         try {
             // Replace with your backend login endpoint URL
@@ -29,12 +31,23 @@ const Login = () => {
                 body: JSON.stringify(userData),
             });
 
-            console.log(userData);
-
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('access_token', data.access_token);
-                console.log("Login successful:", data["message"]);
+                console.log("Login response:", data);
+                
+                if (data.access_token) {
+                    // Set the token in localStorage
+                    setToken(data.access_token);
+                    console.log("Token stored in localStorage");
+                    
+                    // Force a reload of the home page to ensure it picks up the new token
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                        window.location.reload();
+                    }, 100);
+                } else {
+                    setError('No access token received from server');
+                }
             } else {
                 const errorData = await response.json();
                 setError(errorData.detail || 'Login failed');
