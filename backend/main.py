@@ -14,7 +14,7 @@ import cryptography
 import jwt
 from jwt import PyJWTError
 from typing import Optional
-import datetime
+from datetime import datetime, timedelta
 
 # Session Management and Authentication #
 SECRET_KEY = "0534224700"  # In production, use a secure secret key
@@ -22,10 +22,10 @@ ALGORITHM = "HS256"
 
 def create_access_token(user_data: dict):
     to_encode = user_data.copy()
-    expire = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    to_encode.update({"exp": int(expire.timestamp())})
+    expire = datetime.utcnow() + timedelta(hours=1)
+    to_encode["exp"] = int(expire.timestamp())
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM, headers={"alg": "HS256", "typ": "JWT"})
-    print("genered token:", token)
+    print("generated token:", token)
     return token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
@@ -62,7 +62,7 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
 ###
 from datetime import datetime
 from contextlib import asynccontextmanager
-
+'''
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database on startup
@@ -70,8 +70,11 @@ async def lifespan(app: FastAPI):
     yield
     # Clean up on shutdown (if needed)
     pass
+'''
 
-app = FastAPI(lifespan=lifespan)
+#app = FastAPI(lifespan=lifespan)
+
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -94,9 +97,10 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
     res_user = await session.execute(select(Users).where(Users.email == email))
     user = res_user.scalars().first()
     if user:
-        stored_password = user.password_hash
+        stored_password = user.hashed_password
         if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
-            access_token = create_access_token({"user_email": user.email, "role": user.role, "username": user.username})
+            access_token = create_access_token({"user_email": user.email, "role": user.role, "first_name": user.first_name,
+                                                "last_name": user.last_name})
             # return {"message": "Login successful"}
             return {"access_token": access_token, "token_type": "bearer", "message": "Login successful"}
         else:

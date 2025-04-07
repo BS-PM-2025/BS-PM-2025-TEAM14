@@ -10,6 +10,7 @@ import UserDetails from "./Components/UserDetails";
 import SubmitGrades from "./Components/SubmitGrades";
 import GeneralRequestForm from "./Components/GeneralRequestForm";
 import Navigation from "./Components/Navigation";
+import Login from "./Components/Login";
 
 function App() {
   const [databases, setDatabases] = useState([]);
@@ -34,6 +35,7 @@ function App() {
             }
           />
           <Route path="/general_request" element={<GeneralRequestForm studentId={1} />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<UploadFile userId="206676850" />} />
           <Route path="/reload" element={<ReloadFiles UserId="206676850" />} />
           <Route path="/users" element={<UsersList />} />
