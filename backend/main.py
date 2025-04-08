@@ -12,7 +12,7 @@ from db_connection import *
 import bcrypt
 import cryptography
 import jwt
-from jwt import PyJWTError
+from jwt.exceptions import PyJWTError
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -158,22 +158,24 @@ async def upload_file(
             detail=f"Error uploading file: {str(e)}"
         )
 
-@app.get("/reloadFiles/{userId}")
-async def reload_files(userId: str):
-    global file_path
-    root_path = os.path.join("Documents", userId)
+@app.get("/reloadFiles/{userEmail}")
+async def reload_files(userEmail: str):
+
+    root_path = os.path.join("Documents", userEmail)
     files = []
     file_paths = []
-    for root, dirs, filenames in os.walk(root_path):
+    for root, _, filenames in os.walk(root_path):
         for filename in filenames:
-            if len(dirs)>0:
-                continue
-            file_path = os.path.relpath(os.path.join("Documents",userId, root, filename), root_path)
-            print(file_path)
+            print("filename:", filename)
+            print("root:", root)
+
+            file_path = os.path.relpath(os.path.join(root, filename), root_path)
+            print("file_path:", file_path)
             files.append(filename)
             file_paths.append(file_path)
-    print(file_paths)
-    return {"files": files, "file_path" : file_paths}
+    print({"files": files, "file_paths": file_paths})
+    return {"files": files, "file_paths": file_paths}
+
 
 
 @app.get("/downloadFile/{userId}/{file_path:path}")
@@ -191,12 +193,38 @@ async def download_file(userId: str, file_path: str):
     return FileResponse(full_path, filename=os.path.basename(full_path))
 
 
-@app.get("/requests/{UserId}")
-async def get_requests(UserId: str, session: AsyncSession = Depends(get_session)):
-    if UserId == "all":
-        return session.query(Requests).all()
-    else:
-        return session.query(Requests).filter(Requests.student_email == UserId).all()
+from fastapi import HTTPException
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
+
+@app.get("/requests/{user_email}")
+async def get_requests(user_email: str, session: AsyncSession = Depends(get_session)):
+    try:
+        if user_email == "all":
+            result = await session.execute(select(Requests))
+        else:
+            result = await session.execute(
+                select(Requests).filter(Requests.student_email == user_email)
+            )
+
+        requests = result.scalars().all()
+
+        return [
+            {
+                "id": req.id,
+                "title": req.title,
+                "student_email": req.student_email,
+                "details": req.details,
+                "files": req.files,
+                "status": req.status,
+                "created_date": str(req.created_date),
+                "timeline": req.timeline,
+            }
+            for req in requests
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
 @app.post("/create_user")
 async def create_user(request :Request, session: AsyncSession = Depends(get_session)):
