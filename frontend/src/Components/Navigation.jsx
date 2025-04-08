@@ -10,7 +10,7 @@ const Navigation = () => {
           <Link to="/">Home</Link>
         </li>
         <li>
-          <Link to="/general_request">Submit General Request</Link>
+          <Link to="/submit_request">Submit A Request</Link>
         </li>
         <li>
           <Link to="/upload">Upload Files</Link>
