@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { fetchDatabases } from "./api";
 import { UploadFile } from "./Components/UploadFile";
 import ReloadFiles from "./Components/ReloadFiles";
@@ -10,6 +10,12 @@ import UserDetails from "./Components/UserDetails";
 import SubmitGrades from "./Components/SubmitGrades";
 import SubmitRequestForm from "./Components/SubmitRequestForm";
 import Navigation from "./Components/Navigation";
+import Login from "./Components/Login";
+import Home from "./Components/Home";
+// example
+// import page from './pages/page';
+// to use -
+// <a href="/page">Page</a>
 
 function App() {
   const [databases, setDatabases] = useState([]);
@@ -26,17 +32,14 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <div>
-                <h1>Welcome</h1>
-                <ul>{/*databases.map(db => <li key={db}>{db}</li>)*/}</ul>
-              </div>
-            }
+            element={<Navigate to="/home" replace />}
           />
+          <Route path="/home" element={<Home />} />
           <Route
             path="/submit_request"
             element={<SubmitRequestForm studentEmail={"ariel@gmail.com"} />}
           />
+          <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<UploadFile userId="206676850" />} />
           <Route path="/reload" element={<ReloadFiles UserId="206676850" />} />
           <Route path="/users" element={<UsersList />} />
