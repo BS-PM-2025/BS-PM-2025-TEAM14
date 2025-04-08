@@ -120,17 +120,43 @@ def list_tables(database_name: str):
 def list_users():
     return {"users": None}
 
-@app.post("/uploadfile/{userId}")
-async def upload_file(userId: str, file: UploadFile = File(...), fileType: str = Form(...)):
-    save_path = os.path.join("Documents", userId, fileType)
+@app.post("/uploadfile/{userEmail}")
+async def upload_file(
+    userEmail: str, 
+    file: UploadFile = File(...), 
+    fileType: str = Form(...)
+):
+    try:
+        # Validate file size (example: 10MB limit)
+        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
+        file_size = 0
+        file_content = await file.read()
+        file_size = len(file_content)
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400, 
+                detail="File size too large. Maximum size is 10MB"
+            )
 
-    os.makedirs(save_path, exist_ok=True)
-    file_path = os.path.join(save_path, file.filename)
+        # Create directory if it doesn't exist
+        save_path = os.path.join("Documents", userEmail, fileType)
+        os.makedirs(save_path, exist_ok=True)
+        
+        # Save the file
+        file_path = os.path.join(save_path, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(file_content)
 
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-
-    return {"message": "File uploaded successfully"}
+        return {
+            "message": "File uploaded successfully",
+            "path": f"{userEmail}/{fileType}/{file.filename}"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading file: {str(e)}"
+        )
 
 @app.get("/reloadFiles/{userId}")
 async def reload_files(userId: str):
@@ -312,7 +338,7 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
     return [{"email": student.email, "name": f"{student.first_name} {student.last_name}"} for student in course.students]
 
 # Create a general request
-@app.post("/general_request/create")
+@app.post("/submit_request/create")
 async def create_general_request(
     request: Request,
     session: AsyncSession = Depends(get_session)
@@ -322,6 +348,8 @@ async def create_general_request(
     student_email = data.get("student_email")
     details = data.get("details")
     files = data.get("files", {})
+    grade_appeal = data.get("grade_appeal")
+    schedule_change = data.get("schedule_change")
 
     if not title or not student_email or not details:
         raise HTTPException(status_code=400, detail="Missing required fields")
@@ -329,10 +357,23 @@ async def create_general_request(
     timeline = {
         "created": datetime.now().isoformat(),
         "status_changes": [{
-            "status": "not read",
+            "status": "pending",
             "date": datetime.now().isoformat()
         }]
     }
+
+    # Add specific details based on request type
+    if title == "Grade Appeal Request" and grade_appeal:
+        timeline.update({
+            "course_id": grade_appeal["course_id"],
+            "grade_component": grade_appeal["grade_component"],
+            "grade": grade_appeal["current_grade"]
+        })
+    elif title == "Schedule Change Request" and schedule_change:
+        timeline.update({
+            "course_id": schedule_change["course_id"],
+            "professor": schedule_change["professors"][0] if schedule_change["professors"] else None
+        })
 
     new_request = await add_request(
         session=session,
@@ -340,9 +381,42 @@ async def create_general_request(
         student_email=student_email,
         details=details,
         files=files,
-        status="not read",
+        status="pending",
         created_date=datetime.now().date(),
         timeline=timeline
     )
 
     return {"message": "Request created successfully", "request_id": new_request.id}
+
+@app.get("/student/{student_email}/courses")
+async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
+    # Get all courses the student is enrolled in with their grades
+    result = await session.execute(
+        select(StudentCourses)
+        .join(Courses, StudentCourses.course_id == Courses.id)
+        .filter(StudentCourses.student_email == student_email)
+    )
+    student_courses = result.scalars().all()
+    
+    # Organize data by course name
+    courses_data = {}
+    for sc in student_courses:
+        # Get the course name
+        course_result = await session.execute(
+            select(Courses).filter(Courses.id == sc.course_id)
+        )
+        course = course_result.scalars().first()
+        
+        if course:
+            if course.name not in courses_data:
+                courses_data[course.name] = []
+            
+            if sc.grade_component and sc.grade is not None:
+                courses_data[course.name].append({
+                    "course_id": course.id,
+                    "grade_component": sc.grade_component,
+                    "professor_email": sc.professor_email,
+                    "grade": sc.grade
+                })
+    
+    return {"courses": courses_data}

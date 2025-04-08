@@ -8,7 +8,7 @@ import CreateUser from "./Components/CreateUser";
 import UsersList from "./Components/UsersList";
 import UserDetails from "./Components/UserDetails";
 import SubmitGrades from "./Components/SubmitGrades";
-import GeneralRequestForm from "./Components/GeneralRequestForm";
+import SubmitRequestForm from "./Components/SubmitRequestForm";
 import Navigation from "./Components/Navigation";
 import Login from "./Components/Login";
 import Home from "./Components/Home";
@@ -35,7 +35,10 @@ function App() {
             element={<Navigate to="/home" replace />}
           />
           <Route path="/home" element={<Home />} />
-          <Route path="/general_request" element={<GeneralRequestForm studentId={1} />} />
+          <Route
+            path="/submit_request"
+            element={<SubmitRequestForm studentEmail={"ariel@gmail.com"} />}
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<UploadFile userId="206676850" />} />
           <Route path="/reload" element={<ReloadFiles UserId="206676850" />} />
