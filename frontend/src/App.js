@@ -3,19 +3,14 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import { fetchDatabases } from "./api";
 import { UploadFile } from "./Components/UploadFile";
 import ReloadFiles from "./Components/ReloadFiles";
-import StudentRequestsPanel from "./Components/StudentRequestsPanel";
-import CreateUser from "./Components/CreateUser";
 import UsersList from "./Components/UsersList";
-import UserDetails from "./Components/UserDetails";
 import SubmitGrades from "./Components/SubmitGrades";
 import SubmitRequestForm from "./Components/SubmitRequestForm";
 import Navigation from "./Components/Navigation";
 import Login from "./Components/Login";
 import Home from "./Components/Home";
-// example
-// import page from './pages/page';
-// to use -
-// <a href="/page">Page</a>
+import StudentRequests from "./Components/StudentRequestsPanel";
+
 
 function App() {
   const [databases, setDatabases] = useState([]);
@@ -39,9 +34,11 @@ function App() {
             path="/submit_request"
             element={<SubmitRequestForm studentEmail={"ariel@gmail.com"} />}
           />
+          <Route path="/Requests" element={<StudentRequests emailUser="ariel@gmail.com" />} />
+
           <Route path="/login" element={<Login />} />
-          <Route path="/upload" element={<UploadFile userId="206676850" />} />
-          <Route path="/reload" element={<ReloadFiles UserId="206676850" />} />
+          <Route path="/upload" element={<UploadFile userEmail="ariel@gmail.com" />} />
+          <Route path="/reload" element={<ReloadFiles userEmail="ariel@gmail.com" />} />
           <Route path="/users" element={<UsersList />} />
           <Route path="/grades" element={<SubmitGrades Professor_Id={1} />} />
         </Routes>

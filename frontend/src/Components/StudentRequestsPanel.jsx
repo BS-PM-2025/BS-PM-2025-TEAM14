@@ -1,27 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/StudentRequestsPanel.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
 
-const sampleRequests = [
-    { id: 1, title: "אישור מחלה", status: "pending", date: "2025-04-01", documents: ["illness_certificate.pdf"] },
-    { id: 2, title: "ערעור על ציון", status: "approved", date: "2025-03-28", documents: ["illness_certificate.pdf"] },
-    { id: 3, title: "בקשה להארכת מועד הגשה", status: "rejected", date: "2025-03-25", documents: ["illness_certificate.pdf"] },
-    { id: 4, title: "אישור מילואים", status: "pending", date: "2025-03-22", documents: ["illness_certificate.pdf"] },
-    { id: 5, title: "בקשה להקלות", status: "approved", date: "2025-03-20", documents: ["illness_certificate.pdf"] },
-];
-
-function StudentRequests({ UserId }) {
+function StudentRequests({ emailUser }) {
     const [visibleRequests, setVisibleRequests] = useState([]);
     const [selectedRequest, setSelectedRequest] = useState(null);
 
     useEffect(() => {
-        sampleRequests.forEach((request, index) => {
-            setTimeout(() => {
-                setVisibleRequests((prev) => [...prev, request]);
-            }, index * 300); 
-        });
-    }, []);
+        const fetchRequests = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8000/requests/${emailUser}`);
+                const data = response.data;
+
+                data.forEach((request, index) => {
+                    setTimeout(() => {
+                        setVisibleRequests(prev => [...prev, request]);
+                    }, index * 300);
+                });
+            } catch (error) {
+                console.error("Error fetching requests:", error);
+            }
+        };
+
+        fetchRequests();
+    }, [emailUser]);
 
     const handleRequestClick = (request) => {
         setSelectedRequest(request);
@@ -49,12 +55,21 @@ function StudentRequests({ UserId }) {
                     >
                         <div className="card shadow-lg p-3 request-card">
                             <div className="card-body">
-                                <h5 className="card-title">{request.title}</h5>
-                                <p className="card-text"><strong>תאריך:</strong> {request.date}</p>
+                                <h5 className="card-title d-flex align-items-center">
+                                    {request.title}
+                                    {/* הוספת האייקון אם יש קבצים */}
+                                    {request.files && request.files.length > 0 && (
+                                        <FontAwesomeIcon
+                                            icon={faFileAlt}
+                                            size="sm"
+                                            style={{ marginLeft: "8px", color: "#007bff" }}
+                                        />
+                                    )}
+                                </h5>
+                                <p className="card-text"><strong>תאריך:</strong> {request.created_date}</p>
                                 <p className={`badge ${getStatusClass(request.status)}`}>
                                     {getStatusText(request.status)}
                                 </p>
-
                             </div>
                         </div>
                     </motion.div>
@@ -85,7 +100,7 @@ function StudentRequests({ UserId }) {
                                 <div className="row mb-3">
                                     <div className="col-md-6">
                                         <p><strong>מזהה בקשה:</strong> {selectedRequest.id}</p>
-                                        <p><strong>תאריך:</strong> {selectedRequest.date}</p>
+                                        <p><strong>תאריך:</strong> {selectedRequest.created_date}</p>
                                         <p><strong>סטטוס:</strong> <span className={`badge ${getStatusClass(selectedRequest.status)}`}>
                                             {getStatusText(selectedRequest.status)}
                                         </span></p>
@@ -93,37 +108,46 @@ function StudentRequests({ UserId }) {
                                     <div className="col-md-6">
                                         <p><strong>מסמכים מצורפים:</strong></p>
                                         <ul className="list-group">
-                                            {selectedRequest.documents.map((doc, index) => (
+                                            {(selectedRequest.files || []).map((doc, index) => (
                                                 <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                                                    {doc}
-                                                    <button className="btn btn-sm btn-outline-primary">להורדה</button>
+                                                    <span>
+                                                        <FontAwesomeIcon icon={faFileAlt} className="me-2 text-primary" />
+                                                        {doc}
+                                                    </span>
+                                                    <a
+                                                        className="btn btn-sm btn-outline-primary"
+                                                        href={`http://localhost:8000/downloadFile/${emailUser}/${encodeURIComponent(doc)}`}
+                                                        download
+                                                    >
+                                                        להורדה
+                                                    </a>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
+
                                 </div>
+
+                                {/* Timeline */}
                                 <div className="mb-3">
                                     <h5>היסטוריית הבקשה</h5>
                                     <div className="timeline">
-                                        <div className="timeline-item">
-                                            <div className="timeline-date">{selectedRequest.date}</div>
-                                            <div className="timeline-content">
-                                                <p>בקשה נשלחה</p>
-                                            </div>
-                                        </div>
-                                        {selectedRequest.status !== "waiting" && (
-                                            <div className="timeline-item">
-                                                <div className="timeline-date">{new Date(new Date(selectedRequest.date).getTime() + 86400000 * 2).toISOString().split('T')[0]}</div>
+                                        {(selectedRequest?.timeline?.status_changes || []).map((statusChange, index) => (
+                                            <div className="timeline-item" key={index}>
+                                                <div className="timeline-date">
+                                                    {new Date(statusChange.date).toLocaleDateString("he-IL")}
+                                                </div>
                                                 <div className="timeline-content">
-                                                    <p>בקשה {selectedRequest.status === "accept" ? "אושרה" : "נדחתה"}</p>
+                                                    <p>סטטוס: {getStatusText(statusChange.status)}</p>
                                                 </div>
                                             </div>
-                                        )}
+                                        ))}
                                     </div>
                                 </div>
+
                                 <div className="text-end mt-3">
                                     <button className="btn btn-secondary me-2" onClick={closeModal}>סגירה</button>
-                                    {selectedRequest.status === "waiting" && (
+                                    {selectedRequest.status === "pending" && (
                                         <button className="btn btn-warning">עריכת בקשה</button>
                                     )}
                                 </div>
@@ -144,6 +168,8 @@ function getStatusClass(status) {
             return "bg-success text-white";
         case "rejected":
             return "bg-danger text-white";
+        case "not read":
+            return "bg-secondary text-white";
         default:
             return "bg-secondary text-white";
     }
@@ -158,7 +184,7 @@ function getStatusText(status) {
         case "rejected":
             return "נדחה";
         case "not read":
-            return "טרם טופל"
+            return "טרם טופל";
         default:
             return status;
     }

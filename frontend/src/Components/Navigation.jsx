@@ -13,6 +13,9 @@ const Navigation = () => {
           <Link to="/submit_request">Submit A Request</Link>
         </li>
         <li>
+          <Link to="/Requests">Requests</Link>
+        </li>
+        <li>
           <Link to="/upload">Upload Files</Link>
         </li>
         <li>
