@@ -15,9 +15,13 @@ import jwt
 from jwt.exceptions import PyJWTError
 from typing import Optional
 from datetime import datetime, timedelta
+from fastapi import HTTPException
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
 
 # Session Management and Authentication #
-SECRET_KEY = "0534224700"  # In production, use a secure secret key
+SECRET_KEY = "SSRSTEAM14"  # In production, use a secure secret key
 ALGORITHM = "HS256"
 
 def create_access_token(user_data: dict):
@@ -29,6 +33,7 @@ def create_access_token(user_data: dict):
     return token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
 
 def verify_token(token: str = Depends(oauth2_scheme)):
     '''
@@ -60,7 +65,7 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
     return token_data
 
 ###
-from datetime import datetime
+
 from contextlib import asynccontextmanager
 '''
 @asynccontextmanager
@@ -84,9 +89,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def home():
     return {"message": "Welcome to FastAPI Backend!"}
+
 
 @app.post("/login")
 async def login(request: Request, session: AsyncSession = Depends(get_session)):
@@ -101,31 +108,30 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
         if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
             access_token = create_access_token({"user_email": user.email, "role": user.role, "first_name": user.first_name,
                                                 "last_name": user.last_name})
-            # return {"message": "Login successful"}
             return {"access_token": access_token, "token_type": "bearer", "message": "Login successful"}
         else:
             raise HTTPException(status_code=401, detail="Invalid password")
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
+
 @app.get("/databases")
 def list_databases():
     return {"databases": None}
+
 
 @app.get("/tables/{database_name}")
 def list_tables(database_name: str):
     return {"tables": None}
 
+
 @app.get("/users")
 def list_users():
     return {"users": None}
 
+
 @app.post("/uploadfile/{userEmail}")
-async def upload_file(
-    userEmail: str, 
-    file: UploadFile = File(...), 
-    fileType: str = Form(...)
-):
+async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: str = Form(...)):
     try:
         # Validate file size (example: 10MB limit)
         MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
@@ -158,9 +164,9 @@ async def upload_file(
             detail=f"Error uploading file: {str(e)}"
         )
 
+
 @app.get("/reloadFiles/{userEmail}")
 async def reload_files(userEmail: str):
-
     root_path = os.path.join("Documents", userEmail)
     files = []
     file_paths = []
@@ -177,7 +183,6 @@ async def reload_files(userEmail: str):
     return {"files": files, "file_paths": file_paths}
 
 
-
 @app.get("/downloadFile/{userId}/{file_path:path}")
 async def download_file(userId: str, file_path: str):
     print(file_path)
@@ -192,11 +197,6 @@ async def download_file(userId: str, file_path: str):
 
     return FileResponse(full_path, filename=os.path.basename(full_path))
 
-
-from fastapi import HTTPException
-from sqlalchemy.future import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
 
 @app.get("/requests/{user_email}")
 async def get_requests(user_email: str, session: AsyncSession = Depends(get_session)):
@@ -226,6 +226,7 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
+
 @app.post("/create_user")
 async def create_user(request :Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
@@ -242,6 +243,7 @@ async def create_user(request :Request, session: AsyncSession = Depends(get_sess
         new_professor = await add_professor(session, email, data.get("department", ""))
     return {"message": "User created successfully", "user_email": new_user.email}
 
+
 @app.post("/Users/getUsers")
 async def get_users(session: AsyncSession = Depends(get_session)):
     users = await session.execute(select(Users))
@@ -252,7 +254,7 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 async def set_role(request: Request, session: AsyncSession = Depends(get_session)):
     print("in the set role function")
     data = await request.json()
-    user_email = data.get("UserEmail")
+    user_email = data.get("user_email")
     role = data.get("role")
 
     res = await session.execute(select(Users).filter(Users.email == user_email))
@@ -266,12 +268,10 @@ async def set_role(request: Request, session: AsyncSession = Depends(get_session
         return {"error": "User not found"}
 
 
-
-
 @app.post("/Users/getUser/{UserEmail}")
 async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)):
     print("in the func", UserEmail)
-    res_user = await session.execute(select(Users).filter(Users.id == UserEmail))
+    res_user = await session.execute(select(Users).where(Users.email == UserEmail))
     user = res_user.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -288,6 +288,7 @@ async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)
         return {**user.__dict__, "professor_data": professor}
 
     return user
+
 
 @app.get("/professor/courses/{professor_email}")
 async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session),
@@ -310,6 +311,7 @@ async def get_courses(professor_email: str, session: AsyncSession = Depends(get_
     courses_names = [course.name for course in courses]
 
     return {"courses": courses_data}
+
 
 @app.post("/courses/{course_id}/submit_grades")
 async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session),
@@ -365,6 +367,7 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
     # Return a list of student details
     return [{"email": student.email, "name": f"{student.first_name} {student.last_name}"} for student in course.students]
 
+
 # Create a general request
 @app.post("/submit_request/create")
 async def create_general_request(
@@ -416,6 +419,7 @@ async def create_general_request(
 
     return {"message": "Request created successfully", "request_id": new_request.id}
 
+
 @app.get("/student/{student_email}/courses")
 async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
     # Get all courses the student is enrolled in with their grades
@@ -448,3 +452,22 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
                 })
     
     return {"courses": courses_data}
+
+
+# Testing
+import sqlite3
+
+def fetch_data():
+    # Opens a connection using sqlite3.
+    connection = sqlite3.connect('mydb.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM my_table")
+    rows = cursor.fetchall()
+    return rows
+
+def main():
+    data = fetch_data()
+    print(data)
+
+if __name__ == '__main__':
+    main()
