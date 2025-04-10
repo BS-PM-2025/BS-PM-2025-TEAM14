@@ -34,6 +34,7 @@ def create_access_token(user_data: dict):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
+
 def verify_token(token: str = Depends(oauth2_scheme)):
     '''
     try:
@@ -107,7 +108,6 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
         if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
             access_token = create_access_token({"user_email": user.email, "role": user.role, "first_name": user.first_name,
                                                 "last_name": user.last_name})
-            # return {"message": "Login successful"}
             return {"access_token": access_token, "token_type": "bearer", "message": "Login successful"}
         else:
             raise HTTPException(status_code=401, detail="Invalid password")
@@ -131,11 +131,7 @@ def list_users():
 
 
 @app.post("/uploadfile/{userEmail}")
-async def upload_file(
-    userEmail: str, 
-    file: UploadFile = File(...), 
-    fileType: str = Form(...)
-    ):
+async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: str = Form(...)):
     try:
         # Validate file size (example: 10MB limit)
         MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
@@ -258,7 +254,7 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 async def set_role(request: Request, session: AsyncSession = Depends(get_session)):
     print("in the set role function")
     data = await request.json()
-    user_email = data.get("UserEmail")
+    user_email = data.get("user_email")
     role = data.get("role")
 
     res = await session.execute(select(Users).filter(Users.email == user_email))
@@ -275,7 +271,7 @@ async def set_role(request: Request, session: AsyncSession = Depends(get_session
 @app.post("/Users/getUser/{UserEmail}")
 async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)):
     print("in the func", UserEmail)
-    res_user = await session.execute(select(Users).filter(Users.id == UserEmail))
+    res_user = await session.execute(select(Users).where(Users.email == UserEmail))
     user = res_user.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
