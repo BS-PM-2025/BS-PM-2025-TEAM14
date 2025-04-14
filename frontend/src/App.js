@@ -32,7 +32,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route
             path="/submit_request"
-            element={<SubmitRequestForm studentEmail={"ariel@gmail.com"} />}
+            element={<SubmitRequestForm />}
           />
           <Route path="/Requests" element={<StudentRequests emailUser="ariel@gmail.com" />} />
 

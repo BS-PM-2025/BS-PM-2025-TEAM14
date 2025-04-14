@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../CSS/SubmitRequestForm.css";
 import { useNavigate } from "react-router-dom";
 import GradeAppealSelection from "./GradeAppealSelection";
 import StudentsCourses from "./StudentsCourses";
+import { getToken, getUserFromToken } from "../utils/auth";
 
-const RequestForm = ({ studentEmail }) => {
+const RequestForm = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
@@ -15,6 +16,40 @@ const RequestForm = ({ studentEmail }) => {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [gradeInfo, setGradeInfo] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const token = getToken();
+      console.log("Token from localStorage:", token);
+
+      if (token) {
+        const userData = getUserFromToken(token);
+        console.log("User data from token:", userData);
+
+        // Check if user is a student
+        if (userData.role !== "student") {
+          console.log("Non-student user detected, redirecting to home");
+          navigate("/home");
+          return;
+        }
+
+        setUser(userData);
+      } else {
+        setUser(null);
+        navigate("/login");
+      }
+    };
+
+    checkLoginStatus();
+    window.addEventListener("storage", checkLoginStatus);
+    window.addEventListener("focus", checkLoginStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+      window.removeEventListener("focus", checkLoginStatus);
+    };
+  }, [navigate]);
 
   const requestTypes = [
     "General Request",
@@ -116,7 +151,7 @@ const RequestForm = ({ studentEmail }) => {
 
           // Upload each file
           await axios.post(
-            `http://localhost:8000/uploadfile/${studentEmail}`,
+            `http://localhost:8000/uploadfile/${user.user_email}`,
             formData,
             {
               headers: {
@@ -131,7 +166,7 @@ const RequestForm = ({ studentEmail }) => {
       // Prepare request data
       const requestData = {
         title,
-        student_email: studentEmail,
+        student_email: user.user_email,
         details:
           title === "Grade Appeal Request"
             ? `${gradeInfo}Appeal Details:\n${details}`
@@ -215,7 +250,7 @@ const RequestForm = ({ studentEmail }) => {
         {title === "Grade Appeal Request" && (
           <div className="form-group">
             <GradeAppealSelection
-              studentEmail={studentEmail}
+              studentEmail={user.user_email}
               onSelectionChange={handleGradeSelection}
             />
           </div>
@@ -224,7 +259,7 @@ const RequestForm = ({ studentEmail }) => {
         {title === "Schedule Change Request" && (
           <div className="form-group">
             <StudentsCourses
-              studentEmail={studentEmail}
+              studentEmail={user.user_email}
               onCourseSelect={handleCourseSelect}
             />
           </div>

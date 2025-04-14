@@ -368,7 +368,7 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
     return [{"email": student.email, "name": f"{student.first_name} {student.last_name}"} for student in course.students]
 
 
-# Create a general request
+# Create a request
 @app.post("/submit_request/create")
 async def create_general_request(
     request: Request,
@@ -395,15 +395,25 @@ async def create_general_request(
 
     # Add specific details based on request type
     if title == "Grade Appeal Request" and grade_appeal:
+        required_keys = {"course_id", "grade_component", "current_grade"}
+        if not required_keys.issubset(grade_appeal.keys()):
+            raise HTTPException(status_code=400, detail="Invalid grade appeal data")
         timeline.update({
             "course_id": grade_appeal["course_id"],
             "grade_component": grade_appeal["grade_component"],
             "grade": grade_appeal["current_grade"]
         })
     elif title == "Schedule Change Request" and schedule_change:
+        if (
+            "course_id" not in schedule_change or 
+            "professors" not in schedule_change or 
+            not isinstance(schedule_change["professors"], list) or 
+            not schedule_change["professors"]
+        ):
+            raise HTTPException(status_code=400, detail="Invalid schedule change data")
         timeline.update({
             "course_id": schedule_change["course_id"],
-            "professor": schedule_change["professors"][0] if schedule_change["professors"] else None
+            "professor": schedule_change["professors"][0]
         })
 
     new_request = await add_request(
@@ -420,9 +430,13 @@ async def create_general_request(
     return {"message": "Request created successfully", "request_id": new_request.id}
 
 
-@app.get("/student/{student_email}/courses")
+@app.get("/student/{student_email:path}/courses")
 async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
-    # Get all courses the student is enrolled in with their grades
+    # Validate the student_email parameter.
+    if not student_email or "@" not in student_email:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Retrieve all courses the student is enrolled in with their grades.
     result = await session.execute(
         select(StudentCourses)
         .join(Courses, StudentCourses.course_id == Courses.id)
@@ -430,10 +444,9 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
     )
     student_courses = result.scalars().all()
     
-    # Organize data by course name
+    # Organize data by course name.
     courses_data = {}
     for sc in student_courses:
-        # Get the course name
         course_result = await session.execute(
             select(Courses).filter(Courses.id == sc.course_id)
         )

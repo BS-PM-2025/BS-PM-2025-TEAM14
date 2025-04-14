@@ -152,6 +152,41 @@ def test_get_courses(override_professor_session):
     assert type(courses) == list
     assert len(courses) == 5
 
+def test_get_student_courses(override_student_session):
+    # Act
+    response = client.get("/student/test_student@example.com/courses")
+
+    # Assert
+    assert response.status_code == 200
+    json_resp = response.json()
+    assert "courses" in json_resp
+    assert isinstance(json_resp["courses"], dict)
+    # Verify that the courses data structure matches what we expect
+    for course_name, components in json_resp["courses"].items():
+        assert isinstance(components, list)
+        for component in components:
+            assert "course_id" in component
+            assert "grade_component" in component
+            assert "professor_email" in component
+            assert "grade" in component
+
+
+def test_get_student_courses_invalid_email(override_student_session):
+    # Act - Using an invalid email format
+    response = client.get("/student/invalid_email/courses")
+
+    # Assert - Should fail with 404 status code
+    assert response.status_code == 404
+    assert "Student not found" in response.json()["detail"]
+
+def test_get_student_courses_empty_email(override_student_session):
+    # Act - Using an empty email
+    response = client.get("/student//courses")
+
+    # Assert - Should fail with 404 status code
+    assert response.status_code == 404
+    assert "Student not found" in response.json()["detail"]
+
 ###########################################
 # Tests for File Upload / Reload Endpoints
 ###########################################
@@ -264,3 +299,148 @@ def test_reload_files(monkeypatch, tmp_path):
 # would involve overriding the token verification dependencies or simulating a token.
 # For example, you could override `verify_token_professor` to simply return a valid payload.
 
+###########################################
+# Tests for Request Creation Endpoints
+###########################################
+
+def test_create_general_request(override_student_session):
+    # Arrange
+    payload = {
+        "title": "Test Request",
+        "student_email": "test_student@example.com",
+        "details": "Test details",
+        "files": {},
+        "grade_appeal": None,
+        "schedule_change": None
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert
+    assert response.status_code == 200
+    json_resp = response.json()
+    assert json_resp["message"] == "Request created successfully"
+    assert "request_id" in json_resp
+
+def test_create_grade_appeal_request(override_student_session):
+    # Arrange
+    payload = {
+        "title": "Grade Appeal Request",
+        "student_email": "test_student@example.com",
+        "details": "Test grade appeal details",
+        "files": {},
+        "grade_appeal": {
+            "course_id": "1",
+            "grade_component": "Final Exam",
+            "current_grade": 85
+        },
+        "schedule_change": None
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert
+    assert response.status_code == 200
+    json_resp = response.json()
+    assert json_resp["message"] == "Request created successfully"
+    assert "request_id" in json_resp
+
+def test_create_schedule_change_request(override_student_session):
+    # Arrange
+    payload = {
+        "title": "Schedule Change Request",
+        "student_email": "test_student@example.com",
+        "details": "Test schedule change details",
+        "files": {},
+        "grade_appeal": None,
+        "schedule_change": {
+            "course_id": "1",
+            "professors": ["test_professor@example.com"]
+        }
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert
+    assert response.status_code == 200
+    json_resp = response.json()
+    assert json_resp["message"] == "Request created successfully"
+    assert "request_id" in json_resp
+
+
+def test_create_request_missing_title(override_student_session):
+    # Arrange - Missing required title field
+    payload = {
+        "student_email": "test_student@example.com",
+        "details": "Test details",
+        "files": {},
+        "grade_appeal": None,
+        "schedule_change": None
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert - Should fail with 400 status code
+    assert response.status_code == 400
+    assert "Missing required fields" in response.json()["detail"]
+
+def test_create_request_missing_student_email(override_student_session):
+    # Arrange - Missing required student_email field
+    payload = {
+        "title": "Test Request",
+        "details": "Test details",
+        "files": {},
+        "grade_appeal": None,
+        "schedule_change": None
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert - Should fail with 400 status code
+    assert response.status_code == 400
+    assert "Missing required fields" in response.json()["detail"]
+
+def test_create_request_invalid_grade_appeal(override_student_session):
+    # Arrange - Invalid grade appeal data (missing required fields)
+    payload = {
+        "title": "Grade Appeal Request",
+        "student_email": "test_student@example.com",
+        "details": "Test details",
+        "files": {},
+        "grade_appeal": {
+            "course_id": "1"  # Missing grade_component and current_grade
+        },
+        "schedule_change": None
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert - Should fail with 400 status code
+    assert response.status_code == 400
+    assert "Invalid grade appeal data" in response.json()["detail"]
+
+def test_create_request_invalid_schedule_change(override_student_session):
+    # Arrange - Invalid schedule change data (missing required fields)
+    payload = {
+        "title": "Schedule Change Request",
+        "student_email": "test_student@example.com",
+        "details": "Test details",
+        "files": {},
+        "grade_appeal": None,
+        "schedule_change": {
+            "course_id": "1"  # Missing professors list
+        }
+    }
+
+    # Act
+    response = client.post("/submit_request/create", json=payload)
+
+    # Assert - Should fail with 400 status code
+    assert response.status_code == 400
+    assert "Invalid schedule change data" in response.json()["detail"]
