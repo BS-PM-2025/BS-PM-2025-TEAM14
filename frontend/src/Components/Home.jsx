@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { getToken, getUserFromToken, removeToken } from '../utils/auth';
+import ConfirmationDialog from './ConfirmationDialog';
 import '../CSS/Home.css';
 
 const Home = () => {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,9 +36,18 @@ const Home = () => {
   }, []);
 
   const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
     removeToken();
     setUser(null);
+    setShowLogoutDialog(false);
     navigate('/');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutDialog(false);
   };
 
   const containerVariants = {
@@ -223,6 +234,14 @@ const Home = () => {
       <motion.footer className="footer" variants={itemVariants}>
         <p>&copy; 2024 Academic Management System. All rights reserved.</p>
       </motion.footer>
+
+      <ConfirmationDialog
+        isOpen={showLogoutDialog}
+        onClose={cancelLogout}
+        onConfirm={confirmLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to log out?"
+      />
     </motion.div>
   );
 };
