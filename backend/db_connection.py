@@ -19,14 +19,14 @@ class Users(Base):
     first_name = Column(String(100), unique=False, nullable=False)
     last_name = Column(String(100), unique=False, nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    role = Column(String(50), nullable=False) 
+    role = Column(String(50), nullable=False)
 
 
 # Student table
 class Students(Base):
     __tablename__ = 'students'
     email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
-    
+
     courses = relationship("Courses", secondary="student_courses", back_populates="students")
     student_courses = relationship("StudentCourses", back_populates="student")
     requests = relationship("Requests", back_populates="student")
@@ -36,7 +36,7 @@ class Professors(Base):
     __tablename__ = 'professors'
     email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
     department = Column(String(100), nullable=False)
-    
+
     courses = relationship("Courses", back_populates="professor")
     student_courses = relationship("StudentCourses", back_populates="professor")
 
@@ -51,7 +51,7 @@ class Requests(Base):
     status = Column(String(100))
     created_date = Column(Date, nullable=False)
     timeline = Column(JSON, nullable=True)
-    
+
     # Relationships
     student = relationship("Students", back_populates="requests")
 
@@ -63,11 +63,14 @@ class StudentCourses(Base):
     professor_email = Column(String(100), ForeignKey('professors.email'), primary_key=True)
     grade_component = Column(String(100), nullable=False, primary_key=True)
     grade = Column(Integer, nullable=False)
-    
+
     # Relationships
     student = relationship("Students", back_populates="student_courses")
     course = relationship("Courses", back_populates="student_courses")
     professor = relationship("Professors", back_populates="student_courses")
+
+
+
 
 # Courses table
 class Courses(Base):
@@ -77,11 +80,13 @@ class Courses(Base):
     description = Column(String(500), nullable=True)
     credits = Column(Float, nullable=False)
     professor_email = Column(String(100), ForeignKey('professors.email'), nullable=False)
-    
+
     # Relationships
     professor = relationship("Professors", back_populates="courses")
     students = relationship("Students", secondary="student_courses", back_populates="courses")
     student_courses = relationship("StudentCourses", back_populates="course")
+
+
 
 async def add_user(session: AsyncSession, email: str, first_name: str, last_name: str, hashed_password: str, role: str):
     existing_user = await session.execute(select(Users).filter(Users.email == email))
@@ -135,7 +140,18 @@ async def update_professor_department(session: AsyncSession, email: str, departm
 async def add_request(session: AsyncSession, title: str, student_email: str, details: str, files: dict = None, status: str = None, created_date: Date = None, timeline: dict = None):
     if created_date is None:
         created_date = datetime.now().date()
-    
+
+    if timeline is None:
+        timeline = {
+            "created": datetime.now().isoformat(),
+            "status_changes": [
+                {
+                    "date": datetime.now().isoformat(),
+                    "status": "not read"
+                }
+            ]
+        }
+
     new_request = Requests(
         title=title,
         student_email=student_email,
@@ -145,10 +161,12 @@ async def add_request(session: AsyncSession, title: str, student_email: str, det
         created_date=created_date,
         timeline=timeline
     )
+
     session.add(new_request)
     await session.commit()
     await session.refresh(new_request)
     return new_request
+
 
 async def add_course(session: AsyncSession, id: str, name: str, description: str, credits: float, professor_email: str):
     new_course = Courses(
@@ -175,6 +193,76 @@ async def add_student_course(session: AsyncSession, student_email: str, course_i
     await session.commit()
     await session.refresh(new_student_course)
     return new_student_course
+
+
+
+# async def add_professor_response(session: AsyncSession, request_id: int, professor_email: str, response_text: str, files: dict = None):
+#     request = await session.get(Requests, request_id)
+#
+#     if not request:
+#         raise ValueError(f"Request with ID {request_id} not found.")
+#
+#     # יצירת התגובה
+#     new_response = ProfessorResponses(
+#         request_id=request_id,
+#         professor_email=professor_email,
+#         response_text=response_text,
+#         files=files,
+#         created_date=datetime.now().date()
+#     )
+#     session.add(new_response)
+#     await session.commit()
+#     await session.refresh(new_response)
+#
+#     new_timeline_entry = {
+#         "date": datetime.now().isoformat(),
+#         "status": "response added",
+#         "professor_response": response_text
+#     }
+#
+#     if request.timeline:
+#         request.timeline.append(new_timeline_entry)
+#     else:
+#         request.timeline = [new_timeline_entry]
+#
+#     await session.commit()
+#     await session.refresh(request)
+#
+#     return new_response
+
+
+
+async def assign_student_to_course(session: AsyncSession, student_email: str, course_name: str):
+    result = await session.execute(select(Users).filter(Users.email == student_email, Users.role == "student"))
+    student = result.scalar_one_or_none()
+
+    result = await session.execute(select(Courses).filter(Courses.name == course_name))
+    course = result.scalar_one_or_none()
+
+    if not student or not course:
+        raise Exception("Student or course not found")
+
+    student_course = StudentCourses(student_email=student.email, course_id=course.id)
+    session.add(student_course)
+    await session.commit()
+    return student_course
+
+async def assign_professor_to_course(session: AsyncSession, professor_email: str, course_id: str):
+    result = await session.execute(select(Users).filter(Users.email == professor_email, Users.role == "professor"))
+    professor = result.scalar_one_or_none()
+    print(f"Professor: {professor}")  # הדפס את המרצה שנמצא או None
+
+    result = await session.execute(select(Courses).filter(Courses.id == course_id))
+    course = result.scalar_one_or_none()
+    print(f"Course: {course}")  # הדפס את הקורס שנמצא או None
+
+    if not professor or not course:
+        raise Exception("Professor or course not found")
+
+    course.professor_id = professor.id
+    await session.commit()
+    return course
+
 
 # Create the asynchronous engine
 engine = create_async_engine(DATABASE_URL, echo=True, future=True)

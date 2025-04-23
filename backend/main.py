@@ -20,6 +20,19 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
+from pydantic import BaseModel
+from typing import List
+
+class AssignProfessorRequest(BaseModel):
+    professor_email: str
+    course_names: List[str]
+
+
+class AssignStudentsRequest(BaseModel):
+    student_emails: List[str]
+    course_name: str
+
+
 # Session Management and Authentication #
 SECRET_KEY = "SSRSTEAM14"  # In production, use a secure secret key
 ALGORITHM = "HS256"
@@ -125,9 +138,7 @@ def list_tables(database_name: str):
     return {"tables": None}
 
 
-@app.get("/users")
-def list_users():
-    return {"users": None}
+
 
 
 @app.post("/uploadfile/{userEmail}")
@@ -243,11 +254,19 @@ async def create_user(request: Request, session: AsyncSession = Depends(get_sess
     return {"message": "User created successfully", "user_email": new_user.email}
 
 
-@app.post("/Users/getUsers")
-async def get_users(session: AsyncSession = Depends(get_session)):
-    users = await session.execute(select(Users))
-    return users.scalars().all()
+@app.get("/users")
+async def get_users(role: str = None, session: AsyncSession = Depends(get_session)):
+    query = select(Users)
+    if role:
+        query = query.where(Users.role == role)
+    result = await session.execute(query)
+    return result.scalars().all()
 
+
+@app.get("/courses")
+async def get_courses(session: AsyncSession = Depends(get_session)):
+    result = await session.execute(select(Courses))
+    return result.scalars().all()
 
 @app.post("/Users/setRole")
 async def set_role(request: Request, session: AsyncSession = Depends(get_session)):
@@ -465,6 +484,29 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
     
     return {"courses": courses_data}
 
+
+@app.post("/assign_student")
+async def assign_students(
+        data: AssignStudentsRequest,
+        db: AsyncSession = Depends(get_session)
+):
+    for email in data.student_emails:
+        await assign_student_to_course(db, email, data.course_name)
+    return {"message": "Students assigned successfully"}
+
+
+@app.post("/assign_professor")
+async def assign_professor(
+        data: AssignProfessorRequest,
+        db: AsyncSession = Depends(get_session)
+):
+    print(f"Received data: {data}")
+    print(f"Professor email: {data.professor_email}")
+    print(f"Course names: {data.course_names}")
+
+    for course_name in data.course_names:
+        await assign_professor_to_course(db, data.professor_email, course_name)
+    return {"message": "Courses assigned successfully"}
 
 # Testing
 import sqlite3
