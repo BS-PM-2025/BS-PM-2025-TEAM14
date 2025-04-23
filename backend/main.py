@@ -228,19 +228,18 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
 
 
 @app.post("/create_user")
-async def create_user(request :Request, session: AsyncSession = Depends(get_session)):
+async def create_user(request: Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
     first_name = data.get("first_name")
     last_name = data.get("last_name")
     email = data.get("email")
     password = data.get("password")
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     role = data.get("role")
+
+    # This already handles adding the student/professor internally:
     new_user = await add_user(session, email, first_name, last_name, hashed_password, role)
-    if role == "student":
-        new_student = await add_student(session, email)
-    elif role == "professor":
-        new_professor = await add_professor(session, email, data.get("department", ""))
+
     return {"message": "User created successfully", "user_email": new_user.email}
 
 

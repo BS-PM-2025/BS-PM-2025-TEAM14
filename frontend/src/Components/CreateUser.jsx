@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 
 const CreateUser = () => {
-    const [username, setUsername] = useState("");
+    const [firstName, setFirstName] = useState("");  // Added firstName state
+    const [lastName, setLastName] = useState("");    // Added lastName state
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("");
@@ -10,7 +11,8 @@ const CreateUser = () => {
         e.preventDefault();
 
         const userData = {
-            username,
+            first_name: firstName,   // Sending firstName instead of username
+            last_name: lastName,     // Sending lastName
             email,
             password,
             role,
@@ -42,11 +44,20 @@ const CreateUser = () => {
             <h2>Create User</h2>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label>Username:</label>
+                    <label>First Name:</label>
                     <input
                         type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={firstName}  // Binding firstName state
+                        onChange={(e) => setFirstName(e.target.value)}  // Updating firstName state
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Last Name:</label>
+                    <input
+                        type="text"
+                        value={lastName}  // Binding lastName state
+                        onChange={(e) => setLastName(e.target.value)}  // Updating lastName state
                         required
                     />
                 </div>

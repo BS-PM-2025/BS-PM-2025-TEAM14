@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "../CSS/Navigation.css";
+import {useUser} from "./UserContext";
 
 const Navigation = () => {
+  const { user, setUserData } = useUser();
   return (
     <nav className="navigation">
       <ul>
@@ -21,9 +23,9 @@ const Navigation = () => {
         <li>
           <Link to="/reload">Reload Files</Link>
         </li>
-        <li>
+        {user?.role === "professor" && <li>
           <Link to="/users">Users</Link>
-        </li>
+        </li>}
         <li>
           <Link to="/grades">Grades</Link>
         </li>

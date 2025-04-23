@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from config import DATABASE_URL
 from datetime import datetime
 from sqlalchemy.sql import text
+from sqlalchemy.future import select
 
 # Define the base class
 Base = declarative_base()
@@ -83,6 +84,10 @@ class Courses(Base):
     student_courses = relationship("StudentCourses", back_populates="course")
 
 async def add_user(session: AsyncSession, email: str, first_name: str, last_name: str, hashed_password: str, role: str):
+    existing_user = await session.execute(select(Users).filter(Users.email == email))
+    if existing_user.scalar():
+        raise ValueError(f"User with email {email} already exists.")
+
     new_user = Users(
         email=email,
         first_name=first_name,
@@ -90,14 +95,19 @@ async def add_user(session: AsyncSession, email: str, first_name: str, last_name
         hashed_password=hashed_password,
         role=role
     )
+    session.add(new_user)
+    await session.flush()
+
     if role == "student":
         await add_student(session, email)
     elif role == "professor":
-        await add_professor(session, email, "NULL")
+        await add_professor(session, email, None)  # Assuming department is nullable
+
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
     return new_user
+
 
 async def add_student(session: AsyncSession, email: str):
     new_student = Students(email=email)

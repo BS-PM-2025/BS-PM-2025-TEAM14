@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { TextField, Button, CircularProgress, IconButton, InputAdornment } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { setToken } from '../utils/auth';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+import { useUser } from './UserContext'; // Import useUser to access the global user context
 
-
-const Login = () => {
+const Login = ({ onSuccess, onFailure }) => {
+    const { setUserData } = useUser(); // Access setUserData from the UserContext
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(null);
-    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
 
     const userData = {
         Email: userId,
@@ -18,16 +19,11 @@ const Login = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent default form submission behavior
+        e.preventDefault();
         setLoading(true);
         setError(null);
-        setSuccess(null);
-
-        console.log("Attempting login with:", userData);
-        console.log(userData);
 
         try {
-            // Replace with your backend login endpoint URL
             const response = await fetch('http://localhost:8000/login', {
                 method: 'POST',
                 headers: {
@@ -38,68 +34,86 @@ const Login = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Login response:", data);
-                
+
                 if (data.access_token) {
-                    // Set the token in localStorage
                     setToken(data.access_token);
-                    console.log("Token stored in localStorage");
-                    
-                    // Navigate to home page without forcing a reload
-                    navigate('/home', { replace: true });
+                    localStorage.setItem('access_token', data.access_token);
+
+                    const decodedUser = jwtDecode(data.access_token);
+                    setUserData(decodedUser); // Update the global user state
+                    if (onSuccess) onSuccess(decodedUser); // Notify Home component about the login success
                 } else {
                     setError('No access token received from server');
+                    if (onFailure) onFailure();
                 }
-                localStorage.setItem('access_token', data.access_token);
-                console.log("Login successful:", data.message);
-                setSuccess(data.message);
-                console.log(jwtDecode(data.access_token));
             } else {
                 const errorData = await response.json();
-                setError(errorData.detail /*|| 'Login failed'*/);
+                setError(errorData.detail || 'Login failed');
+                if (onFailure) onFailure();
             }
         } catch (err) {
-            setError('An error occurred. Please try again.');
             console.error(err);
+            setError('An error occurred. Please try again.');
+            if (onFailure) onFailure();
         }
+
         setLoading(false);
     };
 
     return (
         <div className="container mt-5">
-        <h2 className="text-center mb-4">Login</h2>
+            <h2 className="text-center mb-4">Login</h2>
             {error && <p className="text-danger text-center">{error}</p>}
-            {success && <p className="text-success text-center">{success}</p>}
             <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
                 <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Email:</label>
-                    <input
-                        type="text"
+                    <TextField
+                        label="Email"
                         id="userId"
+                        variant="outlined"
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
-                        className="form-control"
                         required
+                        fullWidth
                     />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password:</label>
-                    <input
-                        type="password"
+                    <TextField
+                        label="Password"
+                        type={showPassword ? 'text' : 'password'}
                         id="password"
+                        variant="outlined"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="form-control"
                         required
+                        fullWidth
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        edge="end"
+                                    >
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
                     />
                 </div>
                 <div className="d-grid">
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? 'Logging in...' : 'Login'}
-                    </button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        disabled={loading}
+                    >
+                        {loading ? <CircularProgress size={24} /> : 'Login'}
+                    </Button>
                 </div>
             </form>
-    </div>)
+        </div>
+    );
 };
 
-export default Login
+export default Login;
