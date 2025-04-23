@@ -19,19 +19,41 @@ const Home = () => {
   const [alert, setAlert] = useState({ type: '', message: '' });
 
   // Check login status on component mount and whenever storage or window focus events are triggered
+  // In Home.jsx, modify the useEffect that checks login status:
+
+  // In Home.jsx, modify the useEffect that checks login status:
+
+  // In Home.jsx, modify the useEffect that checks login status:
+
   useEffect(() => {
     const checkLoginStatus = () => {
       const token = getToken();
+      console.log("Checking login status, token:", token ? "exists" : "none");
+
       if (token) {
-        // Get the user data from token
-        const userData = JSON.parse(localStorage.getItem("user")); // Assuming you store user data in localStorage
-        setUserData(userData); // Update the global state
+        // Get the user data from localStorage
+        const userData = JSON.parse(localStorage.getItem("user"));
+
+        // Only update if user data is null but we have data in localStorage
+        // This prevents unnecessary re-renders and potential state cycles
+        if (!user && userData) {
+          console.log("Restoring user data from localStorage");
+          setUserData(userData);
+        }
       } else {
-        setUserData(null); // No user, clear the global state
+        // No token, clear user data if it exists
+        if (user) {
+          console.log("No token found, clearing user data");
+          setUserData(null);
+        }
       }
     };
 
     checkLoginStatus();
+
+    // Add debug log to track when this effect runs
+    console.log("Login status effect executed");
+
     window.addEventListener('storage', checkLoginStatus);
     window.addEventListener('focus', checkLoginStatus);
 
@@ -39,7 +61,7 @@ const Home = () => {
       window.removeEventListener('storage', checkLoginStatus);
       window.removeEventListener('focus', checkLoginStatus);
     };
-  }, []);
+  }, [user]); // Add user to the dependency array
 
   useEffect(() => {
     if (alert.message) {
@@ -56,13 +78,17 @@ const Home = () => {
   };
 
   const confirmLogout = () => {
+    // Only remove token and clear user data AFTER user confirms
     removeToken();
-    setUserData(null); // Clear user data
+    setUserData(null);
+    setShowLogoutDialog(false);
     navigate('/');
+    setAlert({ type: 'success', message: 'Logged out successfully!' });
   };
 
-  const cancelLogout = () => setShowLogoutDialog(false);
-
+  const cancelLogout = () => {
+    setShowLogoutDialog(false);
+  };
   const handleOpenLogin = () => setOpenLoginModal(true);
   const handleCloseLogin = () => setOpenLoginModal(false);
 
