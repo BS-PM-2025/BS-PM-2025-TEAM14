@@ -61,13 +61,28 @@ class StudentCourses(Base):
     student_email = Column(String(100), ForeignKey('students.email'), primary_key=True)
     course_id = Column(String(20), ForeignKey('courses.id'), primary_key=True)
     professor_email = Column(String(100), ForeignKey('professors.email'), primary_key=True)
-    grade_component = Column(String(100), nullable=False, primary_key=True)
-    grade = Column(Integer, nullable=False)
+
     
     # Relationships
     student = relationship("Students", back_populates="student_courses")
     course = relationship("Courses", back_populates="student_courses")
     professor = relationship("Professors", back_populates="student_courses")
+
+
+
+class StudentCourses(Base):
+    __tablename__ = 'grades'
+    student_email = Column(String(100), ForeignKey('students.email'), primary_key=True)
+    course_id = Column(String(20), ForeignKey('courses.id'), primary_key=True)
+    professor_email = Column(String(100), ForeignKey('professors.email'), primary_key=True)
+    grade_component = Column(String(100), nullable=False, primary_key=True)
+    grade = Column(Integer, nullable=False)
+
+    # Relationships
+    student = relationship("Students", back_populates="student_courses")
+    course = relationship("Courses", back_populates="student_courses")
+    professor = relationship("Professors", back_populates="student_courses")
+
 
 # Courses table
 class Courses(Base):
@@ -101,7 +116,7 @@ async def add_user(session: AsyncSession, email: str, first_name: str, last_name
     if role == "student":
         await add_student(session, email)
     elif role == "professor":
-        await add_professor(session, email, None)  # Assuming department is nullable
+        await add_professor(session, email, "None")  # Assuming department is nullable
 
     session.add(new_user)
     await session.commit()

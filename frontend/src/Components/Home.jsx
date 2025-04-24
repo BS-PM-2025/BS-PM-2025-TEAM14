@@ -18,13 +18,6 @@ const Home = () => {
   const navigate = useNavigate();
   const [alert, setAlert] = useState({ type: '', message: '' });
 
-  // Check login status on component mount and whenever storage or window focus events are triggered
-  // In Home.jsx, modify the useEffect that checks login status:
-
-  // In Home.jsx, modify the useEffect that checks login status:
-
-  // In Home.jsx, modify the useEffect that checks login status:
-
   useEffect(() => {
     const checkLoginStatus = () => {
       const token = getToken();

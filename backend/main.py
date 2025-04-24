@@ -67,7 +67,7 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
 ###
 
 from contextlib import asynccontextmanager
-'''
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database on startup
@@ -75,11 +75,11 @@ async def lifespan(app: FastAPI):
     yield
     # Clean up on shutdown (if needed)
     pass
-'''
 
-#app = FastAPI(lifespan=lifespan)
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
+
+# app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
