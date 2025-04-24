@@ -73,7 +73,11 @@ const GradeAppealSelection = ({
 
         {selectedCourse && (
             <div className="form-group">
-              <label>Select Grade to Appeal*</label>
+              {courses
+                  .filter((course) => course.id === selectedCourse)
+                  .some((course) => course.grades.length > 0) && (
+                  <label>Select Grade to Appeal*</label>
+              )}
               <div className="grade-options">
                 {courses
                     .filter((course) => course.id === selectedCourse)

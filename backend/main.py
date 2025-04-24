@@ -476,28 +476,33 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
     )
     rows = result.all()
 
-    courses_data = []
+    # A dictionary to store courses and their grades
+    courses_data = {}
+
     for sc, course, grade in rows:
-        course_info = {
-            "id": course.id,
-            "name": course.name,
-            "description": course.description,
-            "credits": course.credits,
-            "professor_email": course.professor_email,
-            "grades": []
-        }
+        if course.id not in courses_data:
+            courses_data[course.id] = {
+                "id": course.id,
+                "name": course.name,
+                "description": course.description,
+                "credits": course.credits,
+                "professor_email": course.professor_email,
+                "grades": []
+            }
 
         # If there are grades for this course, add them
         if grade:
-            course_info["grades"].append({
+            courses_data[course.id]["grades"].append({
                 "grade_component": grade.grade_component,
                 "grade": grade.grade
             })
 
-        courses_data.append(course_info)
-    print(courses_data)
+    # Convert the dictionary to a list of courses
+    courses_list = list(courses_data.values())
 
-    return {"courses": courses_data}
+    print(courses_list)
+
+    return {"courses": courses_list}
 
 
 
