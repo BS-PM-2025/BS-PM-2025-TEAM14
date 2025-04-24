@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from './UserContext'; // Import the custom hook
+import { useUser } from './UserContext';
 
 const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
-    const navigate = useNavigate();
-    const { user, setUserData } = useUser(); // Access user data and setUserData from context
+    const { user } = useUser(); // We only need user here, no need for setUserData
 
     const getUserDisplayName = () => {
         if (!user) return '';
@@ -18,13 +16,6 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
     useEffect(() => {
         console.log("User changed in UserWelcome:", user);
     }, [user]);
-
-    const handleLogout = () => {
-        console.log("Logout button clicked in the user welcome section");
-        onLogoutClick(); // Calls the function passed from Home to handle logout
-        // setUserData(null); // Clears the global user data
-        // navigate('/'); // Redirects to the home page
-    };
 
     return (
         <motion.div className="guest-welcome" variants={itemVariants}>
@@ -39,7 +30,7 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
                         <h2>Hello, {getUserDisplayName()}!</h2>
                         <p className="user-role">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</p>
                     </div>
-                    <button className="logout-button" onClick={handleLogout}>
+                    <button className="logout-button" onClick={onLogoutClick}>
                         Logout
                     </button>
                 </div>
@@ -49,7 +40,7 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
                     <p>Please log in to access the Academic Management System and manage your academic journey.</p>
                     <motion.button
                         className="login-button"
-                        onClick={onLoginClick} // Open the login modal
+                        onClick={onLoginClick}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
