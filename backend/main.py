@@ -3,7 +3,7 @@ import urllib.parse
 from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select, literal, literal_column, ColumnElement
+from sqlalchemy import select, literal, literal_column, ColumnElement, delete
 from sqlalchemy.orm import selectinload
 from starlette.requests import Request
 from starlette.responses import FileResponse
@@ -25,12 +25,12 @@ from typing import List
 
 class AssignProfessorRequest(BaseModel):
     professor_email: str
-    course_names: List[str]
+    course_ids: List[str]
 
 
 class AssignStudentsRequest(BaseModel):
     student_emails: List[str]
-    course_name: str
+    course_id: str
 
 
 # Session Management and Authentication #
@@ -80,7 +80,7 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
 ###
 
 from contextlib import asynccontextmanager
-'''
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database on startup
@@ -88,11 +88,11 @@ async def lifespan(app: FastAPI):
     yield
     # Clean up on shutdown (if needed)
     pass
-'''
 
-#app = FastAPI(lifespan=lifespan)
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
+
+# app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -264,7 +264,11 @@ async def get_users(role: str = None, session: AsyncSession = Depends(get_sessio
 
 
 @app.get("/courses")
-async def get_courses(session: AsyncSession = Depends(get_session)):
+async def get_courses(professor_email: bool = None, session: AsyncSession = Depends(get_session)):
+    query = select(Courses)
+    if professor_email:
+        query = query.where(Courses.professor_email is not None)
+    print(query)
     result = await session.execute(select(Courses))
     return result.scalars().all()
 
@@ -309,8 +313,8 @@ async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)
 
 
 @app.get("/professor/courses/{professor_email}")
-async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session),
-                      token_data: dict = Depends(verify_token_professor)):
+async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session)):
+
     result = await session.execute(select(Professors).filter(Professors.email == professor_email))
     professor = result.scalars().first()
     if not professor:
@@ -490,8 +494,22 @@ async def assign_students(
         data: AssignStudentsRequest,
         db: AsyncSession = Depends(get_session)
 ):
+    stmt = select(StudentCourses).filter(StudentCourses.course_id == data.course_id)
+    result = await db.execute(stmt)
+    existing_students = result.scalars().all()
+
+    new_students_emails = set(data.student_emails)
+    print(f"New students emails: {new_students_emails}")
+    print(f"Existing students: {existing_students}")
+
+    for student in existing_students:
+        if student.student_email not in new_students_emails:
+            await db.delete(student)
+
     for email in data.student_emails:
-        await assign_student_to_course(db, email, data.course_name)
+        await assign_student_to_course(db, email, data.course_id)
+
+    await db.commit()
     return {"message": "Students assigned successfully"}
 
 
@@ -500,13 +518,33 @@ async def assign_professor(
         data: AssignProfessorRequest,
         db: AsyncSession = Depends(get_session)
 ):
-    print(f"Received data: {data}")
-    print(f"Professor email: {data.professor_email}")
-    print(f"Course names: {data.course_names}")
+    result = await db.execute(select(Courses).filter(Courses.professor_email == data.professor_email))
+    existing_courses = result.scalars().all()
 
-    for course_name in data.course_names:
-        await assign_professor_to_course(db, data.professor_email, course_name)
+    existing_course_ids = [course.id for course in existing_courses]
+    new_course_ids = data.course_ids
+
+    for course_id in existing_course_ids:
+        if course_id not in new_course_ids:
+            stmt = delete(Courses).filter(Courses.id == course_id, Courses.professor_email == data.professor_email)
+            await db.execute(stmt)
+
+    for course_id in new_course_ids:
+        await assign_professor_to_course(db, data.professor_email, course_id)
+
+    await db.commit()
+
     return {"message": "Courses assigned successfully"}
+
+
+
+@app.get("/assigned_students")
+async def get_assigned_students(course_id: str, db: AsyncSession = Depends(get_session)):
+    stmt = select(StudentCourses.student_email).filter(StudentCourses.course_id == course_id)
+    result = await db.execute(stmt)
+    assigned_students = result.scalars().all()
+    return [{"email": email} for email in assigned_students]
+
 
 # Testing
 import sqlite3

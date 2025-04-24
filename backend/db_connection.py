@@ -1,6 +1,6 @@
 import asyncio
 import os
-from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float
+from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from config import DATABASE_URL
@@ -30,6 +30,8 @@ class Students(Base):
     courses = relationship("Courses", secondary="student_courses", back_populates="students")
     student_courses = relationship("StudentCourses", back_populates="student")
     requests = relationship("Requests", back_populates="student")
+    grades = relationship("Grades", back_populates="student")
+
 
 # Professor table
 class Professors(Base):
@@ -39,6 +41,7 @@ class Professors(Base):
 
     courses = relationship("Courses", back_populates="professor")
     student_courses = relationship("StudentCourses", back_populates="professor")
+    grades = relationship("Grades", back_populates="professor")  # הוסף את המאפיין הזה
 
 # Requests table
 class Requests(Base):
@@ -54,6 +57,9 @@ class Requests(Base):
 
     # Relationships
     student = relationship("Students", back_populates="requests")
+    responses = relationship("Responses", back_populates="request")
+
+#grades
 
 # Student-Courses table
 class StudentCourses(Base):
@@ -61,14 +67,24 @@ class StudentCourses(Base):
     student_email = Column(String(100), ForeignKey('students.email'), primary_key=True)
     course_id = Column(String(20), ForeignKey('courses.id'), primary_key=True)
     professor_email = Column(String(100), ForeignKey('professors.email'), primary_key=True)
-    grade_component = Column(String(100), nullable=False, primary_key=True)
-    grade = Column(Integer, nullable=False)
 
     # Relationships
     student = relationship("Students", back_populates="student_courses")
     course = relationship("Courses", back_populates="student_courses")
     professor = relationship("Professors", back_populates="student_courses")
 
+class Grades(Base):
+    __tablename__ = 'grades'
+    student_email = Column(String(100), ForeignKey('students.email'), primary_key=True)
+    course_id = Column(String(20), ForeignKey('courses.id'), primary_key=True)
+    professor_email = Column(String(100), ForeignKey('professors.email'), primary_key=True)
+    grade_component = Column(String(100), nullable=False, primary_key=True)
+    grade = Column(Integer, nullable=False)
+
+    # Relationships
+    student = relationship("Students", back_populates="grades")
+    course = relationship("Courses", back_populates="grades")
+    professor = relationship("Professors", back_populates="grades")
 
 
 
@@ -79,13 +95,27 @@ class Courses(Base):
     name = Column(String(100), nullable=False)
     description = Column(String(500), nullable=True)
     credits = Column(Float, nullable=False)
-    professor_email = Column(String(100), ForeignKey('professors.email'), nullable=False)
+    professor_email = Column(String(100), ForeignKey('professors.email'))
 
     # Relationships
     professor = relationship("Professors", back_populates="courses")
     students = relationship("Students", secondary="student_courses", back_populates="courses")
     student_courses = relationship("StudentCourses", back_populates="course")
+    grades = relationship("Grades", back_populates="course")  # הוסף את המאפיין הזה
 
+
+
+class Responses(Base):
+    __tablename__ = 'responses'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(Integer, ForeignKey('requests.id'), nullable=False)  # קשר לטבלת requests
+    professor_email = Column(String(255), nullable=False)
+    response_text = Column(Text, nullable=False)
+    files = Column(JSON, nullable=True)  # לשמירת קבצים במבנה JSON
+    created_date = Column(Date, default=datetime.now().date)
+
+    request = relationship('Requests', back_populates='responses')
 
 
 async def add_user(session: AsyncSession, email: str, first_name: str, last_name: str, hashed_password: str, role: str):
@@ -196,55 +226,73 @@ async def add_student_course(session: AsyncSession, student_email: str, course_i
 
 
 
-# async def add_professor_response(session: AsyncSession, request_id: int, professor_email: str, response_text: str, files: dict = None):
-#     request = await session.get(Requests, request_id)
-#
-#     if not request:
-#         raise ValueError(f"Request with ID {request_id} not found.")
-#
-#     # יצירת התגובה
-#     new_response = ProfessorResponses(
-#         request_id=request_id,
-#         professor_email=professor_email,
-#         response_text=response_text,
-#         files=files,
-#         created_date=datetime.now().date()
-#     )
-#     session.add(new_response)
-#     await session.commit()
-#     await session.refresh(new_response)
-#
-#     new_timeline_entry = {
-#         "date": datetime.now().isoformat(),
-#         "status": "response added",
-#         "professor_response": response_text
-#     }
-#
-#     if request.timeline:
-#         request.timeline.append(new_timeline_entry)
-#     else:
-#         request.timeline = [new_timeline_entry]
-#
-#     await session.commit()
-#     await session.refresh(request)
-#
-#     return new_response
+async def add_professor_response(session: AsyncSession, request_id: int, professor_email: str, response_text: str, files: dict = None):
+    request = await session.get(Requests, request_id)
+
+    if not request:
+        raise ValueError(f"Request with ID {request_id} not found.")
+
+    # יצירת התגובה
+    new_response = Responses(
+        request_id=request_id,
+        professor_email=professor_email,
+        response_text=response_text,
+        files=files,
+        created_date=datetime.now().date()
+    )
+    session.add(new_response)
+    await session.commit()
+    await session.refresh(new_response)
+
+    new_timeline_entry = {
+        "date": datetime.now().isoformat(),
+        "status": "response added",
+        "professor_response": response_text
+    }
+
+    if request.timeline:
+        request.timeline.append(new_timeline_entry)
+    else:
+        request.timeline = [new_timeline_entry]
+
+    await session.commit()
+    await session.refresh(request)
+
+    return new_response
 
 
 
-async def assign_student_to_course(session: AsyncSession, student_email: str, course_name: str):
-    result = await session.execute(select(Users).filter(Users.email == student_email, Users.role == "student"))
+async def assign_student_to_course(session: AsyncSession, student_email: str, course_id: str):
+    result = await session.execute(
+        select(Users).filter(Users.email == student_email, Users.role == "student")
+    )
     student = result.scalar_one_or_none()
 
-    result = await session.execute(select(Courses).filter(Courses.name == course_name))
+    result = await session.execute(
+        select(Courses).filter(Courses.id == course_id)
+    )
     course = result.scalar_one_or_none()
 
-    if not student or not course:
-        raise Exception("Student or course not found")
+    result = await session.execute(
+        select(StudentCourses).filter_by(
+            student_email=student.email,
+            course_id=course.id,
+            professor_email=course.professor_email
+        )
+    )
+    existing_relation = result.scalar_one_or_none()
 
-    student_course = StudentCourses(student_email=student.email, course_id=course.id)
+    if existing_relation:
+        return existing_relation
+
+    student_course = StudentCourses(
+        student_email=student.email,
+        course_id=course.id,
+        professor_email=course.professor_email
+    )
     session.add(student_course)
     await session.commit()
+
     return student_course
 
 async def assign_professor_to_course(session: AsyncSession, professor_email: str, course_id: str):
@@ -259,7 +307,7 @@ async def assign_professor_to_course(session: AsyncSession, professor_email: str
     if not professor or not course:
         raise Exception("Professor or course not found")
 
-    course.professor_id = professor.id
+    course.professor_email = professor.email
     await session.commit()
     return course
 
