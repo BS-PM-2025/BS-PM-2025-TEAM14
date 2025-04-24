@@ -289,11 +289,11 @@ async def assign_student_to_course(session: AsyncSession, student_email: str, co
 async def assign_professor_to_course(session: AsyncSession, professor_email: str, course_id: str):
     result = await session.execute(select(Users).filter(Users.email == professor_email, Users.role == "professor"))
     professor = result.scalar_one_or_none()
-    print(f"Professor: {professor}")  # הדפס את המרצה שנמצא או None
+    print(f"Professor: {professor}")  
 
     result = await session.execute(select(Courses).filter(Courses.id == course_id))
     course = result.scalar_one_or_none()
-    print(f"Course: {course}")  # הדפס את הקורס שנמצא או None
+    print(f"Course: {course}")  
 
     if not professor or not course:
         raise Exception("Professor or course not found")
