@@ -29,6 +29,12 @@ const Navigation = () => {
         <li>
           <Link to="/grades">Grades</Link>
         </li>
+        <li>
+          <Link to="/assignProfessorToCourse">assign professors</Link>
+        </li>
+        <li>
+          <Link to="/AssignStudentsToCourse">assign students</Link>
+        </li>
       </ul>
     </nav>
   );

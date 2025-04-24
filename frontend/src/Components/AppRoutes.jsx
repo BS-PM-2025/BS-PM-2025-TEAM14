@@ -10,6 +10,8 @@ import Login from "./Login";
 import Home from "./Home";
 import StudentRequests from "./StudentRequestsPanel";
 import { useUser } from "./UserContext";
+import AssignProfessorToCourse from "./AssignProfessorToCourse";
+import AssignStudentToCourse from "./AssignStudentToCourse";
 
 function AppRoutes() {
     const { user } = useUser(); // Now safe to use here
@@ -28,6 +30,8 @@ function AppRoutes() {
                     <Route path="/reload" element={<ReloadFiles userEmail={user?.user_email} />} />
                     <Route path="/users" element={<UsersList />} />
                     <Route path="/grades" element={<SubmitGrades Professor_Id={1} />} />
+                    <Route path="/assignProfessorToCourse" element={<AssignProfessorToCourse />} />
+                    <Route path="/AssignStudentsToCourse" element={<AssignStudentToCourse />} />
                 </Routes>
             </div>
         </Router>
