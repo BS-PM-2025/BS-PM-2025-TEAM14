@@ -26,9 +26,9 @@ const Navigation = () => {
         {user?.role === "professor" && <li>
           <Link to="/users">Users</Link>
         </li>}
-        <li>
+        {user?.role === "professor" && <li>
           <Link to="/grades">Grades</Link>
-        </li>
+        </li>}
         <li>
           <Link to="/assignProfessorToCourse">assign professors</Link>
         </li>

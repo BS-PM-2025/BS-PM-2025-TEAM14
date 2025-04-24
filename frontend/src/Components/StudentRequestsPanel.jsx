@@ -57,7 +57,6 @@ function StudentRequests({ emailUser }) {
                             <div className="card-body">
                                 <h5 className="card-title d-flex align-items-center">
                                     {request.title}
-                                    {/* הוספת האייקון אם יש קבצים */}
                                     {request.files && request.files.length > 0 && (
                                         <FontAwesomeIcon
                                             icon={faFileAlt}

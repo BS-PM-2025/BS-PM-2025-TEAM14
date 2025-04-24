@@ -21,8 +21,6 @@ const RequestForm = () => {
   useEffect(() => {
     const checkLoginStatus = () => {
       const token = getToken();
-      console.log("Token from localStorage:", token);
-
       if (token) {
         const userData = getUserFromToken(token);
         console.log("User data from token:", userData);
@@ -67,6 +65,9 @@ const RequestForm = () => {
         `Grade Information:\nCourse: ${selection.course}\nComponent: ${selection.grade.grade_component}\nCurrent Grade: ${selection.grade.grade}\n\n`
       );
     }
+    else{
+      setGradeInfo(`Grade Information:\n Course: ${selection.course}`)
+    }
   };
 
   const handleCourseSelect = (course) => {
@@ -100,10 +101,10 @@ const RequestForm = () => {
     }
 
     // Additional validation for grade appeal
-    if (title === "Grade Appeal Request" && !selectedGrade?.grade) {
-      setError("Please select a grade to appeal.");
-      return;
-    }
+    // if (title === "Grade Appeal Request" && !selectedGrade?.grade) {
+    //   setError("Please select a grade to appeal.");
+    //   return;
+    // }
 
     // Additional validation for schedule change
     if (title === "Schedule Change Request" && !selectedCourse) {
@@ -152,7 +153,7 @@ const RequestForm = () => {
           // Upload each file
           await axios.post(
             `http://localhost:8000/uploadfile/${user.user_email}`,
-            formData,
+              {formData},
             {
               headers: {
                 "Content-Type": "multipart/form-data",
@@ -176,12 +177,14 @@ const RequestForm = () => {
 
       // Add grade appeal specific data if it's a grade appeal
       if (title === "Grade Appeal Request" && selectedGrade) {
+        console.log(selectedGrade);
         requestData.grade_appeal = {
-          course_id: selectedGrade.grade.course_id,
-          grade_component: selectedGrade.grade.grade_component,
-          current_grade: selectedGrade.grade.grade,
+          course_id: selectedGrade.course,
+          grade_component: selectedGrade.grade.grade_component ? selectedGrade.grade.grade_component : "no info",
+          current_grade: selectedGrade.grade.grade ? selectedGrade.grade.grade : "no info",
         };
       }
+      console.log("request data", requestData);
 
       // Add schedule change specific data if it's a schedule change
       if (title === "Schedule Change Request" && selectedCourse) {
@@ -208,6 +211,8 @@ const RequestForm = () => {
       setGradeInfo("");
       setSelectedCourse(null);
     } catch (error) {
+      console.error("Request error:", error);
+      console.error("Response:", error.response);
       setError(
         error.response?.data?.detail ||
           "An error occurred while creating the request"

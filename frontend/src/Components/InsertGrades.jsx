@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { jwtDecode } from 'jwt-decode';
+import "../CSS/InsertGrades.css";
 
 export default function InsertGrades() {
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState("");
+    const [selectedCourseCode, setSelectedCourseCode] = useState("");
     const [students, setStudents] = useState([]);
     const [grades, setGrades] = useState({});
     const [loading, setLoading] = useState(false);
     const [professorEmail, setProfessorEmail] = useState(null);
+    const [gradeComponent, setGradeComponent] = useState("");
 
-    // Retrieve professor email from token
     useEffect(() => {
         const token = localStorage.getItem("access_token");
         if (token) {
@@ -35,7 +37,6 @@ export default function InsertGrades() {
 
     const fetchCourses = async () => {
         try {
-            // Use professorEmail instead of an undefined professor id
             const response = await fetch(`http://localhost:8000/professor/courses/${professorEmail}`, {
                 method: "GET",
                 headers: {
@@ -72,7 +73,7 @@ export default function InsertGrades() {
             if (!response.ok) throw new Error("Failed to fetch students");
             const data = await response.json();
             setStudents(data);
-            setGrades(data.reduce((acc, student) => ({ ...acc, [student.id]: "" }), {}));
+            setGrades(data.reduce((acc, student) => ({ ...acc, [student.email]: "" }), {}));
         } catch (error) {
             console.error("Error fetching students:", error);
         } finally {
@@ -85,67 +86,97 @@ export default function InsertGrades() {
     };
 
     const submitGrades = async () => {
+        if (!gradeComponent) {
+            alert("Please enter a grade component");
+            return;
+        }
+
         try {
-            const response = await fetch("http://localhost:8000/courses/submit_grades", {
+            const response = await fetch(`http://localhost:8000/courses/${selectedCourseCode}/submit_grades`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     ...getAuthHeaders()
                 },
-                body: JSON.stringify({ courseId: selectedCourse, grades })
+                body: JSON.stringify({
+                    courseId: selectedCourseCode,
+                    gradeComponent,
+                    grades
+                })
             });
+
             if (!response.ok) throw new Error("Failed to submit grades");
             alert("Grades submitted successfully");
+            setGradeComponent("");
+            setGrades({});
         } catch (error) {
             console.error("Error submitting grades:", error);
             alert("Error submitting grades");
         }
     };
 
+
     return (
-        <div className="p-6 border rounded-lg shadow-lg bg-white max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Enter Test Grades</h2>
+        <div className="insert-grades-container">
+            <h2 className="insert-grades-title">Enter Test Grades</h2>
+
             <select
-                className="block w-full p-2 border rounded mb-4"
+                className="insert-grades-select"
                 value={selectedCourse}
                 onChange={(e) => {
+                    const course_id = e.target.value.slice(-6, -1);
+                    setSelectedCourseCode(course_id);
                     setSelectedCourse(e.target.value);
-                    fetchStudents(e.target.value);
+                    fetchStudents(course_id);
                 }}
             >
                 <option value="">Select a course</option>
                 {courses.length > 0 ? (
                     courses.map((course) => (
                         <option key={course.id} value={course.code}>
-                            {course.name} ({course.code})
+                            {course.name} ({course.id})
                         </option>
                     ))
                 ) : (
                     <option>No courses available</option>
                 )}
             </select>
+
+            <input
+                type="text"
+                className="insert-grades-input"
+                placeholder="Enter grade component (e.g., Midterm, Final, Project)"
+                value={gradeComponent}
+                onChange={(e) => setGradeComponent(e.target.value)}
+            />
+
             {loading ? (
                 <p>Loading students...</p>
             ) : (
-                <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden">
+                <table className="insert-grades-table">
                     <thead>
-                    <tr className="bg-blue-500 text-white">
-                        <th className="px-6 py-3 text-left">Student ID</th>
-                        <th className="px-6 py-3 text-left">Name</th>
-                        <th className="px-6 py-3 text-left">Grade</th>
+                    <tr>
+                        <th>Student Email</th>
+                        <th>Name</th>
+                        <th>Grade</th>
                     </tr>
                     </thead>
                     <tbody>
                     {students.map((student) => (
-                        <tr key={student.id} className="border-b hover:bg-gray-100 transition">
-                            <td className="px-6 py-3">{student.id}</td>
-                            <td className="px-6 py-3 font-medium text-gray-700">{student.name}</td>
-                            <td className="px-6 py-3">
+                        <tr key={student.email}>
+                            <td>{student.email}</td>
+                            <td>{student.name}</td>
+                            <td>
                                 <input
                                     type="number"
-                                    className="border p-1 w-20 text-center"
-                                    value={grades[student.id] || ""}
-                                    onChange={(e) => handleGradeChange(student.id, e.target.value)}
+                                    className="grade-input"
+                                    value={grades[student.email] || "0"}
+                                    onChange={(e) => {
+                                        const newGrade = e.target.value;
+                                        if (!isNaN(newGrade) && newGrade >= 0) {
+                                            handleGradeChange(student.email, Math.min(newGrade, 100));
+                                        }
+                                    }}
                                 />
                             </td>
                         </tr>
@@ -153,10 +184,8 @@ export default function InsertGrades() {
                     </tbody>
                 </table>
             )}
-            <button
-                onClick={submitGrades}
-                className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg mt-4 block mx-auto hover:bg-green-700 transition duration-300"
-            >
+
+            <button onClick={submitGrades} className="submit-button">
                 Submit Grades
             </button>
         </div>

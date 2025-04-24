@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import { UploadFile } from "./UploadFile";
 import ReloadFiles from "./ReloadFiles";
 import UsersList from "./UsersList";
-import SubmitGrades from "./SubmitGrades";
+import InsertGrades from "./InsertGrades";
 import SubmitRequestForm from "./SubmitRequestForm";
 import Navigation from "./Navigation";
 import Login from "./Login";
@@ -29,7 +29,7 @@ function AppRoutes() {
                     <Route path="/upload" element={<UploadFile userEmail={user?.user_email} />} />
                     <Route path="/reload" element={<ReloadFiles userEmail={user?.user_email} />} />
                     <Route path="/users" element={<UsersList />} />
-                    <Route path="/grades" element={<SubmitGrades Professor_Id={1} />} />
+                    <Route path="/grades" element={<InsertGrades Professor_Id={user?.user_email} />} />
                     <Route path="/assignProfessorToCourse" element={<AssignProfessorToCourse />} />
                     <Route path="/AssignStudentsToCourse" element={<AssignStudentToCourse />} />
                 </Routes>

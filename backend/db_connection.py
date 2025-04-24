@@ -50,6 +50,8 @@ class Requests(Base):
     title = Column(String(100), nullable=False)
     student_email = Column(String(100), ForeignKey('students.email'), nullable=False)
     details = Column(String(500))
+    course_id = Column(String(20), nullable=True)
+    course_component = Column(String(50), nullable=True)
     files = Column(JSON, nullable=True)
     status = Column(String(100))
     created_date = Column(Date, nullable=False)
@@ -167,7 +169,7 @@ async def update_professor_department(session: AsyncSession, email: str, departm
         return professor
     return None
 
-async def add_request(session: AsyncSession, title: str, student_email: str, details: str, files: dict = None, status: str = None, created_date: Date = None, timeline: dict = None):
+async def add_request(session: AsyncSession, title: str, student_email: str, details: str, course_id:str = None, course_component: str = None, files: dict = None, status: str = None, created_date: Date = None, timeline: dict = None):
     if created_date is None:
         created_date = datetime.now().date()
     
@@ -178,7 +180,9 @@ async def add_request(session: AsyncSession, title: str, student_email: str, det
         files=files,
         status=status,
         created_date=created_date,
-        timeline=timeline
+        timeline=timeline,
+        course_id = course_id,
+        course_component = course_component
     )
     session.add(new_request)
     await session.commit()

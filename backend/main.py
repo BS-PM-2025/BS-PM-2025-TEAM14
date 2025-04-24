@@ -1,6 +1,7 @@
 import os
+from fastapi.encoders import jsonable_encoder
 import urllib.parse
-from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, literal, literal_column, ColumnElement, delete
@@ -20,7 +21,7 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from typing import List
 
 class AssignProfessorRequest(BaseModel):
@@ -335,34 +336,49 @@ async def get_courses(professor_email: str, session: AsyncSession = Depends(get_
     return {"courses": courses_data}
 
 
+
 @app.post("/courses/{course_id}/submit_grades")
-async def submit_grades(course_id: int, grades: list[dict], session: AsyncSession = Depends(get_session),
-                        token_data: dict = Depends(verify_token_professor)):
-    for entry in grades:
-        student_email = entry["student_email"]
-        grade_component = entry["grade_component"]
-        grade = entry["grade"]
-        result = await session.execute(select(Students).filter(Students.email == student_email))
+async def submit_grades(
+        course_id: str,
+        data: dict = Body(...),  # data will include: gradeComponent, grades (dict: email -> grade)
+        session: AsyncSession = Depends(get_session),
+        token_data: dict = Depends(verify_token_professor)
+):
+    print(course_id, data)
+    grade_component = data.get("gradeComponent")
+    grades = data.get("grades")  # dict: { "student@email.com": 95 }
+
+    if not grade_component or not grades:
+        raise HTTPException(status_code=400, detail="Missing grade component or grades")
+
+    professor_email = token_data.get("user_email")
+
+    for student_email, grade in grades.items():
+        result = await session.execute(
+            select(Students).filter(Students.email == student_email)
+        )
         student = result.scalars().first()
         if not student:
-            raise HTTPException(status_code=404, detail=f"Student {student_email} not found in course {course_id}")
+            raise HTTPException(status_code=404, detail=f"Student {student_email} not found")
 
-        existing_grade = await session.execute(
-            select(StudentCourses).filter(
-                StudentCourses.student_email == student_email,
-                StudentCourses.course_id == course_id,
-                StudentCourses.grade_component == grade_component
+        # Check if grade exists
+        existing = await session.execute(
+            select(Grades).filter_by(
+                student_email=student_email,
+                course_id=course_id,
+                professor_email=professor_email,
+                grade_component=grade_component
             )
         )
-        grade_record = existing_grade.scalars().first()
+        grade_record = existing.scalars().first()
 
         if grade_record:
             grade_record.grade = grade
         else:
-            new_grade = StudentCourses(
+            new_grade = Grades(
                 student_email=student_email,
                 course_id=course_id,
-                professor_email=entry["professor_email"],
+                professor_email=professor_email,
                 grade_component=grade_component,
                 grade=grade
             )
@@ -371,23 +387,21 @@ async def submit_grades(course_id: int, grades: list[dict], session: AsyncSessio
     await session.commit()
     return {"message": "Grades submitted successfully"}
 
+
 @app.get("/course/{course_id}/students")
 async def get_students(course_id: str, session: AsyncSession = Depends(get_session),
                        token_data: dict = Depends(verify_token_professor)):
-    print("in the func")
-    # Fetch the course with the given ID and eagerly load students
     result = await session.execute(
         select(Courses)
         .filter(Courses.id == course_id)
-        .options(selectinload(Courses.students))  # Eagerly load the students
+        .options(selectinload(Courses.students))
     )
     course = result.scalars().first()
 
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    # Return a list of student details
-    return [{"email": student.email, "name": f"{student.first_name} {student.last_name}"} for student in course.students]
+    return jsonable_encoder(course.students)
 
 
 # Create a request
@@ -403,6 +417,7 @@ async def create_general_request(
     files = data.get("files", {})
     grade_appeal = data.get("grade_appeal")
     schedule_change = data.get("schedule_change")
+    course_id = data.get("course_id")
 
     if not title or not student_email or not details:
         raise HTTPException(status_code=400, detail="Missing required fields")
@@ -420,11 +435,7 @@ async def create_general_request(
         required_keys = {"course_id", "grade_component", "current_grade"}
         if not required_keys.issubset(grade_appeal.keys()):
             raise HTTPException(status_code=400, detail="Invalid grade appeal data")
-        timeline.update({
-            "course_id": grade_appeal["course_id"],
-            "grade_component": grade_appeal["grade_component"],
-            "grade": grade_appeal["current_grade"]
-        })
+
     elif title == "Schedule Change Request" and schedule_change:
         if (
             "course_id" not in schedule_change or 
@@ -433,20 +444,19 @@ async def create_general_request(
             not schedule_change["professors"]
         ):
             raise HTTPException(status_code=400, detail="Invalid schedule change data")
-        timeline.update({
-            "course_id": schedule_change["course_id"],
-            "professor": schedule_change["professors"][0]
-        })
 
     new_request = await add_request(
         session=session,
         title=title,
         student_email=student_email,
         details=details,
+        course_id = grade_appeal['course_id'],
+        course_component = grade_appeal['grade_component'],
         files=files,
         status="pending",
         created_date=datetime.now().date(),
         timeline=timeline
+
     )
 
     return {"message": "Request created successfully", "request_id": new_request.id}
@@ -454,39 +464,41 @@ async def create_general_request(
 
 @app.get("/student/{student_email:path}/courses")
 async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
-    # Validate the student_email parameter.
     if not student_email or "@" not in student_email:
         raise HTTPException(status_code=404, detail="Student not found")
-    
-    # Retrieve all courses the student is enrolled in with their grades.
+
+    # Query to get courses along with the grades for the student
     result = await session.execute(
-        select(StudentCourses)
+        select(StudentCourses, Courses, Grades)
         .join(Courses, StudentCourses.course_id == Courses.id)
+        .join(Grades, (Grades.course_id == Courses.id) & (Grades.student_email == student_email), isouter=True)
         .filter(StudentCourses.student_email == student_email)
     )
-    student_courses = result.scalars().all()
-    
-    # Organize data by course name.
-    courses_data = {}
-    for sc in student_courses:
-        course_result = await session.execute(
-            select(Courses).filter(Courses.id == sc.course_id)
-        )
-        course = course_result.scalars().first()
-        
-        if course:
-            if course.name not in courses_data:
-                courses_data[course.name] = []
-            
-            if sc.grade_component and sc.grade is not None:
-                courses_data[course.name].append({
-                    "course_id": course.id,
-                    "grade_component": sc.grade_component,
-                    "professor_email": sc.professor_email,
-                    "grade": sc.grade
-                })
-    
+    rows = result.all()
+
+    courses_data = []
+    for sc, course, grade in rows:
+        course_info = {
+            "id": course.id,
+            "name": course.name,
+            "description": course.description,
+            "credits": course.credits,
+            "professor_email": course.professor_email,
+            "grades": []
+        }
+
+        # If there are grades for this course, add them
+        if grade:
+            course_info["grades"].append({
+                "grade_component": grade.grade_component,
+                "grade": grade.grade
+            })
+
+        courses_data.append(course_info)
+    print(courses_data)
+
     return {"courses": courses_data}
+
 
 
 @app.post("/assign_student")
