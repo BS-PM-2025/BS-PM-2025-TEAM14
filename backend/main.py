@@ -505,7 +505,6 @@ async def edit_request(request_id: int, request: Request ,session: AsyncSession 
         # existing_request.files = data["files"]
 
         existing_request_timeline = dict(existing_request.timeline)
-        print("before change ###### ->", existing_request_timeline)
         try:
             edits = existing_request_timeline["edits"]
             edits.append((f"details: {data['details']}", datetime.now().isoformat()))
@@ -513,7 +512,6 @@ async def edit_request(request_id: int, request: Request ,session: AsyncSession 
             print("Error", e)
             edits = [(f"details: {data['details']}", datetime.now().isoformat())]
         existing_request_timeline["edits"] = edits
-        print("after change ###### ->",existing_request_timeline)
         existing_request.timeline = existing_request_timeline
         flag_modified(existing_request, "timeline")
         #session.add(existing_request)
