@@ -20,17 +20,21 @@ export default function ScoreGauge({ scoreValue }) {
         <Gauge
             {...settings}
             cornerRadius="50%"
-            sx={(theme) => ({
-                [`& .${gaugeClasses.valueText}`]: {
-                    fontSize: 40,
-                },
-                [`& .${gaugeClasses.valueArc}`]: {
-                    fill: color,
-                },
-                [`& .${gaugeClasses.referenceArc}`]: {
-                    fill: theme.palette.text.disabled,
-                },
-            })}
+            sx={(theme) => {
+                const isDark = theme.palette.mode === 'dark';
+                return {
+                    [`& .${gaugeClasses.valueText}`]: {
+                        fontSize: 40,
+                        fill: isDark ? '#eee' : '#333',
+                    },
+                    [`& .${gaugeClasses.valueArc}`]: {
+                        fill: color,
+                    },
+                    [`& .${gaugeClasses.referenceArc}`]: {
+                        fill: isDark ? '#555' : theme.palette.text.disabled,
+                    },
+                };
+            }}
         />
     );
 }

@@ -339,4 +339,79 @@
 
 .confirm-button:hover {
   background-color: #d32f2f;
-} 
+}
+/* DARK MODE OVERRIDES */
+.dark .home-container {
+  background: linear-gradient(135deg, #1c1e26 0%, #2c2f39 100%);
+}
+
+.dark .user-welcome,
+.dark .dashboard-tabs,
+.dark .guest-welcome,
+.dark .confirmation-dialog,
+.dark .footer {
+  background-color: #2b2d36;
+  color: #eee;
+}
+
+.dark .user-info h2,
+.dark .dashboard-content h3,
+.dark .courses-content h3,
+.dark .grades-content h3,
+.dark .documents-content h3,
+.dark .guest-welcome h2,
+.dark .confirmation-dialog h3 {
+  color: #fff;
+}
+
+.dark .user-role,
+.dark .dashboard-card p,
+.dark .guest-welcome p,
+.dark .confirmation-dialog p {
+  color: #aaa;
+}
+
+.dark .dashboard-card {
+  background-color: #363946;
+}
+
+.dark .tab-button {
+  color: #aaa;
+}
+
+.dark .tab-button.active {
+  color: #88aaff;
+}
+
+.dark .tab-button.active::after {
+  background-color: #88aaff;
+}
+
+.dark .cancel-button {
+  background-color: #444;
+  color: #eee;
+}
+
+.dark .cancel-button:hover {
+  background-color: #555;
+}
+
+.dark .confirm-button {
+  background-color: #e53935;
+}
+
+.dark .confirm-button:hover {
+  background-color: #c62828;
+}
+
+.dark .logout-button {
+  background-color: #e53935;
+}
+
+.dark .logout-button:hover {
+  background-color: #c62828;
+}
+
+.dark .login-button {
+  background: linear-gradient(90deg, #3b5cb7 0%, #552ba7 100%);
+}

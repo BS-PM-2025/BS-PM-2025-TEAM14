@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useUser } from './UserContext';
+import ScoreGauge from "./Gauge";
 
 const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
     const { user } = useUser(); // We only need user here, no need for setUserData
@@ -28,6 +29,7 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
                     </div>
                     <div className="user-info">
                         <h2>Hello, {getUserDisplayName()}!</h2>
+                        <ScoreGauge scoreValue={90} />
                         <p className="user-role">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</p>
                     </div>
                     <button className="logout-button" onClick={onLogoutClick}>

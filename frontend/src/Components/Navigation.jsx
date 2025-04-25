@@ -1,42 +1,61 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../CSS/Navigation.css";
-import {useUser} from "./UserContext";
+import { AppBar, Toolbar, Button, Box, IconButton, Tooltip, useTheme } from "@mui/material";
+import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { useUser } from "./UserContext";
 
-const Navigation = () => {
-  const { user, setUserData } = useUser();
+const Navigation = ({ darkMode, setDarkMode }) => {
+  const { user } = useUser();
+  const theme = useTheme();
+
+  const navItem = (to, label) => (
+      <Button
+          key={to}
+          component={Link}
+          to={to}
+          sx={{ color: "#fff", textTransform: "none", fontWeight: 500 }}
+      >
+        {label}
+      </Button>
+  );
+
   return (
-    <nav className="navigation">
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/submit_request">Submit A Request</Link>
-        </li>
-        <li>
-          <Link to="/Requests">Requests</Link>
-        </li>
-        <li>
-          <Link to="/upload">Upload Files</Link>
-        </li>
-        <li>
-          <Link to="/reload">Reload Files</Link>
-        </li>
-        {user?.role === "professor" && <li>
-          <Link to="/users">Users</Link>
-        </li>}
-        {user?.role === "professor" && <li>
-          <Link to="/grades">Grades</Link>
-        </li>}
-        <li>
-          <Link to="/assignProfessorToCourse">assign professors</Link>
-        </li>
-        <li>
-          <Link to="/AssignStudentsToCourse">assign students</Link>
-        </li>
-      </ul>
-    </nav>
+      <AppBar position="static" color="primary" sx={{ mb: 3 }}>
+        <Toolbar>
+          <Box sx={{ flexGrow: 1, display: "flex", gap: 2 }}>
+            {navItem("/", "Home")}
+
+            {user?.role === "student" && (
+                <>
+                  {navItem("/submit_request", "Submit Request")}
+                  {navItem("/Requests", "Requests")}
+                  {navItem("/upload", "Upload Files")}
+                  {navItem("/reload", "Reload Files")}
+                </>
+            )}
+
+            {user?.role === "professor" && (
+                <>
+                  {navItem("/users", "Users")}
+                  {navItem("/grades", "Grades")}
+                </>
+            )}
+
+            {user?.role === "admin" && (
+                <>
+                  {navItem("/assignProfessorToCourse", "Assign Professors")}
+                  {navItem("/AssignStudentsToCourse", "Assign Students")}
+                </>
+            )}
+          </Box>
+
+          <Tooltip title={theme.palette.mode === "dark" ? "למצב בהיר" : "למצב כהה"}>
+            <IconButton sx={{ color: "white" }} onClick={() => setDarkMode(!darkMode)}>
+              {theme.palette.mode === "dark" ? <Brightness4 /> : <Brightness7 />}
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+      </AppBar>
   );
 };
 

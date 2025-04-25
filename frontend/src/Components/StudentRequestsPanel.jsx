@@ -8,6 +8,9 @@ import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
 import {getToken, getUserFromToken} from "../utils/auth";
 import {useUser} from "./UserContext";
 import {useNavigate} from "react-router-dom";
+import {Fab} from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+
 
 function StudentRequests({ emailUser }) {
     const navigate = useNavigate();
@@ -270,19 +273,20 @@ function StudentRequests({ emailUser }) {
                                     <button className="btn btn-secondary me-2 requestCloseBTN"
                                             onClick={closeModal}>סגירה
                                     </button>
-                                    {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && !isEditing &&
-                                        (
-                                            <button
-                                                className="btn btn-warning requestEditBTN"
-                                                onClick={() => {
-                                                    setIsEditing(true);
-                                                    setEditDetails(selectedRequest.details);
-                                                    // setEditFiles(selectedRequest.files || []);
-                                                }}
-                                            >
-                                                עריכת בקשה
-                                            </button>
-                                        )}
+                                    {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && !isEditing && (
+                                        <Fab
+                                            color="secondary"
+                                            aria-label="edit"
+                                            onClick={() => {
+                                                setIsEditing(true);
+                                                setEditDetails(selectedRequest.details);
+                                                // setEditFiles(selectedRequest.files || []);
+                                            }}
+                                            // sx={{ position: 'fixed', bottom: 32, right: 32 }}
+                                        >
+                                            <EditIcon />
+                                        </Fab>
+                                    )}
 
                                     {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && (
                                         <button className="btn btn-danger requestDeleteBTN"

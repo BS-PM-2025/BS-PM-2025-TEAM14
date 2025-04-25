@@ -460,8 +460,8 @@ async def create_general_request(
         title=title,
         student_email=student_email,
         details=details,
-        # course_id = grade_appeal['course_id'],
-        # course_component = grade_appeal['grade_component'],
+        course_id = grade_appeal['course_id'] if grade_appeal['course_id'] else None,
+        course_component = grade_appeal['grade_component'] if grade_appeal['grade_component'] else None,
         files=files,
         status="pending",
         created_date=datetime.now().date(),
@@ -564,6 +564,32 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
 
     return {"courses": courses_list}
 
+@app.get("/grades/{student_email}")
+async def get_grades(student_email: str, db: AsyncSession = Depends(get_session)):
+    stmt = (
+        select(Grades, Courses.name)
+        .join(Courses, Courses.id == Grades.course_id)  # Join on course_id
+        .where(Grades.student_email == student_email)
+    )
+    result = await db.execute(stmt)
+    grades = result.all()
+
+    if not grades:
+        raise HTTPException(status_code=404, detail="No grades found for this student")
+
+    formatted_grades = [
+        {
+            "course_id": grade.course_id,
+            "course_name": course_name,
+            "professor_email": grade.professor_email,
+            "grade_component": grade.grade_component,
+            "grade": grade.grade,
+            "student_email": grade.student_email
+        }
+        for grade, course_name in grades
+    ]
+
+    return formatted_grades
 
 
 @app.post("/assign_student")
