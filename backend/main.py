@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from httpx import request
 from sqlalchemy import select, literal, literal_column, ColumnElement, delete
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm.attributes import flag_modified
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -80,7 +81,6 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
     return token_data
 
 def verify_token_student(token_data: dict = Depends(verify_token)):
-    print(token_data)
     if token_data.get("role") != "student":
         print("Bad role in token")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Student role required")
@@ -502,7 +502,21 @@ async def edit_request(request_id: int, request: Request ,session: AsyncSession 
         print(data)
         # Edit the request
         existing_request.details = data["details"]
-        existing_request.files = data["files"]
+        # existing_request.files = data["files"]
+
+        existing_request_timeline = dict(existing_request.timeline)
+        print("before change ###### ->", existing_request_timeline)
+        try:
+            edits = existing_request_timeline["edits"]
+            edits.append((f"details: {data['details']}", datetime.now().isoformat()))
+        except KeyError as e:
+            print("Error", e)
+            edits = [(f"details: {data['details']}", datetime.now().isoformat())]
+        existing_request_timeline["edits"] = edits
+        print("after change ###### ->",existing_request_timeline)
+        existing_request.timeline = existing_request_timeline
+        flag_modified(existing_request, "timeline")
+        #session.add(existing_request)
         await session.commit()
 
         return {"message": "Request updated successfully"}
