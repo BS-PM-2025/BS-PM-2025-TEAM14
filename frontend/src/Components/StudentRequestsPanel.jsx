@@ -37,6 +37,22 @@ function StudentRequests({ emailUser }) {
         setSelectedRequest(null);
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm("אתה בטוח שברצונך למחוק את הבקשה הזו?")) return;
+        try {
+            // call your FastAPI DELETE endpoint
+            await axios.delete(`http://localhost:8000/Requests/${id}`);
+            // remove it from the list so the UI updates
+            setVisibleRequests(prev => prev.filter(r => r.id !== id));
+            // close the modal
+            setSelectedRequest(null);
+        } catch (err) {
+            console.error("שגיאה במחיקת הבקשה:", err);
+            alert("אירעה שגיאה בשרת בעת מחיקה.");
+        }
+    };
+
+
     return (
         <div className="container mt-4">
             <h2 className="text-center mb-4">הבקשות שלי</h2>
@@ -100,12 +116,15 @@ function StudentRequests({ emailUser }) {
                                     <div className="col-md-6">
                                         <p><strong>מזהה בקשה:</strong> {selectedRequest.id}</p>
                                         <p><strong>תאריך:</strong> {selectedRequest.created_date}</p>
-                                        <p><strong>סטטוס:</strong> <span className={`badge ${getStatusClass(selectedRequest.status)}`}>
+                                        <p><strong>סטטוס:</strong> <span
+                                            className={`badge ${getStatusClass(selectedRequest.status)}`}>
                                             {getStatusText(selectedRequest.status)}
                                         </span></p>
+                                        <p><strong>תוכן הבקשה:</strong> {selectedRequest.details}</p>
+
                                     </div>
                                     <div className="col-md-6">
-                                        <p><strong>מסמכים מצורפים:</strong></p>
+                                    <p><strong>מסמכים מצורפים:</strong></p>
                                         <ul className="list-group">
                                             {(selectedRequest.files || []).map((doc, index) => (
                                                 <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
@@ -145,9 +164,13 @@ function StudentRequests({ emailUser }) {
                                 </div>
 
                                 <div className="text-end mt-3">
-                                    <button className="btn btn-secondary me-2" onClick={closeModal}>סגירה</button>
+                                    <button className="btn btn-secondary me-2 requestCloseBTN" onClick={closeModal}>סגירה</button>
                                     {selectedRequest.status === "pending" && (
-                                        <button className="btn btn-warning">עריכת בקשה</button>
+                                        <button className="btn btn-warning requestEditBTN">עריכת בקשה</button>
+                                    )}
+                                    {selectedRequest.status === "pending" && (
+                                        <button className="btn btn-danger requestDeleteBTN" onClick={() => handleDelete(selectedRequest.id)}>
+                                            מחיקת בקשה</button>
                                     )}
                                 </div>
                             </div>

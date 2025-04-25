@@ -410,6 +410,7 @@ async def create_general_request(
     request: Request,
     session: AsyncSession = Depends(get_session)
 ):
+    print("in submit request")
     data = await request.json()
     title = data.get("title")
     student_email = data.get("student_email")
@@ -418,7 +419,7 @@ async def create_general_request(
     grade_appeal = data.get("grade_appeal")
     schedule_change = data.get("schedule_change")
     course_id = data.get("course_id")
-
+    print(data)
     if not title or not student_email or not details:
         raise HTTPException(status_code=400, detail="Missing required fields")
 
@@ -450,8 +451,8 @@ async def create_general_request(
         title=title,
         student_email=student_email,
         details=details,
-        course_id = grade_appeal['course_id'],
-        course_component = grade_appeal['grade_component'],
+        # course_id = grade_appeal['course_id'],
+        # course_component = grade_appeal['grade_component'],
         files=files,
         status="pending",
         created_date=datetime.now().date(),
@@ -460,6 +461,23 @@ async def create_general_request(
     )
 
     return {"message": "Request created successfully", "request_id": new_request.id}
+
+@app.delete("/Requests/{request_id}")
+async def delete_request(request_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        # Fetch the request to ensure it exists
+        request = await session.get(Requests, request_id)
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        if request.status != "pending":
+            raise HTTPException(status_code=400, detail="Cannot delete a request that is not pending")
+        # Delete the request
+        await session.delete(request)
+        await session.commit()
+
+        return {"message": "Request deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting request: {str(e)}")
 
 
 @app.get("/student/{student_email:path}/courses")
