@@ -5,10 +5,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/StudentRequestsPanel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
+import {getToken} from "../utils/auth";
 
 function StudentRequests({ emailUser }) {
     const [visibleRequests, setVisibleRequests] = useState([]);
     const [selectedRequest, setSelectedRequest] = useState(null);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editDetails, setEditDetails] = useState("");
 
     useEffect(() => {
         const fetchRequests = async () => {
@@ -52,6 +56,39 @@ function StudentRequests({ emailUser }) {
         }
     };
 
+    const handleEditSubmit = async e => {
+        e.preventDefault();
+        try {
+             await axios.put(
+                `http://localhost:8000/Requests/EditRequest/${selectedRequest.id}`,
+                {
+                    details: editDetails,
+                    files: selectedRequest.files // or editFiles
+                },
+                 {
+                     headers: {
+                         "Content-Type": "application/json",
+                         "Authorization": `Bearer ${getToken()}`
+                     }
+                 }
+            );
+            // 1) update the list
+            setVisibleRequests(prev =>
+                prev.map(r =>
+                    r.id === selectedRequest.id
+                        ? { ...r, details: editDetails /*, files: editFiles*/ }
+                        : r
+                )
+            );
+            // 2) update the selectedRequest so the modal shows the new text
+            setSelectedRequest(r => ({ ...r, details: editDetails /*, files: editFiles*/ }));
+            // 3) exit edit-mode
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Error updating request:", err);
+            alert("אירעה שגיאה בעת עדכון הבקשה.");
+        }
+    };
 
     return (
         <div className="container mt-4">
@@ -124,12 +161,14 @@ function StudentRequests({ emailUser }) {
 
                                     </div>
                                     <div className="col-md-6">
-                                    <p><strong>מסמכים מצורפים:</strong></p>
+                                        <p><strong>מסמכים מצורפים:</strong></p>
                                         <ul className="list-group">
                                             {(selectedRequest.files || []).map((doc, index) => (
-                                                <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                                                <li key={index}
+                                                    className="list-group-item d-flex justify-content-between align-items-center">
                                                     <span>
-                                                        <FontAwesomeIcon icon={faFileAlt} className="me-2 text-primary" />
+                                                        <FontAwesomeIcon icon={faFileAlt}
+                                                                         className="me-2 text-primary"/>
                                                         {doc}
                                                     </span>
                                                     <a
@@ -162,14 +201,58 @@ function StudentRequests({ emailUser }) {
                                         ))}
                                     </div>
                                 </div>
-
-                                <div className="text-end mt-3">
-                                    <button className="btn btn-secondary me-2 requestCloseBTN" onClick={closeModal}>סגירה</button>
-                                    {selectedRequest.status === "pending" && (
-                                        <button className="btn btn-warning requestEditBTN">עריכת בקשה</button>
+                                {/*Edit Request form*/}
+                                <div className="mb-3">
+                                    {isEditing ? (
+                                        <form onSubmit={handleEditSubmit}>
+                                            <div className="mb-2">
+                                                <label>תוכן הבקשה:</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    value={editDetails}
+                                                    onChange={e => setEditDetails(e.target.value)}
+                                                    rows={4}
+                                                />
+                                            </div>
+                                            {/* if you allow editing attachments, render inputs for editFiles here */}
+                                            <button type="submit" className="btn btn-primary me-2" style={{marginLeft: '15px'}}>
+                                                שמור שינויים
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary"
+                                                onClick={() => setIsEditing(false)}
+                                            >
+                                                ביטול
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <p><strong>תוכן הבקשה:</strong> {selectedRequest.details}</p>
+                                        /* rest of your read-only fields… */
                                     )}
-                                    {selectedRequest.status === "pending" && (
-                                        <button className="btn btn-danger requestDeleteBTN" onClick={() => handleDelete(selectedRequest.id)}>
+                                </div>
+                                {/*End Edit Request form*/}
+                                <div className="text-end mt-3">
+                                    <button className="btn btn-secondary me-2 requestCloseBTN"
+                                            onClick={closeModal}>סגירה
+                                    </button>
+                                    {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && !isEditing &&
+                                        (
+                                            <button
+                                                className="btn btn-warning requestEditBTN"
+                                                onClick={() => {
+                                                    setIsEditing(true);
+                                                    setEditDetails(selectedRequest.details);
+                                                    // setEditFiles(selectedRequest.files || []);
+                                                }}
+                                            >
+                                                עריכת בקשה
+                                            </button>
+                                        )}
+
+                                    {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && (
+                                        <button className="btn btn-danger requestDeleteBTN"
+                                                onClick={() => handleDelete(selectedRequest.id)}>
                                             מחיקת בקשה</button>
                                     )}
                                 </div>

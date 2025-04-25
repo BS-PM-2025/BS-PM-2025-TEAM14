@@ -4,6 +4,7 @@ import urllib.parse
 from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
+from httpx import request
 from sqlalchemy import select, literal, literal_column, ColumnElement, delete
 from sqlalchemy.orm import selectinload
 from starlette.requests import Request
@@ -76,6 +77,14 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
         print("Bad role in token")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Professor role required")
     print("Authorized as professor!!!!!!!!")
+    return token_data
+
+def verify_token_student(token_data: dict = Depends(verify_token)):
+    print(token_data)
+    if token_data.get("role") != "student":
+        print("Bad role in token")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Student role required")
+    print("Authorized as student")
     return token_data
 
 ###
@@ -479,6 +488,27 @@ async def delete_request(request_id: int, session: AsyncSession = Depends(get_se
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting request: {str(e)}")
 
+@app.put("/Requests/EditRequest/{request_id}")
+async def edit_request(request_id: int, request: Request ,session: AsyncSession = Depends(get_session),
+                       student: dict = Depends(verify_token_student)
+                       ):
+    try :
+        existing_request = await session.get(Requests, request_id)
+        if not existing_request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        if existing_request.status != "pending":
+            raise HTTPException(status_code=400, detail="Cannot edit a request that is not pending")
+        data = await request.json()
+        print(data)
+        # Edit the request
+        existing_request.details = data["details"]
+        existing_request.files = data["files"]
+        await session.commit()
+
+        return {"message": "Request updated successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error editing request: {str(e)}")
 
 @app.get("/student/{student_email:path}/courses")
 async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
