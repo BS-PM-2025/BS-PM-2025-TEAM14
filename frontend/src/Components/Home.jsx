@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {Modal, Box, Alert} from '@mui/material';
-import { useUser } from './UserContext'; // Import the custom hook
+import { useUser } from './UserContext';
 import { getToken, removeToken } from '../utils/auth';
 import ConfirmationDialog from './ConfirmationDialog';
-import Login from './Login'; // Import the Login component
-import UserWelcome from './UserWelcome'; // Import the new UserWelcome component
+import Login from './Login';
+import UserWelcome from './UserWelcome';
 import '../CSS/Home.css';
 import CreateUser from "./CreateUser";
+import ScoreGauge from "./Gauge";
+import axios from "axios";
 
 const Home = () => {
   const { user, setUserData } = useUser(); // Use the user and setUserData from context
@@ -17,6 +19,9 @@ const Home = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const navigate = useNavigate();
   const [alert, setAlert] = useState({ type: '', message: '' });
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -95,6 +100,27 @@ const Home = () => {
     }
   };
 
+  const handleCoursesTab = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await axios.get(`http://localhost:8000/student/${user?.user_email}/courses`);
+      setCourses(response.data.courses);
+    } catch (err) {
+      setError("Failed to fetch courses");
+    }
+    setLoading(false);
+  };
+
+  const getGaugeColor = (value) => {
+    if (value > 85) return '#4caf50';
+    if (value > 70) return '#ff9800';
+    return '#f44336';
+  };
+
+
+
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
@@ -159,7 +185,11 @@ const Home = () => {
                       <button
                           key={tab}
                           className={`tab-button ${activeTab === tab ? 'active' : ''}`}
-                          onClick={() => setActiveTab(tab)}
+                          onClick={() => {
+                            setActiveTab(tab);
+                            if (tab === 'courses') handleCoursesTab();
+                          }}
+
                       >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                       </button>
@@ -197,12 +227,34 @@ const Home = () => {
                     {activeTab === 'courses' && (
                         <div className="courses-content">
                           <h3>Your Courses</h3>
-                          <p>Course content will be displayed here</p>
+                          {loading ? (
+                              <p>Loading courses...</p>
+                          ) : error ? (
+                              <Alert severity="error">{error}</Alert>
+                          ) : courses.length > 0 ? (
+                              <ul className="courses-list">
+                                {courses.map((course) => (
+                                    <li key={course.course_id} className="course-item">
+                                      <h4>{course.name}</h4>
+                                      <p>{course.description}</p>
+                                    </li>
+                                ))}
+                              </ul>
+                          ) : (
+                              <p>No courses found.</p>
+                          )}
+
+
                         </div>
                     )}
                     {activeTab === 'grades' && (
                         <div className="grades-content">
                           <h3>Academic Performance</h3>
+                          <ScoreGauge scoreValue={90} />
+
+
+
+
                           <p>Grades content will be displayed here</p>
                         </div>
                     )}
