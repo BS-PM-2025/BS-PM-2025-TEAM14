@@ -1,5 +1,9 @@
 /* הוספה לקובץ StudentRequestsPanel.css */
 
+.requestCloseBTN, .requestEditBTN, .requestDeleteBTN {
+    margin-left: 15px;
+}
+
 .modal-backdrop {
     position: fixed;
     top: 0;

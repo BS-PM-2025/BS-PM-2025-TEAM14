@@ -4,8 +4,10 @@ import urllib.parse
 from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
+from httpx import request
 from sqlalchemy import select, literal, literal_column, ColumnElement, delete
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm.attributes import flag_modified
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -76,6 +78,13 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
         print("Bad role in token")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Professor role required")
     print("Authorized as professor!!!!!!!!")
+    return token_data
+
+def verify_token_student(token_data: dict = Depends(verify_token)):
+    if token_data.get("role") != "student":
+        print("Bad role in token")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Student role required")
+    print("Authorized as student")
     return token_data
 
 ###
@@ -410,6 +419,7 @@ async def create_general_request(
     request: Request,
     session: AsyncSession = Depends(get_session)
 ):
+    print("in submit request")
     data = await request.json()
     title = data.get("title")
     student_email = data.get("student_email")
@@ -418,7 +428,7 @@ async def create_general_request(
     grade_appeal = data.get("grade_appeal")
     schedule_change = data.get("schedule_change")
     course_id = data.get("course_id")
-
+    print(data)
     if not title or not student_email or not details:
         raise HTTPException(status_code=400, detail="Missing required fields")
 
@@ -450,8 +460,8 @@ async def create_general_request(
         title=title,
         student_email=student_email,
         details=details,
-        course_id = grade_appeal['course_id'],
-        course_component = grade_appeal['grade_component'],
+        # course_id = grade_appeal['course_id'],
+        # course_component = grade_appeal['grade_component'],
         files=files,
         status="pending",
         created_date=datetime.now().date(),
@@ -461,6 +471,58 @@ async def create_general_request(
 
     return {"message": "Request created successfully", "request_id": new_request.id}
 
+@app.delete("/Requests/{request_id}")
+async def delete_request(request_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        # Fetch the request to ensure it exists
+        request = await session.get(Requests, request_id)
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        if request.status != "pending":
+            raise HTTPException(status_code=400, detail="Cannot delete a request that is not pending")
+        # Delete the request
+        await session.delete(request)
+        await session.commit()
+
+        return {"message": "Request deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting request: {str(e)}")
+
+@app.put("/Requests/EditRequest/{request_id}")
+async def edit_request(request_id: int, request: Request ,session: AsyncSession = Depends(get_session),
+                       student: dict = Depends(verify_token_student)
+                       ):
+    try :
+        existing_request = await session.get(Requests, request_id)
+        if not existing_request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        if existing_request.status != "pending":
+            raise HTTPException(status_code=400, detail="Cannot edit a request that is not pending")
+        data = await request.json()
+        print(data)
+        # Edit the request
+        existing_request.details = data["details"]
+        # existing_request.files = data["files"]
+
+        existing_request_timeline = dict(existing_request.timeline)
+        print("before change ###### ->", existing_request_timeline)
+        try:
+            edits = existing_request_timeline["edits"]
+            edits.append((f"details: {data['details']}", datetime.now().isoformat()))
+        except KeyError as e:
+            print("Error", e)
+            edits = [(f"details: {data['details']}", datetime.now().isoformat())]
+        existing_request_timeline["edits"] = edits
+        print("after change ###### ->",existing_request_timeline)
+        existing_request.timeline = existing_request_timeline
+        flag_modified(existing_request, "timeline")
+        #session.add(existing_request)
+        await session.commit()
+
+        return {"message": "Request updated successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error editing request: {str(e)}")
 
 @app.get("/student/{student_email:path}/courses")
 async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
