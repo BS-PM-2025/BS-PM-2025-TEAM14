@@ -21,7 +21,6 @@ function AppRoutes() {
             <div className="App">
                 <Navigation />
                 <Routes>
-                    {console.log("in the navigation, user:", user)}
                     <Route path="/" element={<Navigate to="/home" replace />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/submit_request" element={<SubmitRequestForm />} />

@@ -15,22 +15,22 @@ function StudentRequests({ emailUser }) {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editDetails, setEditDetails] = useState("");
-    const [user, setUser] = useState();
+    const [user, setUser] = useState(null);
     useEffect(() => {
         const checkLoginStatus = () => {
             const token = getToken();
             if (token) {
-                const user = getUserFromToken(token);
-                console.log("User data from token:", user);
+                const userData = getUserFromToken(token);
+                console.log("User data from token:", userData);
 
                 // Check if user is a student
-                if (user.role !== "student") {
+                if (userData.role !== "student") {
                     console.log("Non-student user detected, redirecting to home");
                     navigate("/home");
                     return;
                 }
 
-                setUser(user);
+                setUser(userData);
             } else {
                 setUser(null);
                 navigate("/login");
@@ -45,10 +45,9 @@ function StudentRequests({ emailUser }) {
             window.removeEventListener("storage", checkLoginStatus);
             window.removeEventListener("focus", checkLoginStatus);
         };
-    }, [navigate]);
+    }, []);
 
     useEffect(() => {
-        console.log(user);
         const fetchRequests = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/requests/${user?.user_email}`);
@@ -70,7 +69,7 @@ function StudentRequests({ emailUser }) {
         };
 
         fetchRequests();
-    }, []);
+    }, [user]);
 
     const handleRequestClick = (request) => {
         setSelectedRequest(request);
@@ -242,7 +241,7 @@ function StudentRequests({ emailUser }) {
                                 </div>
                                 {/*Edit Request form*/}
                                 <div className="mb-3">
-                                    {isEditing ? (
+                                    {isEditing && (
                                         <form onSubmit={handleEditSubmit}>
                                             <div className="mb-2">
                                                 <label>תוכן הבקשה:</label>
@@ -253,7 +252,6 @@ function StudentRequests({ emailUser }) {
                                                     rows={4}
                                                 />
                                             </div>
-                                            {/* if you allow editing attachments, render inputs for editFiles here */}
                                             <button type="submit" className="btn btn-primary me-2" style={{marginLeft: '15px'}}>
                                                 שמור שינויים
                                             </button>
@@ -265,9 +263,6 @@ function StudentRequests({ emailUser }) {
                                                 ביטול
                                             </button>
                                         </form>
-                                    ) : (
-                                        <p><strong>תוכן הבקשה:</strong> {selectedRequest.details}</p>
-                                        /* rest of your read-only fields… */
                                     )}
                                 </div>
                                 {/*End Edit Request form*/}
