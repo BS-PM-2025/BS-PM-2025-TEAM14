@@ -270,9 +270,13 @@ function StudentRequests({ emailUser }) {
                                 </div>
                                 {/*End Edit Request form*/}
                                 <div className="text-end mt-3">
-                                    <button className="btn btn-secondary me-2 requestCloseBTN"
-                                            onClick={closeModal}>סגירה
+                                    <button
+                                        className="btn btn-secondary me-2 requestCloseBTN"
+                                        onClick={closeModal}
+                                    >
+                                        סגירה
                                     </button>
+
                                     {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && !isEditing && (
                                         <Fab
                                             color="secondary"
@@ -282,16 +286,18 @@ function StudentRequests({ emailUser }) {
                                                 setEditDetails(selectedRequest.details);
                                                 // setEditFiles(selectedRequest.files || []);
                                             }}
-                                            // sx={{ position: 'fixed', bottom: 32, right: 32 }}
                                         >
                                             <EditIcon />
                                         </Fab>
                                     )}
 
                                     {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && (
-                                        <button className="btn btn-danger requestDeleteBTN"
-                                                onClick={() => handleDelete(selectedRequest.id)}>
-                                            מחיקת בקשה</button>
+                                        <button
+                                            className="btn btn-danger requestDeleteBTN"
+                                            onClick={() => handleDelete(selectedRequest.id)}
+                                        >
+                                            מחיקת בקשה
+                                        </button>
                                     )}
                                 </div>
                             </div>

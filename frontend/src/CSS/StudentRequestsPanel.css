@@ -97,3 +97,34 @@
         transform: translateY(0);
     }
 }
+/* Dark mode styles */
+.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.dark-mode .card {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+}
+
+.dark-mode .modal-container {
+    background-color: #2c2c2c;
+}
+
+.dark-mode .btn-secondary {
+    background-color: #555;
+    border-color: #444;
+}
+
+.dark-mode .badge {
+    background-color: #444;
+}
+
+.dark-mode .timeline-item {
+    background-color: #2a2a2a;
+}
+
+.dark-mode .requestDeleteBTN {
+    background-color: #d9534f;
+}
