@@ -5,33 +5,72 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/StudentRequestsPanel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
-import {getToken} from "../utils/auth";
+import {getToken, getUserFromToken} from "../utils/auth";
+import {useUser} from "./UserContext";
+import {useNavigate} from "react-router-dom";
 
 function StudentRequests({ emailUser }) {
+    const navigate = useNavigate();
     const [visibleRequests, setVisibleRequests] = useState([]);
     const [selectedRequest, setSelectedRequest] = useState(null);
-
     const [isEditing, setIsEditing] = useState(false);
     const [editDetails, setEditDetails] = useState("");
+    const [user, setUser] = useState();
+    useEffect(() => {
+        const checkLoginStatus = () => {
+            const token = getToken();
+            if (token) {
+                const user = getUserFromToken(token);
+                console.log("User data from token:", user);
+
+                // Check if user is a student
+                if (user.role !== "student") {
+                    console.log("Non-student user detected, redirecting to home");
+                    navigate("/home");
+                    return;
+                }
+
+                setUser(user);
+            } else {
+                setUser(null);
+                navigate("/login");
+            }
+        };
+
+        checkLoginStatus();
+        window.addEventListener("storage", checkLoginStatus);
+        window.addEventListener("focus", checkLoginStatus);
+
+        return () => {
+            window.removeEventListener("storage", checkLoginStatus);
+            window.removeEventListener("focus", checkLoginStatus);
+        };
+    }, [navigate]);
 
     useEffect(() => {
+        console.log(user);
         const fetchRequests = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/requests/${emailUser}`);
+                const response = await axios.get(`http://localhost:8000/requests/${user?.user_email}`);
                 const data = response.data;
+                console.log(data);
 
-                data.forEach((request, index) => {
-                    setTimeout(() => {
-                        setVisibleRequests(prev => [...prev, request]);
-                    }, index * 300);
-                });
+                setVisibleRequests([]);
+                setTimeout(() => {
+                    data.forEach((request, index) => {
+                        setTimeout(() => {
+                            setVisibleRequests(prev => [...prev, request]);
+                        }, index * 300);
+                    });
+                }, 0);
+
             } catch (error) {
                 console.error("Error fetching requests:", error);
             }
         };
 
         fetchRequests();
-    }, [emailUser]);
+    }, []);
 
     const handleRequestClick = (request) => {
         setSelectedRequest(request);

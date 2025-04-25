@@ -60,7 +60,7 @@ const RequestForm = () => {
   const handleGradeSelection = (selection) => {
     setSelectedGrade(selection);
     // If we have both course and grade selected, update the grade info
-    if (selection.course && selection.grade) {
+    if (selection.course && selection.grade && selection.grade.grade_component && selection.grade.grade) {
       setGradeInfo(
         `Grade Information:\nCourse: ${selection.course}\nComponent: ${selection.grade.grade_component}\nCurrent Grade: ${selection.grade.grade}\n\n`
       );

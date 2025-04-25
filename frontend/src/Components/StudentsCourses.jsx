@@ -13,6 +13,7 @@ const StudentsCourses = ({ studentEmail, onCourseSelect }) => {
         const response = await axios.get(
           `http://localhost:8000/student/${studentEmail}/courses`
         );
+        console.log(response.data.courses);
         setCourses(response.data.courses);
         setLoading(false);
       } catch (err) {
@@ -24,18 +25,17 @@ const StudentsCourses = ({ studentEmail, onCourseSelect }) => {
     fetchCourses();
   }, [studentEmail]);
 
-  const handleCourseSelect = (courseName, courseData) => {
-    setSelectedCourse(courseName);
+  const handleCourseSelect = (courseName, course) => {
+    setSelectedCourse(course.id);
     if (onCourseSelect) {
       onCourseSelect({
         courseName,
-        courseId: courseData[0].course_id,
-        professors: [
-          ...new Set(courseData.map((grade) => grade.professor_email)),
-        ], // Get unique professors
+        courseId: course.id,
+        professors: [course.professor_email],
       });
     }
   };
+
 
   if (loading) return <div>Loading courses...</div>;
   if (error) return <div className="error-message">{error}</div>;
@@ -44,28 +44,25 @@ const StudentsCourses = ({ studentEmail, onCourseSelect }) => {
     <div className="students-courses">
       <h3>Your Courses</h3>
       <div className="courses-grid">
-        {Object.entries(courses).map(([courseName, courseData]) => (
-          <div
-            key={courseName}
-            className={`course-card ${
-              selectedCourse === courseName ? "selected" : ""
-            }`}
-            onClick={() => handleCourseSelect(courseName, courseData)}
-          >
-            <div className="course-code">{courseData[0].course_id}</div>
-            <div className="course-name">{courseName}</div>
-            <div className="professors">
-              <span>Professor:</span>
-              <ul>
-                {[
-                  ...new Set(courseData.map((grade) => grade.professor_email)),
-                ].map((professor, index) => (
-                  <li key={index}>{professor}</li>
-                ))}
-              </ul>
+        {courses.map((course, index) => (
+            <div
+                key={index}
+                className={`course-card ${
+                    selectedCourse === course.id ? "selected" : ""
+                }`}
+                onClick={() => handleCourseSelect(course.name, course)}
+            >
+              <div className="course-code">{course.id}</div>
+              <div className="course-name">{course.name}</div>
+              <div className="professors">
+                <span>Professor:</span>
+                <ul>
+                  <li>{course.professor_email}</li>
+                </ul>
+              </div>
             </div>
-          </div>
         ))}
+
       </div>
     </div>
   );
