@@ -445,7 +445,8 @@ async def create_general_request(
         required_keys = {"course_id", "grade_component", "current_grade"}
         if not required_keys.issubset(grade_appeal.keys()):
             raise HTTPException(status_code=400, detail="Invalid grade appeal data")
-
+        course_id = grade_appeal.get('course_id')
+        course_component = grade_appeal.get('grade_component')
     elif title == "Schedule Change Request" and schedule_change:
         if (
             "course_id" not in schedule_change or 
@@ -454,19 +455,23 @@ async def create_general_request(
             not schedule_change["professors"]
         ):
             raise HTTPException(status_code=400, detail="Invalid schedule change data")
+        course_id = schedule_change.get('course_id')
+        course_component = None
+    else:
+        course_id = None
+        course_component = None
 
     new_request = await add_request(
         session=session,
         title=title,
         student_email=student_email,
         details=details,
-        course_id = grade_appeal['course_id'] if grade_appeal['course_id'] else None,
-        course_component = grade_appeal['grade_component'] if grade_appeal['grade_component'] else None,
+        course_id=course_id,
+        course_component=course_component,
         files=files,
         status="pending",
         created_date=datetime.now().date(),
         timeline=timeline
-
     )
 
     return {"message": "Request created successfully", "request_id": new_request.id}

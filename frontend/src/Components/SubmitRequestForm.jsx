@@ -60,13 +60,17 @@ const RequestForm = () => {
   const handleGradeSelection = (selection) => {
     setSelectedGrade(selection);
     // If we have both course and grade selected, update the grade info
-    if (selection.course && selection.grade && selection.grade.grade_component && selection.grade.grade) {
+    if (
+      selection.course &&
+      selection.grade &&
+      selection.grade.grade_component &&
+      selection.grade.grade
+    ) {
       setGradeInfo(
         `Grade Information:\nCourse: ${selection.course}\nComponent: ${selection.grade.grade_component}\nCurrent Grade: ${selection.grade.grade}\n\n`
       );
-    }
-    else{
-      setGradeInfo(`Grade Information:\n Course: ${selection.course}`)
+    } else {
+      setGradeInfo(`Grade Information:\n Course: ${selection.course}`);
     }
   };
 
@@ -153,7 +157,7 @@ const RequestForm = () => {
           // Upload each file
           await axios.post(
             `http://localhost:8000/uploadfile/${user.user_email}`,
-              {formData},
+            formData,
             {
               headers: {
                 "Content-Type": "multipart/form-data",
@@ -180,8 +184,12 @@ const RequestForm = () => {
         console.log(selectedGrade);
         requestData.grade_appeal = {
           course_id: selectedGrade.course,
-          grade_component: selectedGrade.grade.grade_component ? selectedGrade.grade.grade_component : "no info",
-          current_grade: selectedGrade.grade.grade ? selectedGrade.grade.grade : "no info",
+          grade_component: selectedGrade.grade.grade_component
+            ? selectedGrade.grade.grade_component
+            : "no info",
+          current_grade: selectedGrade.grade.grade
+            ? selectedGrade.grade.grade
+            : "no info",
         };
       }
       console.log("request data", requestData);
