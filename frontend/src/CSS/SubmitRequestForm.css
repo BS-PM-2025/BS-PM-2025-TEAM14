@@ -224,3 +224,26 @@
 .professors li {
   margin-bottom: 3px;
 }
+
+.warning-message {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  padding: 15px;
+  margin: 15px 0;
+  color: #856404;
+}
+
+.warning-message h4 {
+  margin-top: 0;
+  color: #856404;
+}
+
+.warning-message ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.warning-message li {
+  margin-bottom: 5px;
+}

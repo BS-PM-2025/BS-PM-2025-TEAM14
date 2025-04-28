@@ -17,6 +17,7 @@ const RequestForm = () => {
   const [gradeInfo, setGradeInfo] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [user, setUser] = useState(null);
+  const [professorUnavailable, setProfessorUnavailable] = useState(null);
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -57,6 +58,50 @@ const RequestForm = () => {
     "Exam Accommodations Request",
   ];
 
+  const checkProfessorAvailability = async (courseId) => {
+    try {
+      // Get the course to find the professor
+      const courseResponse = await axios.get(
+        `http://localhost:8000/student_courses/professor/${user.user_email}/${courseId}`
+      );
+      const professorEmail = courseResponse.data.professor_email;
+
+      if (!professorEmail) {
+        return;
+      }
+
+      // Get today's date and next month's date
+      const today = new Date();
+      const nextMonth = new Date();
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      // Fetch unavailability periods for the next month
+      const unavailabilityResponse = await axios.get(
+        `http://localhost:8000/professor/unavailability/${professorEmail}`
+      );
+
+      // Filter periods that are within the next month
+      const relevantPeriods = unavailabilityResponse.data.periods.filter(
+        (period) => {
+          const periodStart = new Date(period.start_date);
+          const periodEnd = new Date(period.end_date);
+          return (
+            (periodStart >= today || periodEnd >= today) &&
+            periodStart <= nextMonth
+          );
+        }
+      );
+
+      if (relevantPeriods.length > 0) {
+        setProfessorUnavailable(relevantPeriods);
+      } else {
+        setProfessorUnavailable(null);
+      }
+    } catch (error) {
+      console.error("Error checking professor availability:", error);
+    }
+  };
+
   const handleGradeSelection = (selection) => {
     setSelectedGrade(selection);
     // If we have both course and grade selected, update the grade info
@@ -69,8 +114,13 @@ const RequestForm = () => {
       setGradeInfo(
         `Grade Information:\nCourse: ${selection.course}\nComponent: ${selection.grade.grade_component}\nCurrent Grade: ${selection.grade.grade}\n\n`
       );
+      // Check professor availability when a course is selected
+      checkProfessorAvailability(selection.course);
     } else {
       setGradeInfo(`Grade Information:\n Course: ${selection.course}`);
+      if (selection.course) {
+        checkProfessorAvailability(selection.course);
+      }
     }
   };
 
@@ -323,6 +373,25 @@ const RequestForm = () => {
             </div>
           )}
         </div>
+
+        {title === "Grade Appeal Request" && professorUnavailable && (
+          <div className="warning-message">
+            <h4>Lecturer Unavailability Notice</h4>
+            <p>Your lecturer is unavailable during the following periods:</p>
+            <ul>
+              {professorUnavailable.map((period, index) => (
+                <li key={index}>
+                  {new Date(period.start_date).toLocaleDateString()} -{" "}
+                  {new Date(period.end_date).toLocaleDateString()}
+                  {period.reason && ` (${period.reason})`}
+                </li>
+              ))}
+            </ul>
+            <p>
+              Please consider this when submitting your grade appeal request.
+            </p>
+          </div>
+        )}
 
         {error && <div className="error-message">{error}</div>}
         {message && <div className="success-message">{message}</div>}
