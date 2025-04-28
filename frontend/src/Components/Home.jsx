@@ -7,8 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmationDialog from './ConfirmationDialog';
 import Login from './Login';
 import UserWelcome from './UserWelcome';
-import axios from 'axios';
 import UserGrades from './UserGrades';
+import ProfessorView from './ProfessorView';
+import axios from 'axios';
 import '../CSS/Home.css';
 
 const Home = () => {
@@ -126,7 +127,7 @@ const Home = () => {
             {user && (
                 <div className="dashboard-tabs">
                   <div className="tabs-header">
-                    {['dashboard', 'courses', 'grades', 'documents'].map((tab) => (
+                    {['dashboard', 'courses', 'grades', 'documents', 'lecturer availability'].map((tab) => (
                         <button
                             key={tab}
                             className={`tab-button ${activeTab === tab ? 'active' : ''}`}
@@ -138,6 +139,14 @@ const Home = () => {
                           {tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
                     ))}
+                  </div>
+                  
+                  <div className="tab-content">
+                    {activeTab === 'lecturer availability' && user.role === 'student' && (
+                      <ProfessorView studentEmail={user.user_email} />
+                    )}
+                    {activeTab === 'grades' && <UserGrades />}
+                    {/* Add other tab content here */}
                   </div>
                 </div>
             )}

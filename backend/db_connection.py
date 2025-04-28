@@ -1,6 +1,6 @@
 import asyncio
 import os
-from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text
+from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text, DateTime
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from config import DATABASE_URL
@@ -41,7 +41,19 @@ class Professors(Base):
     
     courses = relationship("Courses", back_populates="professor")
     student_courses = relationship("StudentCourses", back_populates="professor")
-    grades = relationship("Grades", back_populates="professor")  # הוסף את המאפיין הזה
+    grades = relationship("Grades", back_populates="professor")
+    unavailability_periods = relationship("ProfessorUnavailability", back_populates="professor")
+
+class ProfessorUnavailability(Base):
+    __tablename__ = 'professor_unavailability'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    professor_email = Column(String(100), ForeignKey('professors.email'), nullable=False)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    reason = Column(String(255))
+    created_at = Column(DateTime, default=datetime.now)
+
+    professor = relationship("Professors", back_populates="unavailability_periods")
 
 # Requests table
 class Requests(Base):

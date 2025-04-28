@@ -26,6 +26,11 @@ from fastapi import Depends
 from pydantic import BaseModel, constr
 from typing import List
 
+class UnavailabilityPeriod(BaseModel):
+    start_date: datetime
+    end_date: datetime
+    reason: Optional[str] = None
+
 class AssignProfessorRequest(BaseModel):
     professor_email: str
     course_ids: List[str]
@@ -671,3 +676,147 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+@app.post("/professor/unavailability/{professor_email}")
+async def add_unavailability_period(
+    professor_email: str,
+    period: UnavailabilityPeriod,
+    session: AsyncSession = Depends(get_session)
+):
+    # Verify professor exists
+    result = await session.execute(select(Professors).where(Professors.email == professor_email))
+    professor = result.scalars().first()
+    if not professor:
+        raise HTTPException(status_code=404, detail="Professor not found")
+
+    # Create new unavailability period
+    new_period = ProfessorUnavailability(
+        professor_email=professor_email,
+        start_date=period.start_date.date(),
+        end_date=period.end_date.date(),
+        reason=period.reason
+    )
+    
+    session.add(new_period)
+    await session.commit()
+    await session.refresh(new_period)
+    
+    return {"message": "Unavailability period added successfully", "period": new_period}
+
+@app.get("/professor/unavailability/{professor_email}")
+async def get_unavailability_periods(
+    professor_email: str,
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(select(Professors).where(Professors.email == professor_email))
+    professor = result.scalars().first()
+    if not professor:
+        raise HTTPException(status_code=404, detail="Professor not found")
+
+    result = await session.execute(
+        select(ProfessorUnavailability)
+        .filter(ProfessorUnavailability.professor_email == professor_email)
+        .order_by(ProfessorUnavailability.start_date)
+    )
+    periods = result.scalars().all()
+    
+    return {"periods": periods}
+
+@app.delete("/professor/unavailability/{period_id}")
+async def delete_unavailability_period(
+    period_id: int,
+    session: AsyncSession = Depends(get_session)
+):
+    period = await session.get(ProfessorUnavailability, period_id)
+    if not period:
+        raise HTTPException(status_code=404, detail="Unavailability period not found")
+
+    await session.delete(period)
+    await session.commit()
+    
+    return {"message": "Unavailability period deleted successfully"}
+
+@app.get("/professor/availability/{professor_email}")
+async def check_professor_availability(
+    professor_email: str,
+    date: datetime,
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(select(Professors).where(Professors.email == professor_email))
+    professor = result.scalars().first()
+    if not professor:
+        raise HTTPException(status_code=404, detail="Professor not found")
+
+    result = await session.execute(
+        select(ProfessorUnavailability)
+        .filter(
+            ProfessorUnavailability.professor_email == professor_email,
+            ProfessorUnavailability.start_date <= date.date(),
+            ProfessorUnavailability.end_date >= date.date()
+        )
+    )
+    periods = result.scalars().all()
+    
+    if periods:
+        return {
+            "is_available": False,
+            "periods": periods
+        }
+    
+    return {"is_available": True}
+
+
+
+@app.get("/student_courses/professor/{student_email}/{course_id}")
+async def get_student_professor(
+    student_email: str,
+    course_id: str,
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(
+        select(StudentCourses.professor_email)
+        .where(
+            StudentCourses.student_email == student_email,
+            StudentCourses.course_id == course_id
+        )
+    )
+    student_course = result.scalars().first()
+    if not student_course:
+        raise HTTPException(status_code=404, detail="No professor found for this student in the specified course")
+    return {"professor_email": student_course}
+
+@app.get("/student/{student_email}/professors")
+async def get_student_professors(
+    student_email: str,
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        # First, get all courses for the student
+        student_courses_query = select(StudentCourses).where(StudentCourses.student_email == student_email)
+        student_courses = (await session.execute(student_courses_query)).scalars().all()
+        
+        if not student_courses:
+            return {"professors": []}
+            
+        # Get unique professor emails from the courses
+        professor_emails = set()
+        for course in student_courses:
+            professor_emails.add(course.professor_email)
+            
+        # Get professor details from Users table
+        professors_query = select(Users).where(Users.email.in_(professor_emails))
+        professors = (await session.execute(professors_query)).scalars().all()
+        
+        # Format the response
+        professors_data = [
+            {
+                "email": prof.email,
+                "first_name": prof.first_name,
+                "last_name": prof.last_name
+            }
+            for prof in professors
+        ]
+        
+        return {"professors": professors_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
