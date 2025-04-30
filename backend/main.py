@@ -700,7 +700,10 @@ async def add_unavailability_period(
     session.add(new_period)
     await session.commit()
     await session.refresh(new_period)
-    
+    # n8n http request
+
+
+    #
     return {"message": "Unavailability period added successfully", "period": new_period}
 
 @app.get("/professor/unavailability/{professor_email}")

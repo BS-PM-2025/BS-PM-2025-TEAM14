@@ -56,8 +56,18 @@ export default function ProfessorUnavailability({ professorEmail }) {
           reason: reason,
         }
       );
+      // n8n
+      const n8nResponse = axios.post('http://localhost:5678/webhook/professor-unavailability-update',
+          {
+            professor_email: professorEmail,
+            start_date: startDate,
+            end_date: endDate,
+            reason: reason
+          });
+      console.log(n8nResponse.data);
+      // n8n
       setOpen(false);
-      fetchUnavailabilityPeriods();
+      await fetchUnavailabilityPeriods();
       // Reset form
       setStartDate(null);
       setEndDate(null);
