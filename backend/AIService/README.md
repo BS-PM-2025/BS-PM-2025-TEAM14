@@ -4,14 +4,14 @@ A multilingual FAQ matching and AI response service for the academic portal.
 
 ## Overview
 
-The AI Service processes user queries in both English and Hebrew, attempting to match them against a database of frequently asked questions. If a match is found with sufficient confidence, the predefined answer is returned. Otherwise, the query is forwarded to a more general AI service (OpenAI).
+The AI Service processes user queries in both English and Hebrew, attempting to match them against a database of frequently asked questions. If a match is found with sufficient confidence, the predefined answer is returned. Otherwise, the query is forwarded to OpenAI's API.
 
 ## Setup
 
 ### Installation
 ```bash
 cd backend/AIService
-npm install
+pip install -r requirements.txt
 ```
 
 ### OpenAI API Key Setup
@@ -30,35 +30,36 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 - **FAQ Matching**: Uses a sophisticated text similarity algorithm to match user queries against patterns
 - **Language Detection**: Automatically detects whether the user is using English or Hebrew 
-- **Fallback to OpenAI**: For queries that don't match FAQ patterns
+- **OpenAI Integration**: For queries that don't match FAQ patterns
+- **Real-time Voice Input**: Browser-based speech recognition for voice queries
 
 ## Files
 
-- `index.js` - Main entry point for the service
-- `services/faqService.js` - FAQ matching implementation
-- `services/openaiService.js` - OpenAI API integration (currently stubbed)
-- `utils/textUtils.js` - Text processing utilities
+- `__init__.py` - Main implementation of the AI Service
 - `data/faq_data.json` - Multilingual FAQ data
-- `test.js` - Simple test script
 
 ## Usage
 
-```javascript
-const aiService = require('./AIService');
+The AI service is imported by the FastAPI backend and exposed via the `/api/ai/chat` endpoint:
 
-// Process a message with automatic language detection
-const response = await aiService.processMessage("How do I appeal my grade?");
-console.log(response);
-// {
-//   text: "You can submit a grade appeal through the 'Requests' section...",
-//   source: "faq",
-//   confidence: 0.85,
-//   language: "en",
-//   success: true
-// }
+```python
+from AIService import processMessage
 
-// Process a message with specified language
-const hebrewResponse = await aiService.processMessage("ערעור ציון", "he");
+# Used within FastAPI route:
+async def chat_endpoint(request_data: dict):
+    response = await processMessage(request_data["message"])
+    return response
+```
+
+Example response:
+```json
+{
+  "text": "You can submit a grade appeal through the 'Requests' section...",
+  "source": "faq",
+  "confidence": 0.85,
+  "language": "en",
+  "success": true
+}
 ```
 
 ## FAQ Data Structure
@@ -84,24 +85,19 @@ The `faq_data.json` file contains patterns and responses in both English and Heb
 }
 ```
 
-## Improving FAQ Matching
+## Technical Implementation
 
-The current matching algorithm uses:
+The service uses Python with the following features:
 
-1. Exact pattern matching
-2. Substring matching
-3. Word-level similarity
-4. Sequence matching using longest common subsequence
-5. Keyword extraction and matching
+1. OpenAI API integration via the official Python SDK
+2. Language detection for multilingual support
+3. FAQ matching using keyword extraction and similarity algorithms
+4. Graceful fallbacks when the API is unavailable
 
-To improve matching:
-- Add more patterns to frequently asked questions
-- Adjust the confidence threshold in index.js
-- Consider implementing more advanced NLP techniques
+## Frontend Integration
 
-## Future Improvements
+The frontend integrates with the AI service through:
 
-- Implement real OpenAI integration
-- Add more sophisticated NLP for better matching
-- Implement feedback loop for improving matching over time
-- Add more language support 
+1. Text chat interface with RTL/LTR language support
+2. Voice input via browser's Web Speech API
+3. Real-time typing indicators and message history 

@@ -1,0 +1,90 @@
+.voice-recorder-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voice-recorder-language-selector {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  font-size: 14px;
+}
+
+.voice-recorder-mic-disabled {
+  color: #d32f2f;
+  font-size: 12px;
+}
+
+.voice-recorder-indicator {
+  color: #d32f2f;
+  font-size: 12px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.voice-recorder-switch {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(60,64,67);
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.voice-recorder-mic-on, 
+.voice-recorder-mic-off {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all .3s ease-in-out;
+}
+
+.voice-recorder-mic-on {
+  z-index: 4;
+}
+
+.voice-recorder-mic-off {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  opacity: 0;
+}
+
+.voice-recorder-switch:hover {
+  background-color: rgba(60,64,67, 0.8);
+}
+
+.voice-recorder-switch.processing {
+  background-color: #f57c00;
+  pointer-events: none;
+}
+
+.voice-recorder-checkbox {
+  display: none;
+}
+
+.voice-recorder-checkbox:checked + .voice-recorder-switch {
+  background-color: #d32f2f;
+}
+
+.voice-recorder-checkbox:checked + .voice-recorder-switch .voice-recorder-mic-off {
+  opacity: 1;
+}
+
+.voice-recorder-checkbox:active + .voice-recorder-switch {
+  transform: scale(1.1);
+} 
