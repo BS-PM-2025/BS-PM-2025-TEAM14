@@ -26,6 +26,14 @@ from fastapi import Depends
 from pydantic import BaseModel, constr
 from typing import List
 
+# Import the AI Service - using the Python wrapper
+from AIService import processMessage
+
+# Model for AI chat requests
+class ChatRequest(BaseModel):
+    message: str
+    language: Optional[str] = None
+
 class UnavailabilityPeriod(BaseModel):
     start_date: datetime
     end_date: datetime
@@ -141,6 +149,25 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
             raise HTTPException(status_code=401, detail="Invalid password")
     else:
         raise HTTPException(status_code=404, detail="User not found")
+
+
+# AI Service endpoint
+@app.post("/api/ai/chat")
+async def ai_chat(chat_request: ChatRequest):
+    try:
+        print(f"\nAPI DEBUG: Received chat request - message: '{chat_request.message}', language: {chat_request.language}")
+        
+        # Process the message through the AI service
+        response = await processMessage(chat_request.message, chat_request.language)
+        
+        print(f"API DEBUG: AI response - source: {response.get('source')}, success: {response.get('success')}")
+        return response
+    except Exception as e:
+        print(f"API ERROR: Error processing message: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing message: {str(e)}"
+        )
 
 
 @app.get("/databases")
