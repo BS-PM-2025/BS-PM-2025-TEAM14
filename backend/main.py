@@ -258,9 +258,18 @@ async def download_file(userId: str, file_path: str):
 @app.get("/requests/{user_email}")
 async def get_requests(user_email: str, session: AsyncSession = Depends(get_session)):
     try:
-        if user_email == "all":
+        # Fetch the user role from the database based on the email
+        result = await session.execute(select(Users).filter(Users.email == user_email))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # If the user is a secretary, return all requests
+        if user.role == "secretary":
             result = await session.execute(select(Requests))
         else:
+            # If not a secretary, only return requests for the current user
             result = await session.execute(
                 select(Requests).filter(Requests.student_email == user_email)
             )
@@ -282,6 +291,33 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
+
+@app.post("/update_status")
+async def update_status(request_id: int, status: str, session: AsyncSession = Depends(get_session), user_email: str = Depends(get_current_user)):
+    try:
+        # result = await session.execute(select(Users).filter(Users.email == user_email))
+        # user = result.scalar_one_or_none()
+        #
+        # if not user:
+        #     raise HTTPException(status_code=404, detail="User not found")
+        #
+        #
+        # if user.role != "secretary":
+        #     raise HTTPException(status_code=403, detail="Only a secretary can change the status")
+
+        result = await session.execute(select(Requests).filter(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+
+        request.status = status
+        await session.commit()
+
+        return {"message": "Status updated successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")
 
 @app.get("/requests/professor/{professor_email}")
 async def get_professor_requests(professor_email: str, session: AsyncSession = Depends(get_session)):

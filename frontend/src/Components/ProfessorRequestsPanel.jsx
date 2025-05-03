@@ -44,18 +44,36 @@ function ProfessorRequestsPanel() {
             alert("שגיאה בשליחת תגובה");
         }
     };
+    const handleStatusChange = async (requestId, newStatus) => {
+        try {
+            await axios.post("http://localhost:8000/update_status", { request_id: requestId, status: newStatus });
+            checkAuth();
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("שגיאה בעדכון הסטטוס");
+        }
+    };
 
     const checkAuth = async () => {
         const token = getToken();
         if (!token) return navigate("/login");
         const user = getUserFromToken(token);
         setUser(user);
-        if (user.role !== "professor") return navigate("/home");
+
+        let apiUrl = "";
+        if (user.role === "professor") {
+            apiUrl = `http://localhost:8000/requests/professor/${user?.user_email}`;
+        } else if (user.role === "secretary") {
+            apiUrl = `http://localhost:8000/requests/${user?.user_email}`;
+        } else {
+            return navigate("/home");
+        }
+
         try {
-            const response = await axios.get(`http://localhost:8000/requests/professor/${user?.user_email}`);
+            const response = await axios.get(apiUrl);
             setRequests(response.data);
         } catch (err) {
-            console.error("Error fetching professor requests:", err);
+            console.error("Error fetching requests:", err);
         }
     };
 
@@ -160,31 +178,53 @@ function ProfessorRequestsPanel() {
                             <p><strong>תוכן:</strong> {selectedRequest.details}</p>
 
                             {/* טופס תגובה */}
-                            <hr />
-                            <h5 className="mt-3">הגב על בקשה זו:</h5>
-                            <form onSubmit={handleResponseSubmit}>
-                                <div className="mb-3">
-                                    <textarea
-                                        className="form-control"
-                                        rows="4"
-                                        placeholder="כתוב תגובה כאן..."
-                                        value={responseText}
-                                        onChange={(e) => setResponseText(e.target.value)}
-                                        required
-                                    ></textarea>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">צרף קבצים (לא חובה):</label>
-                                    <input
-                                        type="file"
-                                        className="form-control"
-                                        multiple
-                                        onChange={(e) => setResponseFiles([...e.target.files])}
-                                    />
-                                </div>
-                                <button className="btn btn-primary" type="submit">שלח תגובה</button>
-                            </form>
+                            {(user?.role === "professor" || user?.role === "secretary") && (
+                                <>
+                                    <hr />
+                                    <h5 className="mt-3">הגב על בקשה זו:</h5>
+                                    <form onSubmit={handleResponseSubmit}>
+                                        <div className="mb-3">
+                <textarea
+                    className="form-control"
+                    rows="4"
+                    placeholder="כתוב תגובה כאן..."
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                    required
+                ></textarea>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">צרף קבצים (לא חובה):</label>
+                                            <input
+                                                type="file"
+                                                className="form-control"
+                                                multiple
+                                                onChange={(e) => setResponseFiles([...e.target.files])}
+                                            />
+                                        </div>
+                                        <button className="btn btn-primary" type="submit">שלח תגובה</button>
+                                    </form>
+                                </>
+                            )}
 
+                            {/* שינוי סטטוס (רק למזכירה) */}
+                            {user?.role === "secretary" && (
+                                <div className="mt-3">
+                                    <FormControl variant="outlined" className="me-2" sx={{ minWidth: 200 }}>
+                                        <InputLabel id="status-label">שנה סטטוס</InputLabel>
+                                        <Select
+                                            labelId="status-label"
+                                            value={selectedRequest.status}
+                                            onChange={(e) => handleStatusChange(selectedRequest.id, e.target.value)}
+                                            label="שנה סטטוס"
+                                        >
+                                            <MenuItem value="pending">ממתין</MenuItem>
+                                            <MenuItem value="approved">אושר</MenuItem>
+                                            <MenuItem value="rejected">נדחה</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </div>
+                            )}
                             <button className="btn btn-secondary mt-3" onClick={() => setSelectedRequest(null)}>סגירה</button>
                         </div>
                     </motion.div>
