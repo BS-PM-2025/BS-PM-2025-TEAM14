@@ -19,6 +19,9 @@ function StudentRequests({ emailUser }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editDetails, setEditDetails] = useState("");
     const [user, setUser] = useState(null);
+    const [responses, setResponses] = useState([]);
+    const [loadingResponses, setLoadingResponses] = useState(false);
+
     useEffect(() => {
         const checkLoginStatus = () => {
             const token = getToken();
@@ -49,6 +52,24 @@ function StudentRequests({ emailUser }) {
             window.removeEventListener("focus", checkLoginStatus);
         };
     }, []);
+    useEffect(() => {
+        const fetchResponses = async () => {
+            if (!selectedRequest) return;
+            try {
+                setLoadingResponses(true);
+                const res = await axios.get(`http://localhost:8000/request/responses/${selectedRequest.id}`);
+                setResponses(res.data);
+            } catch (err) {
+                console.error("Error fetching responses:", err);
+                setResponses([]);
+            } finally {
+                setLoadingResponses(false);
+            }
+        };
+
+        fetchResponses();
+    }, [selectedRequest]);
+
 
     useEffect(() => {
         const fetchRequests = async () => {
@@ -241,6 +262,51 @@ function StudentRequests({ emailUser }) {
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                                <div className="mb-3">
+                                    <h5>תגובות סגל</h5>
+                                    {loadingResponses ? (
+                                        <p>טוען תגובות...</p>
+                                    ) : responses.length === 0 ? (
+                                        <p className="text-muted">אין תגובות עדיין לבקשה זו.</p>
+                                    ) : (
+                                        <div className="timeline">
+                                            {responses.map((resp, index) => (
+                                                <div key={index} className="timeline-item">
+                                                    <div className="timeline-date">
+                                                        {new Date(resp.created_date).toLocaleDateString("he-IL")} - {resp.professor_email}
+                                                    </div>
+                                                    <div className="timeline-content">
+                                                        <p>{resp.response_text}</p>
+
+                                                        {/* If there are files attached to the response */}
+                                                        {resp.files && resp.files.length > 0 && (
+                                                            <div className="mt-2">
+                                                                <h6>מסמכים מצורפים:</h6>
+                                                                <ul className="list-group">
+                                                                    {resp.files.map((doc, idx) => (
+                                                                        <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <FontAwesomeIcon icon={faFileAlt} className="me-2 text-primary" />
+                                                {doc}
+                                            </span>
+                                                                            <a
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                                href={`http://localhost:8000/downloadFile/${emailUser}/${encodeURIComponent(doc)}`}
+                                                                                download
+                                                                            >
+                                                                                להורדה
+                                                                            </a>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 {/*Edit Request form*/}
                                 <div className="mb-3">

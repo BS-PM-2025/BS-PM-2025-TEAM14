@@ -964,3 +964,23 @@ async def submit_response(
 
     finally:
         await db.close()
+
+
+
+@app.get("/request/responses/{request_id}")
+async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_session)):
+    result = await db.execute(
+        select(Responses).where(Responses.request_id == request_id)
+    )
+    responses = result.scalars().all()
+
+    return [
+        {
+            "id": r.id,
+            "professor_email": r.professor_email,
+            "response_text": r.response_text,
+            "files": r.files,
+            "created_date": str(r.created_date),
+        }
+        for r in responses
+    ]
