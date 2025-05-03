@@ -32,12 +32,13 @@ function ProfessorRequestsPanel() {
             for (let pair of formData.entries()) {
                 console.log(pair[0], pair[1]);
             }
-            await axios.post("http://localhost:8000/submit_request", formData);
+            await axios.post("http://localhost:8000/submit_response", formData);
 
             alert("תגובתך נשלחה בהצלחה");
             setSelectedRequest(null);
             setResponseText("");
             setResponseFiles([]);
+            checkAuth();
         } catch (error) {
             console.error("Error submitting response:", error);
             alert("שגיאה בשליחת תגובה");
