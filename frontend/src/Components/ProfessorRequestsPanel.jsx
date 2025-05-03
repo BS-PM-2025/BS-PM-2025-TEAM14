@@ -38,6 +38,7 @@ function ProfessorRequestsPanel() {
             setSelectedRequest(null);
             setResponseText("");
             setResponseFiles([]);
+            checkAuth();
         } catch (error) {
             console.error("Error submitting response:", error);
             alert("שגיאה בשליחת תגובה");

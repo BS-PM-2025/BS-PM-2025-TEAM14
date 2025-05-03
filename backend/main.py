@@ -908,8 +908,8 @@ async def submit_response(
             saved_files.append(file.filename)
 
     try:
-        # שליפת הבקשה מה-DB
-        request = db.query(Requests).filter_by(id=request_id).one()
+        result = await db.execute(select(Requests).where(Requests.id == request_id))
+        request = result.scalar_one()
 
         # עדכון ה-timeline
         if not request.timeline:
@@ -923,19 +923,21 @@ async def submit_response(
             "by": professor_email,
             "date": datetime.now().isoformat()
         })
+        request.status = "responded"
+        db.flush()
+
 
         # אחרי ששמרת את השינויים ב-request
         print("=== בקשה לאחר עדכון ===")
         print(f"ID: {request.id}")
-        print(f"נושא: {request.subject}")
-        print(f"תיאור: {request.description}")
+        print(f"נושא: {request.title}")
+        print(f"תיאור: {request.details}")
         print(f"סטטוס: {request.status}")
         print(f"Timeline: {json.dumps(request.timeline, indent=2, ensure_ascii=False)}")
-        print(f"מספר תגובות: {len(request.responses)}")
         print("=======================")
 
 
-# שמירה מחדש
+        # שמירה מחדש
         db.add(request)
 
         # שמירת תגובה חדשה
@@ -947,18 +949,18 @@ async def submit_response(
             created_date=datetime.now().date()
         )
         db.add(response)
-        db.commit()
+        await db.commit()
 
         return {"message": "Response submitted and timeline updated"}
 
     except NoResultFound:
-        db.rollback()
+        await db.rollback()
         return {"error": "Request not found"}, 404
 
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         print("Error:", e)
         return {"error": "Failed to submit response"}, 500
 
     finally:
-        db.close()
+        await db.close()
