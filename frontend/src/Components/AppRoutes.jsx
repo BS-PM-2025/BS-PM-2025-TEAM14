@@ -35,7 +35,10 @@ function AppRoutes({ darkMode, setDarkMode }) {
           path="/Requests"
           element={<StudentRequests emailUser={user?.user_email} />}
         />
-        <Route path="/Student's Requests" element={<ProfessorRequestsPanel />} />
+        <Route
+          path="/Student's Requests"
+          element={<ProfessorRequestsPanel />}
+        />
         <Route path="/login" element={<Login />} />
         <Route
           path="/upload"
@@ -64,10 +67,7 @@ function AppRoutes({ darkMode, setDarkMode }) {
             <ProfessorUnavailability professorEmail={user?.user_email} />
           }
         />
-        <Route
-          path="/transfer-requests"
-          element={<TransferRequests />}
-        />
+        <Route path="/transfer-requests" element={<TransferRequests />} />
       </Routes>
     </Router>
   );

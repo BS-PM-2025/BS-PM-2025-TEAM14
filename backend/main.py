@@ -962,7 +962,12 @@ async def get_department_transfer_requests(
     student_emails = [student.email for student in students]
     requests = await session.execute(
         select(Requests)
-        .where(Requests.student_email.in_(student_emails))
+        .where(
+            and_(
+                Requests.student_email.in_(student_emails),
+                Requests.status == "pending"
+            )
+        )
         .order_by(Requests.created_date.desc())
     )
     requests = requests.scalars().all()
@@ -1088,4 +1093,124 @@ async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_
         }
         for r in responses
     ]
+
+@app.get("/request/{request_id}/student_courses")
+async def get_student_courses_for_request(
+    request_id: int,
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        # Get the request to find the student email
+        result = await session.execute(select(Requests).where(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+        
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+            
+        # Get all courses for the student
+        result = await session.execute(
+            select(StudentCourses, Courses)
+            .join(Courses, StudentCourses.course_id == Courses.id)
+            .where(StudentCourses.student_email == request.student_email)
+        )
+        courses = result.all()
+        
+        return [{
+            "course_id": course.id,
+            "course_name": course.name,
+            "professor_email": sc.professor_email
+        } for sc, course in courses]
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/request/{request_id}/transfer")
+async def transfer_request(
+    request_id: int,
+    new_course_id: Optional[str] = Body(None, embed=True),
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        # Get the request
+        result = await session.execute(select(Requests).where(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+        
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+            
+        # Update the course_id (can be null)
+        request.course_id = new_course_id
+        
+        # Update timeline
+        if not request.timeline:
+            request.timeline = {
+                "created": request.created_date.isoformat() if request.created_date else datetime.now().isoformat(),
+                "status_changes": []
+            }
+            
+        request.timeline["status_changes"].append({
+            "status": "transferred",
+            "new_course_id": new_course_id if new_course_id else "Department Secretary",
+            "date": datetime.now().isoformat()
+        })
+        
+        await session.commit()
+        return {"message": "Request transferred successfully"}
+        
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/transfer-requests")
+async def get_all_transfer_requests(
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token)
+):
+    # Verify the user is an admin
+    if token_data["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can access this endpoint"
+        )
+    
+    # Get all pending requests
+    requests = await session.execute(
+        select(Requests)
+        .where(Requests.status == "pending")
+        .order_by(Requests.created_date.desc())
+    )
+    requests = requests.scalars().all()
+    
+    # Format the response
+    formatted_requests = []
+    for request in requests:
+        # Get student details
+        student = await session.execute(
+            select(Users).where(Users.email == request.student_email)
+        )
+        student = student.scalar_one_or_none()
+        
+        # Get student's department
+        student_dept = await session.execute(
+            select(Students).where(Students.email == request.student_email)
+        )
+        student_dept = student_dept.scalar_one_or_none()
+        
+        formatted_request = {
+            "id": request.id,
+            "title": request.title,
+            "student_email": request.student_email,
+            "student_name": f"{student.first_name} {student.last_name}" if student else "Unknown",
+            "details": request.details,
+            "course_id": request.course_id,
+            "course_component": request.course_component,
+            "files": request.files,
+            "status": request.status,
+            "created_date": request.created_date,
+            "timeline": request.timeline,
+            "department_id": student_dept.department_id if student_dept else None
+        }
+        formatted_requests.append(formatted_request)
+    
+    return formatted_requests
 
