@@ -1,0 +1,70 @@
+{
+  "faqs": [
+    {
+      "id": "grade_appeal",
+      "patterns": {
+        "en": ["grade appeal", "appeal grade", "contest grade", "challenge grade", "change my grade", "grade review"],
+        "he": ["ערעור ציון", "לערער על ציון", "ערעור על ציון", "שינוי ציון", "לשנות את הציון שלי", "בדיקה מחודשת של הציון"]
+      },
+      "response": {
+        "en": "You can submit a grade appeal through the 'Requests' section. Attach the exam and reason, then track status under 'My Requests'.",
+        "he": "ניתן להגיש ערעור ציון דרך מדור 'בקשות'. צרף את המבחן והסיבה, ואז עקוב אחר הסטטוס תחת 'הבקשות שלי'."
+      }
+    },
+    {
+      "id": "document_upload",
+      "patterns": {
+        "en": ["upload document", "submit file", "add document", "share document", "upload file"],
+        "he": ["העלאת מסמך", "הגשת קובץ", "להוסיף מסמך", "שיתוף מסמך", "העלאת קובץ"]
+      },
+      "response": {
+        "en": "To upload documents, navigate to the 'Documents' section, click 'Upload New', select your file, and provide any required information.",
+        "he": "כדי להעלות מסמכים, נווט לאזור 'מסמכים', לחץ על 'העלאה חדשה', בחר את הקובץ שלך, וספק את המידע הנדרש."
+      }
+    },
+    {
+      "id": "course_registration",
+      "patterns": {
+        "en": ["register for course", "course registration", "sign up for class", "enroll in course", "add course"],
+        "he": ["רישום לקורס", "הרשמה לקורס", "להירשם לשיעור", "הרשמה לשיעור", "הוספת קורס"]
+      },
+      "response": {
+        "en": "Course registration is open during designated periods. Go to 'My Courses' > 'Course Registration' and follow the steps to search and register for available courses.",
+        "he": "הרשמה לקורסים פתוחה במהלך תקופות ייעודיות. עבור ל'הקורסים שלי' > 'רישום לקורסים' ועקוב אחר השלבים לחיפוש ורישום לקורסים זמינים."
+      }
+    },
+    {
+      "id": "exam_schedule",
+      "patterns": {
+        "en": ["exam schedule", "test dates", "when is my exam", "examination timetable", "final exam date"],
+        "he": ["לוח בחינות", "תאריכי מבחנים", "מתי הבחינה שלי", "לוח זמנים לבחינות", "תאריך בחינה סופית"]
+      },
+      "response": {
+        "en": "Exam schedules are published under 'Academic Calendar' > 'Examination Period'. You can also see your personal exam schedule in 'My Courses' > 'My Exams'.",
+        "he": "לוחות בחינות מפורסמים תחת 'לוח שנה אקדמי' > 'תקופת בחינות'. תוכל גם לראות את לוח הבחינות האישי שלך ב'הקורסים שלי' > 'הבחינות שלי'."
+      }
+    },
+    {
+      "id": "graduation_requirements",
+      "patterns": {
+        "en": ["graduation requirements", "what do I need to graduate", "graduation credits", "degree requirements", "graduation checklist"],
+        "he": ["דרישות סיום תואר", "מה אני צריך כדי לסיים תואר", "נקודות זכות לסיום", "דרישות תואר", "רשימת דרישות לסיום"]
+      },
+      "response": {
+        "en": "Graduation requirements vary by program. Check 'Academic Information' > 'Degree Requirements' for a complete list of credits, required courses, and other criteria for your specific program.",
+        "he": "דרישות סיום תואר משתנות לפי תכנית. בדוק 'מידע אקדמי' > 'דרישות תואר' לרשימה מלאה של נקודות זכות, קורסי חובה וקריטריונים אחרים עבור התכנית הספציפית שלך."
+      }
+    },
+    {
+      "id": "request_status",
+      "patterns": {
+        "en": ["request status", "check my request", "status of my application", "where is my request", "request progress"],
+        "he": ["סטטוס בקשה", "לבדוק את הבקשה שלי", "סטטוס של הבקשה שלי", "איפה הבקשה שלי", "התקדמות הבקשה"]
+      },
+      "response": {
+        "en": "To check the status of any request, go to 'My Requests' section where you'll see all your submitted requests with their current status and expected completion time.",
+        "he": "כדי לבדוק את הסטטוס של כל בקשה, עבור למדור 'הבקשות שלי' שם תראה את כל הבקשות שהגשת עם הסטטוס הנוכחי שלהן וזמן הסיום המשוער."
+      }
+    }
+  ]
+} 

@@ -55,24 +55,33 @@ const Navigation = ({ darkMode, setDarkMode }) => {
 
           {user?.role === "professor" && (
             <>
+                {navItem("/Student's Requests", "Student's Requests")}
               {navItem("/users", "Users")}
               {navItem("/grades", "Grades")}
               {navItem("/manage-availability", "Manage Availability")}
             </>
           )}
 
-          {user?.role === "admin" && (
+          {user?.role === "secretary" && (
             <>
               {navItem("/assignProfessorToCourse", "Assign Professors")}
               {navItem("/AssignStudentsToCourse", "Assign Students")}
             </>
           )}
 
+
           {user?.role === "secretary" && (
             <>
               {navItem("/transfer-requests", "Transfer Requests")}
             </>
           )}
+
+            {user?.role === "secretary" && (
+            <>
+                {navItem("/Student's Requests", "Student's Requests")}
+            </>
+            )}
+
         </Box>
 
         <Tooltip

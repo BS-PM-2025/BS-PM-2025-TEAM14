@@ -1,11 +1,15 @@
 import os
+import shutil
+from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 import urllib.parse
 from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
-from httpx import request
-from sqlalchemy import select, literal, literal_column, ColumnElement, delete
+from pathlib import Path
+from sqlalchemy import select, literal, literal_column, ColumnElement, delete, and_
+import json
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.requests import Request
@@ -25,6 +29,14 @@ from fastapi import Depends
 
 from pydantic import BaseModel, constr
 from typing import List
+
+# Import the AI Service - using the Python wrapper
+from AIService import processMessage
+
+# Model for AI chat requests
+class ChatRequest(BaseModel):
+    message: str
+    language: Optional[str] = None
 
 class UnavailabilityPeriod(BaseModel):
     start_date: datetime
@@ -143,6 +155,25 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
         raise HTTPException(status_code=404, detail="User not found")
 
 
+# AI Service endpoint
+@app.post("/api/ai/chat")
+async def ai_chat(chat_request: ChatRequest):
+    try:
+        print(f"\nAPI DEBUG: Received chat request - message: '{chat_request.message}', language: {chat_request.language}")
+        
+        # Process the message through the AI service
+        response = await processMessage(chat_request.message, chat_request.language)
+        
+        print(f"API DEBUG: AI response - source: {response.get('source')}, success: {response.get('success')}")
+        return response
+    except Exception as e:
+        print(f"API ERROR: Error processing message: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing message: {str(e)}"
+        )
+
+
 @app.get("/databases")
 def list_databases():
     return {"databases": None}
@@ -227,9 +258,18 @@ async def download_file(userId: str, file_path: str):
 @app.get("/requests/{user_email}")
 async def get_requests(user_email: str, session: AsyncSession = Depends(get_session)):
     try:
-        if user_email == "all":
+        # Fetch the user role from the database based on the email
+        result = await session.execute(select(Users).filter(Users.email == user_email))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # If the user is a secretary, return all requests
+        if user.role == "secretary":
             result = await session.execute(select(Requests))
         else:
+            # If not a secretary, only return requests for the current user
             result = await session.execute(
                 select(Requests).filter(Requests.student_email == user_email)
             )
@@ -252,7 +292,71 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
+@app.post("/update_status")
+async def update_status(request_id: int, status: str, session: AsyncSession = Depends(get_session), user_email: str = Depends(get_current_user)):
+    try:
+        # result = await session.execute(select(Users).filter(Users.email == user_email))
+        # user = result.scalar_one_or_none()
+        #
+        # if not user:
+        #     raise HTTPException(status_code=404, detail="User not found")
+        #
+        #
+        # if user.role != "secretary":
+        #     raise HTTPException(status_code=403, detail="Only a secretary can change the status")
 
+        result = await session.execute(select(Requests).filter(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+
+        request.status = status
+        await session.commit()
+
+        return {"message": "Status updated successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")
+
+@app.get("/requests/professor/{professor_email}")
+async def get_professor_requests(professor_email: str, session: AsyncSession = Depends(get_session)):
+    try:
+        result = await session.execute(
+            select(Courses.id).where(Courses.professor_email == professor_email))
+        course_ids = [row[0] for row in result.all()]
+
+        if not course_ids:
+            return []
+
+        result = await session.execute(
+            select(Requests).where(
+                and_(
+                    Requests.course_id.in_(course_ids),
+                    Requests.status == "pending"
+                )
+            )
+        )
+        requests = result.scalars().all()
+
+        return [
+            {
+                "id": req.id,
+                "title": req.title,
+                "student_email": req.student_email,
+                "details": req.details,
+                "files": req.files,
+                "status": req.status,
+                "created_date": str(req.created_date),
+                "timeline": req.timeline,
+                "course_id": req.course_id,
+                "course_component": req.course_component,
+            }
+            for req in requests
+        ]
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 @app.post("/create_user")
 async def create_user(request: Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
@@ -421,8 +525,8 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
 # Create a request
 @app.post("/submit_request/create")
 async def create_general_request(
-    request: Request,
-    session: AsyncSession = Depends(get_session)
+        request: Request,
+        session: AsyncSession = Depends(get_session)
 ):
     print("in submit request")
     data = await request.json()
@@ -454,10 +558,10 @@ async def create_general_request(
         course_component = grade_appeal.get('grade_component')
     elif title == "Schedule Change Request" and schedule_change:
         if (
-            "course_id" not in schedule_change or 
-            "professors" not in schedule_change or 
-            not isinstance(schedule_change["professors"], list) or 
-            not schedule_change["professors"]
+                "course_id" not in schedule_change or
+                "professors" not in schedule_change or
+                not isinstance(schedule_change["professors"], list) or
+                not schedule_change["professors"]
         ):
             raise HTTPException(status_code=400, detail="Invalid schedule change data")
         course_id = schedule_change.get('course_id')
@@ -822,6 +926,7 @@ async def get_student_professors(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/secretary/transfer-requests/{secretary_email}")
 async def get_department_transfer_requests(
     secretary_email: str,
@@ -887,3 +992,100 @@ async def get_department_transfer_requests(
         formatted_requests.append(formatted_request)
     
     return formatted_requests
+=======
+@app.post("/submit_response")
+async def submit_response(
+        request_id: int = Form(...),
+        professor_email: str = Form(...),
+        response_text: str = Form(...),
+        files: Optional[List[UploadFile]] = File(None),
+        db: AsyncSession = Depends(get_session)):
+    saved_files = []
+    upload_dir = f"Documents/{professor_email}/{request_id}"
+    os.makedirs(upload_dir, exist_ok=True)
+
+    if files:
+        for file in files:
+            file_path = os.path.join(upload_dir, file.filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            saved_files.append(file.filename)
+
+    try:
+        result = await db.execute(select(Requests).where(Requests.id == request_id))
+        request = result.scalar_one()
+
+        # עדכון ה-timeline
+        if not request.timeline:
+            request.timeline = {
+                "created": request.created_date.isoformat() if request.created_date else datetime.now().isoformat(),
+                "status_changes": []
+            }
+
+        request.timeline["status_changes"].append({
+            "status": "responded",
+            "by": professor_email,
+            "date": datetime.now().isoformat()
+        })
+        request.status = "responded"
+        db.flush()
+
+
+        # אחרי ששמרת את השינויים ב-request
+        print("=== בקשה לאחר עדכון ===")
+        print(f"ID: {request.id}")
+        print(f"נושא: {request.title}")
+        print(f"תיאור: {request.details}")
+        print(f"סטטוס: {request.status}")
+        print(f"Timeline: {json.dumps(request.timeline, indent=2, ensure_ascii=False)}")
+        print("=======================")
+
+
+        # שמירה מחדש
+        db.add(request)
+
+        # שמירת תגובה חדשה
+        response = Responses(
+            request_id=request_id,
+            professor_email=professor_email,
+            response_text=response_text,
+            files=saved_files if saved_files else None,
+            created_date=datetime.now().date()
+        )
+        db.add(response)
+        await db.commit()
+
+        return {"message": "Response submitted and timeline updated"}
+
+    except NoResultFound:
+        await db.rollback()
+        return {"error": "Request not found"}, 404
+
+    except Exception as e:
+        await db.rollback()
+        print("Error:", e)
+        return {"error": "Failed to submit response"}, 500
+
+    finally:
+        await db.close()
+
+
+
+@app.get("/request/responses/{request_id}")
+async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_session)):
+    result = await db.execute(
+        select(Responses).where(Responses.request_id == request_id)
+    )
+    responses = result.scalars().all()
+
+    return [
+        {
+            "id": r.id,
+            "professor_email": r.professor_email,
+            "response_text": r.response_text,
+            "files": r.files,
+            "created_date": str(r.created_date),
+        }
+        for r in responses
+    ]
+

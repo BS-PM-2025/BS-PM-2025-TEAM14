@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { UserProvider } from "./Components/UserContext";
 import AppRoutes from "./Components/AppRoutes";
+import ChatButton from "./Components/AI-bot/ai-components/ChatButton";
 
 function App() {
     const [darkMode, setDarkMode] = useState(false);
@@ -27,7 +28,8 @@ function App() {
             <CssBaseline />
             <UserProvider>
                 <div className={`App ${darkMode ? 'dark' : ''}`}>
-                <AppRoutes darkMode={darkMode} setDarkMode={setDarkMode} />
+                    <AppRoutes darkMode={darkMode} setDarkMode={setDarkMode} />
+                    <ChatButton />
                 </div>
             </UserProvider>
         </ThemeProvider>

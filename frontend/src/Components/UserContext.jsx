@@ -17,7 +17,11 @@ export const UserProvider = ({ children }) => {
 
     const setUserData = (userData) => {
         setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData)); // Save user data to localStorage
+        if (userData) {
+            localStorage.setItem("user", JSON.stringify(userData)); // Save user data to localStorage
+        } else {
+            localStorage.removeItem("user"); // Remove user data if null
+        }
     };
 
     return (
