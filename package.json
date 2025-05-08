@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "jwt-decode": "^4.0.0",
+    "package.json": "^2.0.1",
     "react-router-dom": "^7.5.0"
   },
   "devDependencies": {

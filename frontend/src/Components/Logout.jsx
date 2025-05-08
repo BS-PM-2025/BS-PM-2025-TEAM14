@@ -19,7 +19,7 @@ const Logout = () => {
     
     // Clear user data from context and localStorage
     setUserData(null);
-    
+    window.dispatchEvent(new Event('user-changed'));
     // Close dialog and navigate
     setShowLogoutDialog(false);
     navigate('/');

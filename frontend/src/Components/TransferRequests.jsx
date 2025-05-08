@@ -8,9 +8,95 @@ import "../CSS/TransferRequests.css";
 const TransferRequests = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [availableCourses, setAvailableCourses] = useState([]);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [transferReason, setTransferReason] = useState("");
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    student: "",
+    course: "",
+    dateFrom: "",
+    dateTo: "",
+    status: "",
+    type: "",
+    department: "", // New filter for department
+  });
+
+  // Get unique values for filter options
+  const getUniqueValues = (key) => {
+    return [...new Set(requests.map((request) => request[key]))].filter(
+      Boolean
+    );
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    let filtered = [...requests];
+
+    if (filters.student) {
+      filtered = filtered.filter(
+        (request) =>
+          request.student_email
+            .toLowerCase()
+            .includes(filters.student.toLowerCase()) ||
+          request.student_name
+            .toLowerCase()
+            .includes(filters.student.toLowerCase())
+      );
+    }
+
+    if (filters.course) {
+      filtered = filtered.filter(
+        (request) => request.course_id === filters.course
+      );
+    }
+
+    if (filters.dateFrom) {
+      filtered = filtered.filter(
+        (request) =>
+          new Date(request.created_date) >= new Date(filters.dateFrom)
+      );
+    }
+
+    if (filters.dateTo) {
+      filtered = filtered.filter(
+        (request) => new Date(request.created_date) <= new Date(filters.dateTo)
+      );
+    }
+
+    if (filters.type) {
+      filtered = filtered.filter((request) => request.title === filters.type);
+    }
+
+    if (filters.department) {
+      filtered = filtered.filter(
+        (request) => request.department_id === filters.department
+      );
+    }
+
+    setFilteredRequests(filtered);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Apply filters when filter values change
+  useEffect(() => {
+    applyFilters();
+  }, [filters, requests]);
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -26,7 +112,7 @@ const TransferRequests = () => {
         }
 
         setUser(userData);
-        fetchRequests(userData.user_email);
+        fetchRequests(userData);
       } else {
         setUser(null);
         navigate("/login");
@@ -43,23 +129,96 @@ const TransferRequests = () => {
     };
   }, [navigate]);
 
-  const fetchRequests = async (userEmail) => {
+  const fetchRequests = async (userData) => {
     try {
       const token = getToken();
-      const response = await axios.get(
-        `http://localhost:8000/secretary/transfer-requests/${userEmail}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let response;
+
+      if (userData.role === "admin") {
+        // Admin endpoint to get all requests
+        response = await axios.get(
+          `http://localhost:8000/admin/transfer-requests`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } else {
+        // Secretary endpoint to get department-specific requests
+        response = await axios.get(
+          `http://localhost:8000/secretary/transfer-requests/${userData.user_email}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+
       setRequests(response.data);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching requests:", err);
       setError("Failed to fetch transfer requests");
       setLoading(false);
+    }
+  };
+
+  const handleTransferClick = async (request) => {
+    try {
+      const token = getToken();
+      const response = await axios.get(
+        `http://localhost:8000/request/${request.id}/student_courses`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setAvailableCourses(response.data);
+      setSelectedRequest(request);
+      setShowTransferModal(true);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      setError("Failed to fetch available courses");
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!selectedRequest || !selectedCourse || !transferReason.trim()) {
+      if (!transferReason.trim()) {
+        alert("Please provide a reason for the transfer");
+      }
+      return;
+    }
+
+    try {
+      const token = getToken();
+      await axios.put(
+        `http://localhost:8000/request/${selectedRequest.id}/transfer`,
+        {
+          new_course_id:
+            selectedCourse === "department_secretary" ? null : selectedCourse,
+          reason: transferReason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Refresh the requests list
+      fetchRequests(user);
+      setShowTransferModal(false);
+      setSelectedRequest(null);
+      setSelectedCourse("");
+      setTransferReason("");
+    } catch (err) {
+      console.error("Error transferring request:", err);
+      setError("Failed to transfer request");
     }
   };
 
@@ -81,14 +240,102 @@ const TransferRequests = () => {
 
   return (
     <div className="transfer-requests-container">
-      <h1>Department Transfer Requests</h1>
+      <h1>
+        {user?.role === "admin"
+          ? "All Transfer Requests"
+          : "Department Transfer Requests"}
+      </h1>
+
+      {/* Filters Section */}
+      <div className="filters-section">
+        <div className="filter-group">
+          <input
+            type="text"
+            name="student"
+            placeholder="Filter by student name or email"
+            value={filters.student}
+            onChange={handleFilterChange}
+            className="filter-input"
+          />
+        </div>
+
+        <div className="filter-group">
+          <select
+            name="course"
+            value={filters.course}
+            onChange={handleFilterChange}
+            className="filter-select"
+          >
+            <option value="">All Courses</option>
+            {getUniqueValues("course_id").map((courseId) => (
+              <option key={courseId} value={courseId}>
+                {courseId}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {user?.role === "admin" && (
+          <div className="filter-group">
+            <select
+              name="department"
+              value={filters.department}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="">All Departments</option>
+              {getUniqueValues("department_id").map((deptId) => (
+                <option key={deptId} value={deptId}>
+                  {deptId}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="filter-group">
+          <input
+            type="date"
+            name="dateFrom"
+            value={filters.dateFrom}
+            onChange={handleFilterChange}
+            className="filter-input"
+            placeholder="From Date"
+          />
+          <input
+            type="date"
+            name="dateTo"
+            value={filters.dateTo}
+            onChange={handleFilterChange}
+            className="filter-input"
+            placeholder="To Date"
+          />
+        </div>
+
+        <div className="filter-group">
+          <select
+            name="type"
+            value={filters.type}
+            onChange={handleFilterChange}
+            className="filter-select"
+          >
+            <option value="">All Types</option>
+            {getUniqueValues("title").map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="requests-grid">
-        {requests.length === 0 ? (
+        {filteredRequests.length === 0 ? (
           <div className="no-requests">
-            <p>No transfer requests found for your department.</p>
+            <p>No requests match the current filters.</p>
           </div>
         ) : (
-          requests.map((request) => {
+          filteredRequests.map((request) => {
             let type = "other";
             switch (request.title) {
               case "General Request":
@@ -180,11 +427,80 @@ const TransferRequests = () => {
                     </ul>
                   </div>
                 )}
+                <button
+                  className="transfer-button"
+                  onClick={() => handleTransferClick(request)}
+                >
+                  Transfer Request
+                </button>
               </div>
             );
           })
         )}
       </div>
+
+      {showTransferModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Transfer Request</h2>
+            <p>Select a new course for this request:</p>
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="course-select"
+            >
+              <option value="">Select a course</option>
+              <option value="department_secretary">Department Secretary</option>
+              {availableCourses.map((course) => (
+                <option key={course.course_id} value={course.course_id}>
+                  {course.course_name} ({course.course_id})
+                </option>
+              ))}
+            </select>
+            <div style={{ marginTop: "20px" }}>
+              <label
+                htmlFor="transferReason"
+                style={{ display: "block", marginBottom: "8px" }}
+              >
+                Reason for Transfer:
+              </label>
+              <textarea
+                id="transferReason"
+                value={transferReason}
+                onChange={(e) => setTransferReason(e.target.value)}
+                placeholder="Please provide a reason for transferring this request..."
+                style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ddd",
+                  marginBottom: "20px",
+                }}
+                required
+              />
+            </div>
+            <div className="modal-buttons">
+              <button
+                onClick={handleTransfer}
+                className="confirm-button"
+                disabled={!transferReason.trim()}
+              >
+                Transfer
+              </button>
+              <button
+                onClick={() => {
+                  setShowTransferModal(false);
+                  setTransferReason("");
+                }}
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

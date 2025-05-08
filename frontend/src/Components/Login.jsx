@@ -41,6 +41,7 @@ const Login = ({ onSuccess, onFailure }) => {
 
                     const decodedUser = jwtDecode(data.access_token);
                     setUserData(decodedUser); // Update the global user state
+                    window.dispatchEvent(new Event('user-changed'));
                     if (onSuccess) onSuccess(decodedUser); // Notify Home component about the login success
                 } else {
                     setError('No access token received from server');

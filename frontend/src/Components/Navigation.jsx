@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 import { useUser } from "./UserContext";
+import NotificationBell from "./NotificationBell";
 
 const Navigation = ({ darkMode, setDarkMode }) => {
   const { user } = useUser();
@@ -55,7 +56,7 @@ const Navigation = ({ darkMode, setDarkMode }) => {
 
           {user?.role === "professor" && (
             <>
-                {navItem("/Student's Requests", "Student's Requests")}
+              {navItem("/Student's Requests", "Student's Requests")}
               {navItem("/users", "Users")}
               {navItem("/grades", "Grades")}
               {navItem("/manage-availability", "Manage Availability")}
@@ -69,20 +70,16 @@ const Navigation = ({ darkMode, setDarkMode }) => {
             </>
           )}
 
-
-          {user?.role === "secretary" && (
-            <>
-              {navItem("/transfer-requests", "Transfer Requests")}
-            </>
+          {(user?.role === "secretary" || user?.role === "admin") && (
+            <>{navItem("/transfer-requests", "Transfer Requests")}</>
           )}
 
-            {user?.role === "secretary" && (
-            <>
-                {navItem("/Student's Requests", "Student's Requests")}
-            </>
-            )}
-
+          {user?.role === "secretary" && (
+            <>{navItem("/Student's Requests", "Student's Requests")}</>
+          )}
         </Box>
+
+        <NotificationBell />
 
         <Tooltip
           title={theme.palette.mode === "dark" ? "למצב בהיר" : "למצב כהה"}
