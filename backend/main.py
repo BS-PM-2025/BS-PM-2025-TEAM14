@@ -293,7 +293,7 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
 @app.post("/update_status")
-async def update_status(request_id: int, status: str, session: AsyncSession = Depends(get_session), user_email: str = Depends(get_current_user)):
+async def update_status(request_id: int, status: str, session: AsyncSession = Depends(get_session)):
     try:
         # result = await session.execute(select(Users).filter(Users.email == user_email))
         # user = result.scalar_one_or_none()
@@ -992,7 +992,7 @@ async def get_department_transfer_requests(
         formatted_requests.append(formatted_request)
     
     return formatted_requests
-=======
+
 @app.post("/submit_response")
 async def submit_response(
         request_id: int = Form(...),
