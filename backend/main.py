@@ -265,9 +265,46 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # If the user is a secretary, return all requests
+        # If the user is a secretary, return all relevant requests
         if user.role == "secretary":
-            result = await session.execute(select(Requests))
+            print("fetching secretary requests", user_email)
+            secretary_result = await session.execute(select(Secretaries).where(Secretaries.email == user_email))
+            secretary = secretary_result.scalar_one_or_none()
+            if not secretary:
+                raise HTTPException(status_code=404, detail="Secretary not found")
+            department = secretary.department_id
+            '''
+            all_requests = await session.execute(select(Requests))
+            requests = all_requests.scalars().all()
+            relevant_requests = []
+            for request in requests:
+                request_student = request.student_email
+                student_result = await session.execute(select(Students).where(Students.email == request_student))
+                student = student_result.scalar_one_or_none()
+                # Ensure student is not None and belongs to the same department
+                if student and student.department_id == department and request.status == "pending":
+                    relevant_requests.append(request)
+            return relevant_requests'''
+            relevant_requests_result = await session.execute(
+                select(Requests)
+                .join(Students, Requests.student_email == Students.email)
+                .where(Students.department_id == department, Requests.status == "pending")
+            )
+            relevant_requests = relevant_requests_result.scalars().all()
+            return [
+                {
+                    "id": req.id,
+                    "title": req.title,
+                    "student_email": req.student_email,
+                    "details": req.details,
+                    "files": req.files,
+                    "status": req.status,
+                    "created_date": str(req.created_date),
+                    "timeline": req.timeline,
+                }
+                for req in relevant_requests
+            ]
+
         else:
             # If not a secretary, only return requests for the current user
             result = await session.execute(
@@ -291,9 +328,9 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
-
+'''
 @app.post("/update_status")
-async def update_status(request_id: int, status: str, session: AsyncSession = Depends(get_session)):
+async def update_status(request: int, status: str, session: AsyncSession = Depends(get_session)):
     try:
         # result = await session.execute(select(Users).filter(Users.email == user_email))
         # user = result.scalar_one_or_none()
@@ -312,6 +349,36 @@ async def update_status(request_id: int, status: str, session: AsyncSession = De
             raise HTTPException(status_code=404, detail="Request not found")
 
         request.status = status
+        await session.commit()
+
+        return {"message": "Status updated successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")'''
+
+@app.post("/update_status")
+async def update_status(request: Request, session: AsyncSession = Depends(get_session)):
+    try:
+        # Get JSON data from the request body
+        data = await request.json()
+        request_id = data.get("request_id")
+        status = data.get("status")
+
+        # Validate incoming data
+        if not request_id or not status:
+            raise HTTPException(status_code=400, detail="request_id and status are required")
+
+        # Fetch the request from the database
+        result = await session.execute(select(Requests).filter(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+
+        # Update the status
+        request.status = status
+        request.timeline["status_changes"].append({"date": datetime.now().isoformat(), "status": status})
+        flag_modified(request, "timeline")
         await session.commit()
 
         return {"message": "Status updated successfully"}
@@ -357,6 +424,8 @@ async def get_professor_requests(professor_email: str, session: AsyncSession = D
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
+
+
 @app.post("/create_user")
 async def create_user(request: Request, session: AsyncSession = Depends(get_session)):
     data = await request.json()
@@ -1070,7 +1139,6 @@ async def submit_response(
         await db.close()
 
 
-
 @app.get("/request/responses/{request_id}")
 async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_session)):
     result = await db.execute(
@@ -1088,4 +1156,23 @@ async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_
         }
         for r in responses
     ]
+
+'''
+@app.get("/requests/dashboard/{user_email}")
+async def get_requests_dashboard(user_email: str, session: AsyncSession = Depends(get_session)):
+    res_user = await session.execute(select(Users).where(Users.email == user_email))
+    user = res_user.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    role = user.role
+
+    print("before fetching data" , role)
+
+    if role == "student" or role == "secretary":
+        return await get_requests(user_email)
+
+    if role == "professor":
+        return await get_professor_requests(user_email, session)
+'''
 

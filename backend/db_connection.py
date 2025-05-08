@@ -27,7 +27,6 @@ class Students(Base):
     __tablename__ = 'students'
     email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
     department_id = Column(String(10), ForeignKey('departments.department_id'), nullable=True)
-
     courses = relationship("Courses", secondary="student_courses", back_populates="students")
     student_courses = relationship("StudentCourses", back_populates="student")
     requests = relationship("Requests", back_populates="student")
@@ -140,7 +139,6 @@ class Secretaries(Base):
     __tablename__ = 'secretaries'
     email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
     department_id = Column(String(10), ForeignKey('departments.department_id'), nullable=False)
-    
     department = relationship("Departments", back_populates="secretaries")
 
 # Update Departments table to include relationships
@@ -148,7 +146,6 @@ class Departments(Base):
     __tablename__ = 'departments'
     department_id = Column(String(10), primary_key=True)  
     department_name = Column(String(100), unique=True, nullable=False)
-    
     students = relationship("Students", back_populates="department")
     professors = relationship("Professors", back_populates="department")
     secretaries = relationship("Secretaries", back_populates="department")
