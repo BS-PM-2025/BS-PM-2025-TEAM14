@@ -47,10 +47,21 @@ function ProfessorRequestsPanel() {
     const handleStatusChange = async (requestId, newStatus) => {
         try {
             await axios.post("http://localhost:8000/update_status", { request_id: requestId, status: newStatus });
-            checkAuth();
+            await checkAuth();
+            // Update the local state to reflect the status change
+            setRequests((prevRequests) =>
+                prevRequests.map((req) =>
+                    req.id === requestId ? { ...req, status: newStatus } : req
+                )
+            );
+            // Update the selected request state if it's the one currently selected
+            if (selectedRequest && selectedRequest.id === requestId) {
+                setSelectedRequest({ ...selectedRequest, status: newStatus });
+            }
+            alert("Status updated successfully");
         } catch (err) {
             console.error("Error updating status:", err);
-            alert("שגיאה בעדכון הסטטוס");
+            alert("An error has occurred");
         }
     };
 
@@ -153,7 +164,8 @@ function ProfessorRequestsPanel() {
                         <div className="card request-card shadow-lg">
                             <div className="card-body">
                                 <h5 className="card-title">{req.title}</h5>
-                                <p className="card-text"><strong>תאריך:</strong> {req.created_date}</p>
+                                <p className="card-text"><strong>Date :</strong> {req.created_date}</p>
+                                <p className="card-text"><strong>From :</strong> {req.student_email}</p>
                                 <p className={`badge ${getStatusClass(req.status)}`}>{getStatusText(req.status)}</p>
                             </div>
                         </div>
@@ -173,25 +185,41 @@ function ProfessorRequestsPanel() {
                     >
                         <div className="modal-content card shadow-lg p-4">
                             <h4>{selectedRequest.title}</h4>
-                            <p><strong>נשלח בתאריך:</strong> {selectedRequest.created_date}</p>
-                            <p><strong>סטטוס:</strong> <span className={`badge ${getStatusClass(selectedRequest.status)}`}>{getStatusText(selectedRequest.status)}</span></p>
-                            <p><strong>תוכן:</strong> {selectedRequest.details}</p>
+                            <p><strong>Date :</strong> {selectedRequest.created_date}</p>
+                            <p><strong>From :</strong> {selectedRequest.student_email}</p>
+                            <p><strong>Status :</strong> <span className={`badge ${getStatusClass(selectedRequest.status)}`}>{getStatusText(selectedRequest.status)}</span></p>
 
-                            {/* טופס תגובה */}
+                            {/* Table View for Details */}
+                            <h5 className="mt-3">Details:</h5>
+                            <table className="table table-bordered mt-2">
+                                <tbody>
+                                {selectedRequest.details.split("\n").map((line, index) => {
+                                    const [key, value] = line.split(": ");
+                                    return (
+                                        <tr key={index}>
+                                            <td style={{ fontWeight: "bold", width: "30%" }}>{key}</td>
+                                            <td>{value}</td>
+                                        </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+
+                            {/* Response Form */}
                             {(user?.role === "professor" || user?.role === "secretary") && (
                                 <>
                                     <hr />
                                     <h5 className="mt-3">הגב על בקשה זו:</h5>
                                     <form onSubmit={handleResponseSubmit}>
                                         <div className="mb-3">
-                <textarea
-                    className="form-control"
-                    rows="4"
-                    placeholder="כתוב תגובה כאן..."
-                    value={responseText}
-                    onChange={(e) => setResponseText(e.target.value)}
-                    required
-                ></textarea>
+                                <textarea
+                                    className="form-control"
+                                    rows="4"
+                                    placeholder="כתוב תגובה כאן..."
+                                    value={responseText}
+                                    onChange={(e) => setResponseText(e.target.value)}
+                                    required
+                                ></textarea>
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">צרף קבצים (לא חובה):</label>
@@ -208,19 +236,19 @@ function ProfessorRequestsPanel() {
                             )}
 
                             {/* שינוי סטטוס (רק למזכירה) */}
-                            {user?.role === "secretary" && (
+                            {(user?.role === "secretary" || user?.role === "professor") && (
                                 <div className="mt-3">
                                     <FormControl variant="outlined" className="me-2" sx={{ minWidth: 200 }}>
-                                        <InputLabel id="status-label">שנה סטטוס</InputLabel>
+                                        <InputLabel id="status-label">Update Status</InputLabel>
                                         <Select
                                             labelId="status-label"
                                             value={selectedRequest.status}
                                             onChange={(e) => handleStatusChange(selectedRequest.id, e.target.value)}
-                                            label="שנה סטטוס"
+                                            label="Change Request Status"
                                         >
-                                            <MenuItem value="pending">ממתין</MenuItem>
-                                            <MenuItem value="approved">אושר</MenuItem>
-                                            <MenuItem value="rejected">נדחה</MenuItem>
+                                            <MenuItem value="pending">Pending</MenuItem>
+                                            <MenuItem value="approved">Approve</MenuItem>
+                                            <MenuItem value="rejected">Reject</MenuItem>
                                         </Select>
                                     </FormControl>
                                 </div>
@@ -230,6 +258,7 @@ function ProfessorRequestsPanel() {
                     </motion.div>
                 </div>
             )}
+
         </div>
     );
 }

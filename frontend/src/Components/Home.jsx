@@ -11,6 +11,7 @@ import UserGrades from './UserGrades';
 import ProfessorView from './ProfessorView';
 import axios from 'axios';
 import '../CSS/Home.css';
+import DashboardTab from "./DashboardTab";
 
 const Home = () => {
   const { user, setUserData } = useUser();
@@ -142,6 +143,9 @@ const Home = () => {
                   </div>
                   
                   <div className="tab-content">
+                    {activeTab === 'dashboard' /*&& (user.role === 'professor' || user.role === 'secretary')*/ && (
+                        <DashboardTab userEmail={user.user_email} />
+                    )}
                     {activeTab === 'lecturer availability' && user.role === 'student' && (
                       <ProfessorView studentEmail={user.user_email} />
                     )}

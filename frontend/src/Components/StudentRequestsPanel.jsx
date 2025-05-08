@@ -52,6 +52,7 @@ function StudentRequests({ emailUser }) {
             window.removeEventListener("focus", checkLoginStatus);
         };
     }, []);
+
     useEffect(() => {
         const fetchResponses = async () => {
             if (!selectedRequest) return;
