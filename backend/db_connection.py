@@ -26,23 +26,26 @@ class Users(Base):
 class Students(Base):
     __tablename__ = 'students'
     email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
+    department_id = Column(String(10), ForeignKey('departments.department_id'), nullable=True)
 
     courses = relationship("Courses", secondary="student_courses", back_populates="students")
     student_courses = relationship("StudentCourses", back_populates="student")
     requests = relationship("Requests", back_populates="student")
     grades = relationship("Grades", back_populates="student")
+    department = relationship("Departments", back_populates="students")
 
 
 # Professor table
 class Professors(Base):
     __tablename__ = 'professors'
     email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
-    department = Column(String(100), nullable=False)
+    department_id = Column(String(10), ForeignKey('departments.department_id'), nullable=True)
     
     courses = relationship("Courses", back_populates="professor")
     student_courses = relationship("StudentCourses", back_populates="professor")
     grades = relationship("Grades", back_populates="professor")
     unavailability_periods = relationship("ProfessorUnavailability", back_populates="professor")
+    department = relationship("Departments", back_populates="professors")
 
 class ProfessorUnavailability(Base):
     __tablename__ = 'professor_unavailability'
@@ -110,6 +113,7 @@ class Courses(Base):
     description = Column(String(500), nullable=True)
     credits = Column(Float, nullable=False)
     professor_email = Column(String(100), ForeignKey('professors.email'))
+    department_id = Column(String(10), ForeignKey('departments.department_id'))
 
     # Relationships
     professor = relationship("Professors", back_populates="courses")
@@ -131,6 +135,23 @@ class Responses(Base):
 
     request = relationship('Requests', back_populates='responses')
 
+# Secretary table
+class Secretaries(Base):
+    __tablename__ = 'secretaries'
+    email = Column(String(100), ForeignKey('users.email'), unique=True, nullable=False, primary_key=True)
+    department_id = Column(String(10), ForeignKey('departments.department_id'), nullable=False)
+    
+    department = relationship("Departments", back_populates="secretaries")
+
+# Update Departments table to include relationships
+class Departments(Base):
+    __tablename__ = 'departments'
+    department_id = Column(String(10), primary_key=True)  
+    department_name = Column(String(100), unique=True, nullable=False)
+    
+    students = relationship("Students", back_populates="department")
+    professors = relationship("Professors", back_populates="department")
+    secretaries = relationship("Secretaries", back_populates="department")
 
 async def add_user(session: AsyncSession, email: str, first_name: str, last_name: str, hashed_password: str, role: str):
     existing_user = await session.execute(select(Users).filter(Users.email == email))
@@ -158,27 +179,52 @@ async def add_user(session: AsyncSession, email: str, first_name: str, last_name
     return new_user
 
 
-async def add_student(session: AsyncSession, email: str):
-    new_student = Students(email=email)
+async def add_student(session: AsyncSession, email: str, department_id: str = None):
+    new_student = Students(email=email, department_id=department_id)
     session.add(new_student)
     await session.commit()
     await session.refresh(new_student)
     return new_student
 
-async def add_professor(session: AsyncSession, email: str, department: str):
-    new_professor = Professors(email=email, department=department)
+async def add_professor(session: AsyncSession, email: str, department_id: str = None):
+    new_professor = Professors(email=email, department_id=department_id)
     session.add(new_professor)
     await session.commit()
     await session.refresh(new_professor)
     return new_professor
 
-async def update_professor_department(session: AsyncSession, email: str, department: str):
+async def add_secretary(session: AsyncSession, email: str, department_id: str):
+    new_secretary = Secretaries(email=email, department_id=department_id)
+    session.add(new_secretary)
+    await session.commit()
+    await session.refresh(new_secretary)
+    return new_secretary
+
+async def update_professor_department(session: AsyncSession, email: str, department_id: str):
     professor = await session.get(Professors, email)
     if professor:
-        professor.department = department
+        professor.department_id = department_id
         await session.commit()
         await session.refresh(professor)
         return professor
+    return None
+
+async def update_student_department(session: AsyncSession, email: str, department_id: str):
+    student = await session.get(Students, email)
+    if student:
+        student.department_id = department_id
+        await session.commit()
+        await session.refresh(student)
+        return student
+    return None
+
+async def update_secretary_department(session: AsyncSession, email: str, department_id: str):
+    secretary = await session.get(Secretaries, email)
+    if secretary:
+        secretary.department_id = department_id
+        await session.commit()
+        await session.refresh(secretary)
+        return secretary
     return None
 
 async def add_request(session: AsyncSession, title: str, student_email: str, details: str, course_id:str = None, course_component: str = None, files: dict = None, status: str = None, created_date: Date = None, timeline: dict = None):
@@ -201,13 +247,14 @@ async def add_request(session: AsyncSession, title: str, student_email: str, det
     await session.refresh(new_request)
     return new_request
 
-async def add_course(session: AsyncSession, id: str, name: str, description: str, credits: float, professor_email: str):
+async def add_course(session: AsyncSession, id: str, name: str, description: str, credits: float, professor_email: str, department_id: str = None):
     new_course = Courses(
         id=id,
         name=name,
         description=description,
         credits=credits,
-        professor_email=professor_email
+        professor_email=professor_email,
+        department_id=department_id
     )
     session.add(new_course)
     await session.commit()
