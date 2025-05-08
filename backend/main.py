@@ -265,9 +265,46 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # If the user is a secretary, return all requests
+        # If the user is a secretary, return all relevant requests
         if user.role == "secretary":
-            result = await session.execute(select(Requests))
+            print("fetching secretary requests", user_email)
+            secretary_result = await session.execute(select(Secretaries).where(Secretaries.email == user_email))
+            secretary = secretary_result.scalar_one_or_none()
+            if not secretary:
+                raise HTTPException(status_code=404, detail="Secretary not found")
+            department = secretary.department_id
+            '''
+            all_requests = await session.execute(select(Requests))
+            requests = all_requests.scalars().all()
+            relevant_requests = []
+            for request in requests:
+                request_student = request.student_email
+                student_result = await session.execute(select(Students).where(Students.email == request_student))
+                student = student_result.scalar_one_or_none()
+                # Ensure student is not None and belongs to the same department
+                if student and student.department_id == department and request.status == "pending":
+                    relevant_requests.append(request)
+            return relevant_requests'''
+            relevant_requests_result = await session.execute(
+                select(Requests)
+                .join(Students, Requests.student_email == Students.email)
+                .where(Students.department_id == department, Requests.status == "pending")
+            )
+            relevant_requests = relevant_requests_result.scalars().all()
+            return [
+                {
+                    "id": req.id,
+                    "title": req.title,
+                    "student_email": req.student_email,
+                    "details": req.details,
+                    "files": req.files,
+                    "status": req.status,
+                    "created_date": str(req.created_date),
+                    "timeline": req.timeline,
+                }
+                for req in relevant_requests
+            ]
+
         else:
             # If not a secretary, only return requests for the current user
             result = await session.execute(
@@ -1120,7 +1157,7 @@ async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_
         for r in responses
     ]
 
-
+'''
 @app.get("/requests/dashboard/{user_email}")
 async def get_requests_dashboard(user_email: str, session: AsyncSession = Depends(get_session)):
     res_user = await session.execute(select(Users).where(Users.email == user_email))
@@ -1137,5 +1174,5 @@ async def get_requests_dashboard(user_email: str, session: AsyncSession = Depend
 
     if role == "professor":
         return await get_professor_requests(user_email, session)
-
+'''
 

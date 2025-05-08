@@ -143,9 +143,6 @@ const Home = () => {
                   </div>
                   
                   <div className="tab-content">
-                    {activeTab === 'dashboard' /*&& (user.role === 'professor' || user.role === 'secretary')*/ && (
-                        <DashboardTab userEmail={user.user_email} />
-                    )}
                     {activeTab === 'lecturer availability' && user.role === 'student' && (
                       <ProfessorView studentEmail={user.user_email} />
                     )}

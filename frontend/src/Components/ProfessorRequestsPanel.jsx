@@ -83,7 +83,8 @@ function ProfessorRequestsPanel() {
             alert("שגיאה בשליחת תגובה");
         }
     };
-    const handleStatusChange = async (requestId, newStatus) => {
+
+    /*const handleStatusChange = async (requestId, newStatus) => {
         try {
             await axios.post("http://localhost:8000/update_status", { request_id: requestId, status: newStatus });
             await checkAuth();
@@ -102,7 +103,7 @@ function ProfessorRequestsPanel() {
             console.error("Error updating status:", err);
             alert("An error has occurred");
         }
-    };
+    };*/
 
     const checkAuth = async () => {
         const token = getToken();
@@ -122,6 +123,7 @@ function ProfessorRequestsPanel() {
         try {
             const response = await axios.get(apiUrl);
             setRequests(response.data);
+            console.log(response.data);
         } catch (err) {
             console.error("Error fetching requests:", err);
         }
