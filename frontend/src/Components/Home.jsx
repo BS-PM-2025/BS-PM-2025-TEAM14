@@ -11,6 +11,7 @@ import UserGrades from './UserGrades';
 import ProfessorView from './ProfessorView';
 import axios from 'axios';
 import '../CSS/Home.css';
+import DashboardTab from "./DashboardTab";
 
 const Home = () => {
   const { user, setUserData } = useUser();
