@@ -16,6 +16,7 @@ const TransferRequests = () => {
   const [availableCourses, setAvailableCourses] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("");
+  const [transferReason, setTransferReason] = useState("");
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -185,7 +186,12 @@ const TransferRequests = () => {
   };
 
   const handleTransfer = async () => {
-    if (!selectedRequest || !selectedCourse) return;
+    if (!selectedRequest || !selectedCourse || !transferReason.trim()) {
+      if (!transferReason.trim()) {
+        alert("Please provide a reason for the transfer");
+      }
+      return;
+    }
 
     try {
       const token = getToken();
@@ -194,6 +200,7 @@ const TransferRequests = () => {
         {
           new_course_id:
             selectedCourse === "department_secretary" ? null : selectedCourse,
+          reason: transferReason,
         },
         {
           headers: {
@@ -208,6 +215,7 @@ const TransferRequests = () => {
       setShowTransferModal(false);
       setSelectedRequest(null);
       setSelectedCourse("");
+      setTransferReason("");
     } catch (err) {
       console.error("Error transferring request:", err);
       setError("Failed to transfer request");
@@ -449,12 +457,42 @@ const TransferRequests = () => {
                 </option>
               ))}
             </select>
+            <div style={{ marginTop: "20px" }}>
+              <label
+                htmlFor="transferReason"
+                style={{ display: "block", marginBottom: "8px" }}
+              >
+                Reason for Transfer:
+              </label>
+              <textarea
+                id="transferReason"
+                value={transferReason}
+                onChange={(e) => setTransferReason(e.target.value)}
+                placeholder="Please provide a reason for transferring this request..."
+                style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ddd",
+                  marginBottom: "20px",
+                }}
+                required
+              />
+            </div>
             <div className="modal-buttons">
-              <button onClick={handleTransfer} className="confirm-button">
+              <button
+                onClick={handleTransfer}
+                className="confirm-button"
+                disabled={!transferReason.trim()}
+              >
                 Transfer
               </button>
               <button
-                onClick={() => setShowTransferModal(false)}
+                onClick={() => {
+                  setShowTransferModal(false);
+                  setTransferReason("");
+                }}
                 className="cancel-button"
               >
                 Cancel

@@ -564,7 +564,8 @@ async def create_general_request(
                 not schedule_change["professors"]
         ):
             raise HTTPException(status_code=400, detail="Invalid schedule change data")
-        course_id = schedule_change.get('course_id')
+        #course_id = schedule_change.get('course_id')
+        course_id = None
         course_component = None
     else:
         course_id = None
@@ -1127,10 +1128,13 @@ async def get_student_courses_for_request(
 @app.put("/request/{request_id}/transfer")
 async def transfer_request(
     request_id: int,
-    new_course_id: Optional[str] = Body(None, embed=True),
+    transfer_data: dict = Body(...),
     session: AsyncSession = Depends(get_session)
 ):
     try:
+        new_course_id = transfer_data.get("new_course_id")
+        transfer_reason = transfer_data.get("reason", "No reason provided")
+        
         # Get the request
         result = await session.execute(select(Requests).where(Requests.id == request_id))
         request = result.scalar_one_or_none()
@@ -1151,8 +1155,95 @@ async def transfer_request(
         request.timeline["status_changes"].append({
             "status": "transferred",
             "new_course_id": new_course_id if new_course_id else "Department Secretary",
+            "reason": transfer_reason,
             "date": datetime.now().isoformat()
         })
+
+        # Create notifications
+        # 1. Notify the student
+        if new_course_id:
+            # Get the professor for this course from student_courses
+            result = await session.execute(
+                select(StudentCourses)
+                .where(
+                    and_(
+                        StudentCourses.course_id == new_course_id,
+                        StudentCourses.student_email == request.student_email
+                    )
+                )
+            )
+            student_course = result.scalar_one_or_none()
+            
+            if student_course and student_course.professor_email:
+                await create_notification(
+                    session=session,
+                    user_email=request.student_email,
+                    request_id=request_id,
+                    message=f"Your request '{request.title}' has been transferred to {student_course.professor_email}. Reason: {transfer_reason}",
+                    type="transfer"
+                )
+            else:
+                await create_notification(
+                    session=session,
+                    user_email=request.student_email,
+                    request_id=request_id,
+                    message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
+                    type="transfer"
+                )
+        else:
+            await create_notification(
+                session=session,
+                user_email=request.student_email,
+                request_id=request_id,
+                message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
+                type="transfer"
+            )
+
+        # 2. If transferred to a course, notify the professor
+        if new_course_id:
+            # Get the professor for this course from student_courses
+            result = await session.execute(
+                select(StudentCourses)
+                .where(
+                    and_(
+                        StudentCourses.course_id == new_course_id,
+                        StudentCourses.student_email == request.student_email
+                    )
+                )
+            )
+            student_course = result.scalar_one_or_none()
+            
+            if student_course and student_course.professor_email:
+                await create_notification(
+                    session=session,
+                    user_email=student_course.professor_email,
+                    request_id=request_id,
+                    message=f"A new request '{request.title}' has been assigned to you from {request.student_email}. Reason for transfer: {transfer_reason}",
+                    type="transfer"
+                )
+        else:
+            # If transferred to Department Secretary, notify the relevant secretary
+            # First get the student's department
+            result = await session.execute(
+                select(Students).where(Students.email == request.student_email)
+            )
+            student = result.scalar_one_or_none()
+            
+            if student and student.department_id:
+                # Get the secretary for this department
+                result = await session.execute(
+                    select(Secretaries).where(Secretaries.department_id == student.department_id)
+                )
+                secretary = result.scalar_one_or_none()
+                
+                if secretary:
+                    await create_notification(
+                        session=session,
+                        user_email=secretary.email,
+                        request_id=request_id,
+                        message=f"A new request '{request.title}' has been transferred to you from {request.student_email}. Reason for transfer: {transfer_reason}",
+                        type="transfer"
+                    )
         
         await session.commit()
         return {"message": "Request transferred successfully"}
@@ -1213,4 +1304,57 @@ async def get_all_transfer_requests(
         formatted_requests.append(formatted_request)
     
     return formatted_requests
+
+# Notification endpoints
+@app.get("/notifications/{user_email}")
+async def get_notifications(
+    user_email: str,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token)
+):
+    try:
+        print(f"Getting notifications for user: {user_email}")
+        notifications = await get_user_notifications(session, user_email)
+        print(f"Found {len(notifications)} notifications")
+        return [
+            {
+                "id": notification.id,
+                "message": notification.message,
+                "is_read": notification.is_read,
+                "created_date": notification.created_date,
+                "type": notification.type,
+                "request_id": notification.request_id
+            }
+            for notification in notifications
+        ]
+    except Exception as e:
+        print(f"Error in get_notifications: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: int,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token)
+):
+    """Mark a specific notification as read."""
+    try:
+        success = await mark_notification_as_read(session, notification_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        return {"message": "Notification marked as read"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/notifications/read-all")
+async def mark_all_notifications_read(
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token)
+):
+    """Mark all notifications for the current user as read."""
+    try:
+        count = await mark_all_notifications_as_read(session, token_data["user_email"])
+        return {"message": f"{count} notifications marked as read"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

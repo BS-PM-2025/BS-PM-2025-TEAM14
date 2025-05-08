@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 import { useUser } from "./UserContext";
+import NotificationBell from "./NotificationBell";
 
 const Navigation = ({ darkMode, setDarkMode }) => {
   const { user } = useUser();
@@ -77,6 +78,8 @@ const Navigation = ({ darkMode, setDarkMode }) => {
             <>{navItem("/Student's Requests", "Student's Requests")}</>
           )}
         </Box>
+
+        <NotificationBell />
 
         <Tooltip
           title={theme.palette.mode === "dark" ? "למצב בהיר" : "למצב כהה"}

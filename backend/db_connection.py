@@ -1,12 +1,13 @@
 import asyncio
 import os
-from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text, DateTime
+from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text, DateTime, Boolean
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from config import DATABASE_URL
 from datetime import datetime
 from sqlalchemy.sql import text
 from sqlalchemy.future import select
+from sqlalchemy.sql import and_
 
 # Define the base class
 Base = declarative_base()
@@ -20,6 +21,7 @@ class Users(Base):
     last_name = Column(String(100), unique=False, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False)
+    notifications = relationship("Notifications", back_populates="user")
 
 
 # Student table
@@ -75,6 +77,22 @@ class Requests(Base):
     # Relationships
     student = relationship("Students", back_populates="requests")
     responses = relationship("Responses", back_populates="request")
+    notifications = relationship("Notifications", back_populates="request")
+
+# Notifications table
+class Notifications(Base):
+    __tablename__ = 'notifications'
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_email = Column(String(100), ForeignKey('users.email'), nullable=False)
+    request_id = Column(Integer, ForeignKey('requests.id'), nullable=False)
+    message = Column(String(500), nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_date = Column(DateTime, default=datetime.now)
+    type = Column(String(50), nullable=False)  # e.g., 'transfer', 'response', 'status_change'
+
+    # Relationships
+    user = relationship("Users", back_populates="notifications")
+    request = relationship("Requests", back_populates="notifications")
 
 #grades
 
@@ -246,6 +264,77 @@ async def add_request(session: AsyncSession, title: str, student_email: str, det
     await session.commit()
     await session.refresh(new_request)
     return new_request
+
+async def create_notification(session: AsyncSession, user_email: str, request_id: int, message: str, type: str):
+    """Create a new notification for a user."""
+    notification = Notifications(
+        user_email=user_email,
+        request_id=request_id,
+        message=message,
+        type=type
+    )
+    session.add(notification)
+    await session.commit()
+    await session.refresh(notification)
+    return notification
+
+async def get_user_notifications(session: AsyncSession, user_email: str, limit: int = 50):
+    """Get notifications for a specific user."""
+    try:
+        print(f"Executing query for user: {user_email}")
+        print(f"Session type: {type(session)}")
+        print(f"Session state: {session.is_active}")
+        
+        # First verify the user exists
+        user_result = await session.execute(select(Users).where(Users.email == user_email))
+        user = user_result.scalar_one_or_none()
+        if not user:
+            print(f"User {user_email} not found")
+            return []
+            
+        result = await session.execute(
+            select(Notifications)
+            .where(Notifications.user_email == user_email)
+            .order_by(Notifications.created_date.desc())
+            .limit(limit)
+        )
+        notifications = result.scalars().all()
+        print(f"Query executed successfully, found {len(notifications)} notifications")
+        return notifications
+    except Exception as e:
+        print(f"Error in get_user_notifications: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise
+
+async def mark_notification_as_read(session: AsyncSession, notification_id: int):
+    """Mark a notification as read."""
+    result = await session.execute(
+        select(Notifications).where(Notifications.id == notification_id)
+    )
+    notification = result.scalar_one_or_none()
+    if notification:
+        notification.is_read = True
+        await session.commit()
+        return True
+    return False
+
+async def mark_all_notifications_as_read(session: AsyncSession, user_email: str):
+    """Mark all notifications for a user as read."""
+    result = await session.execute(
+        select(Notifications).where(
+            and_(
+                Notifications.user_email == user_email,
+                Notifications.is_read == False
+            )
+        )
+    )
+    notifications = result.scalars().all()
+    for notification in notifications:
+        notification.is_read = True
+    await session.commit()
+    return len(notifications)
 
 async def add_course(session: AsyncSession, id: str, name: str, description: str, credits: float, professor_email: str, department_id: str = None):
     new_course = Courses(
