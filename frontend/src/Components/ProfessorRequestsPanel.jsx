@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { getToken, getUserFromToken } from "../utils/auth";
 import { Button, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import "../CSS/ProfessorRequestsPanel.css";
 
 function ProfessorRequestsPanel() {
@@ -15,7 +16,45 @@ function ProfessorRequestsPanel() {
     const [responseText, setResponseText] = useState("");
     const [responseFiles, setResponseFiles] = useState([]);
     const [user, setUser] = useState(null);
+    const [openDialog, setOpenDialog] = useState(false);
+    const [dialogData, setDialogData] = useState({ requestId: null, newStatus: "" });
 
+    const handleOpenDialog = (requestId, newStatus) => {
+        setDialogData({ requestId, newStatus });
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    };
+
+    const handleConfirmStatusChange = async () => {
+        try {
+            await axios.post("http://localhost:8000/update_status", {
+                request_id: dialogData.requestId,
+                status: dialogData.newStatus
+            });
+
+            // Update the local state to reflect the status change
+            setRequests((prevRequests) =>
+                prevRequests.map((req) =>
+                    req.id === dialogData.requestId ? { ...req, status: dialogData.newStatus } : req
+                )
+            );
+
+            // Update the selected request state if it's the one currently selected
+            if (selectedRequest && selectedRequest.id === dialogData.requestId) {
+                setSelectedRequest({ ...selectedRequest, status: dialogData.newStatus });
+            }
+
+            alert("Status updated successfully");
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Error updating status");
+        } finally {
+            handleCloseDialog();
+        }
+    };
     const handleResponseSubmit = async (e) => {
         e.preventDefault();
 
@@ -243,7 +282,7 @@ function ProfessorRequestsPanel() {
                                         <Select
                                             labelId="status-label"
                                             value={selectedRequest.status}
-                                            onChange={(e) => handleStatusChange(selectedRequest.id, e.target.value)}
+                                            onChange={(e) => handleOpenDialog(selectedRequest.id, e.target.value)}
                                             label="Change Request Status"
                                         >
                                             <MenuItem value="pending">Pending</MenuItem>
@@ -253,6 +292,28 @@ function ProfessorRequestsPanel() {
                                     </FormControl>
                                 </div>
                             )}
+                            <Dialog
+                                open={openDialog}
+                                onClose={handleCloseDialog}
+                                aria-labelledby="alert-dialog-title"
+                                aria-describedby="alert-dialog-description"
+                            >
+                                <DialogTitle id="alert-dialog-title">{"Confirm Status Update"}</DialogTitle>
+                                <DialogContent>
+                                    <DialogContentText id="alert-dialog-description">
+                                        <strong>Are you sure you want to change the status to {dialogData.newStatus} ?</strong>
+                                    </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={handleCloseDialog} color="secondary">
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleConfirmStatusChange} color="primary" autoFocus>
+                                        Approve
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
+
                             <button className="btn btn-secondary mt-3" onClick={() => setSelectedRequest(null)}>סגירה</button>
                         </div>
                     </motion.div>
