@@ -329,7 +329,6 @@ async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)
 
 @app.get("/professor/courses/{professor_email}")
 async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session)):
-
     result = await session.execute(select(Professors).filter(Professors.email == professor_email))
     professor = result.scalars().first()
     if not professor:
@@ -343,7 +342,8 @@ async def get_courses(professor_email: str, session: AsyncSession = Depends(get_
         "name": course.name,
         "description": course.description,
         "credits": course.credits,
-        "professor_email": course.professor_email
+        "professor_email": course.professor_email,
+        "department_id": course.department_id
     } for course in courses]
     courses_names = [course.name for course in courses]
 
@@ -557,6 +557,7 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
                 "description": course.description,
                 "credits": course.credits,
                 "professor_email": course.professor_email,
+                "department_id": course.department_id,
                 "grades": []
             }
 
@@ -820,3 +821,69 @@ async def get_student_professors(
         return {"professors": professors_data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/secretary/transfer-requests/{secretary_email}")
+async def get_department_transfer_requests(
+    secretary_email: str,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token)
+):
+    # Verify the user is a secretary
+    if token_data["role"] not in ["admin", "secretary"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin and secretary can access this endpoint"
+        )
+    
+    # Get secretary's department
+    secretary = await session.execute(
+        select(Secretaries).where(Secretaries.email == secretary_email)
+    )
+    secretary = secretary.scalar_one_or_none()
+    
+    if not secretary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Secretary not found"
+        )
+    
+    # Get all students in the same department
+    students = await session.execute(
+        select(Students).where(Students.department_id == secretary.department_id)
+    )
+    students = students.scalars().all()
+    
+    # Get all requests from these students
+    student_emails = [student.email for student in students]
+    requests = await session.execute(
+        select(Requests)
+        .where(Requests.student_email.in_(student_emails))
+        .order_by(Requests.created_date.desc())
+    )
+    requests = requests.scalars().all()
+    
+    # Format the response
+    formatted_requests = []
+    for request in requests:
+        # Get student details
+        student = await session.execute(
+            select(Users).where(Users.email == request.student_email)
+        )
+        student = student.scalar_one_or_none()
+        
+        formatted_request = {
+            "id": request.id,
+            "title": request.title,
+            "student_email": request.student_email,
+            "student_name": f"{student.first_name} {student.last_name}" if student else "Unknown",
+            "details": request.details,
+            "course_id": request.course_id,
+            "course_component": request.course_component,
+            "files": request.files,
+            "status": request.status,
+            "created_date": request.created_date,
+            "timeline": request.timeline
+        }
+        formatted_requests.append(formatted_request)
+    
+    return formatted_requests

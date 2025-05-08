@@ -18,6 +18,7 @@ import { useUser } from "./UserContext";
 import AssignProfessorToCourse from "./AssignProfessorToCourse";
 import AssignStudentToCourse from "./AssignStudentToCourse";
 import ProfessorUnavailability from "./ProfessorUnavailability";
+import TransferRequests from "./TransferRequests";
 
 function AppRoutes({ darkMode, setDarkMode }) {
   const { user } = useUser();
@@ -60,6 +61,10 @@ function AppRoutes({ darkMode, setDarkMode }) {
           element={
             <ProfessorUnavailability professorEmail={user?.user_email} />
           }
+        />
+        <Route
+          path="/transfer-requests"
+          element={<TransferRequests />}
         />
       </Routes>
     </Router>

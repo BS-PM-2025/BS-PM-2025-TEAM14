@@ -67,6 +67,12 @@ const Navigation = ({ darkMode, setDarkMode }) => {
               {navItem("/AssignStudentsToCourse", "Assign Students")}
             </>
           )}
+
+          {user?.role === "secretary" && (
+            <>
+              {navItem("/transfer-requests", "Transfer Requests")}
+            </>
+          )}
         </Box>
 
         <Tooltip
