@@ -1103,23 +1103,12 @@ async def submit_response(
             "date": datetime.now().isoformat()
         })
         request.status = "responded"
-        db.flush()
+        flag_modified(request, "timeline")
+        await db.commit()
+        await db.flush()
 
-
-        # אחרי ששמרת את השינויים ב-request
-        print("=== בקשה לאחר עדכון ===")
-        print(f"ID: {request.id}")
-        print(f"נושא: {request.title}")
-        print(f"תיאור: {request.details}")
-        print(f"סטטוס: {request.status}")
-        print(f"Timeline: {json.dumps(request.timeline, indent=2, ensure_ascii=False)}")
-        print("=======================")
-
-
-        # שמירה מחדש
         db.add(request)
 
-        # שמירת תגובה חדשה
         response = Responses(
             request_id=request_id,
             professor_email=professor_email,
