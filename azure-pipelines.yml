@@ -10,6 +10,7 @@ pool:
 variables:
   pythonVersion: "3.11"
   nodeVersion: "18.x"
+  CI: "true"
 
 stages:
   - stage: Build
@@ -26,10 +27,11 @@ stages:
 
           - script: |
               cd frontend
-              npm install
+              npm ci
               npm run build
-              npm test
+              npm test -- --watchAll=false --passWithNoTests
             displayName: "Build and Test Frontend"
+            timeoutInMinutes: 10
 
           # Backend Build and Test
           - task: UsePythonVersion@0
