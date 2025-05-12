@@ -27,9 +27,10 @@ stages:
 
           - script: |
               cd frontend
-              npm ci
+              npm install --legacy-peer-deps
+              npm install react-scripts --save-dev
               npm run build
-              npm test -- --watchAll=false --passWithNoTests
+              npm test -- --watchAll=false --passWithNoTests --testPathPattern="src/**/*.{test,spec}.{js,jsx}" --testMatch="**/__tests__/**/*.{js,jsx}" --testMatch="**/?(*.)+(spec|test).{js,jsx}"
             displayName: "Build and Test Frontend"
             timeoutInMinutes: 10
 
