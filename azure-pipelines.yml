@@ -1,0 +1,93 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  pythonVersion: "3.11"
+  nodeVersion: "18.x"
+
+stages:
+  - stage: Build
+    displayName: "Build and Test"
+    jobs:
+      - job: BuildAndTest
+        displayName: "Build and Test Applications"
+        steps:
+          # Frontend Build and Test
+          - task: NodeTool@0
+            displayName: "Install Node.js"
+            inputs:
+              versionSpec: "$(nodeVersion)"
+
+          - script: |
+              cd frontend
+              npm install
+              npm run build
+              npm test
+            displayName: "Build and Test Frontend"
+
+          # Backend Build and Test
+          - task: UsePythonVersion@0
+            displayName: "Use Python $(pythonVersion)"
+            inputs:
+              versionSpec: "$(pythonVersion)"
+              addToPath: true
+
+          - script: |
+              python -m pip install --upgrade pip
+              cd backend
+              pip install -r requirements.txt
+              pytest
+            displayName: "Install Dependencies and Run Tests"
+
+  - stage: Deploy
+    displayName: "Deploy"
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployFrontend
+        displayName: "Deploy Frontend"
+        environment: "production"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: ArchiveFiles@2
+                  inputs:
+                    rootFolderOrFile: "frontend/build"
+                    includeRootFolder: false
+                    archiveType: "zip"
+                    archiveFile: "$(Build.ArtifactStagingDirectory)/frontend.zip"
+                    replaceExistingArchive: true
+
+                - task: PublishBuildArtifacts@1
+                  inputs:
+                    PathtoPublish: "$(Build.ArtifactStagingDirectory)/frontend.zip"
+                    ArtifactName: "frontend"
+                    publishLocation: "Container"
+
+      - deployment: DeployBackend
+        displayName: "Deploy Backend"
+        environment: "production"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: ArchiveFiles@2
+                  inputs:
+                    rootFolderOrFile: "backend"
+                    includeRootFolder: false
+                    archiveType: "zip"
+                    archiveFile: "$(Build.ArtifactStagingDirectory)/backend.zip"
+                    replaceExistingArchive: true
+
+                - task: PublishBuildArtifacts@1
+                  inputs:
+                    PathtoPublish: "$(Build.ArtifactStagingDirectory)/backend.zip"
+                    ArtifactName: "backend"
+                    publishLocation: "Container"
