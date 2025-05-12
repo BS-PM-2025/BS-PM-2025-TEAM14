@@ -161,11 +161,11 @@ function ProfessorRequestsPanel() {
 
     return (
         <div className="container mt-4">
-            <h2 className="text-center mb-4">כל הבקשות שהוגשו</h2>
+            <h2 className="text-center mb-4">Pending Requests</h2>
 
             <div className="d-flex justify-content-end mb-3">
                 <FormControl variant="outlined" className="me-2" sx={{ minWidth: 200 }}>
-                    <InputLabel id="sort-label">מיין לפי</InputLabel>
+                    <InputLabel id="sort-label">Sort</InputLabel>
                     <Select
                         labelId="sort-label"
                         value={sortBy}
@@ -173,11 +173,11 @@ function ProfessorRequestsPanel() {
                         label="מיין לפי"
                         defaultValue="created_desc"
                     >
-                        <MenuItem value="created_desc">תאריך (חדש לישן)</MenuItem>
-                        <MenuItem value="created_asc">תאריך (ישן לחדש)</MenuItem>
-                        <MenuItem value="title_asc">נושא (א'-ת')</MenuItem>
-                        <MenuItem value="title_desc">נושא (ת'-א')</MenuItem>
-                        <MenuItem value="status">סטטוס</MenuItem>
+                        <MenuItem value="created_desc">Date (New to Old)</MenuItem>
+                        <MenuItem value="created_asc">Date (Old to New)</MenuItem>
+                        <MenuItem value="title_asc">Title (A-Z)</MenuItem>
+                        <MenuItem value="title_desc">Title (Z-A)</MenuItem>
+                        <MenuItem value="status">Status</MenuItem>
                     </Select>
                 </FormControl>
                 <Button
@@ -186,7 +186,7 @@ function ProfessorRequestsPanel() {
                     onClick={clearSort}
                     sx={{ minWidth: 120, alignSelf: 'flex-start', marginLeft: '10px' }}
                 >
-                    ניקוי מיון
+                    Clear Sort
                 </Button>
             </div>
 
@@ -231,7 +231,7 @@ function ProfessorRequestsPanel() {
                             <p><strong>Status :</strong> <span className={`badge ${getStatusClass(selectedRequest.status)}`}>{getStatusText(selectedRequest.status)}</span></p>
 
                             {/* Table View for Details */}
-                            <h5 className="mt-3">Details:</h5>
+                            <h5 className="mt-3">Details :</h5>
                             <table className="table table-bordered mt-2">
                                 <tbody>
                                 {selectedRequest.details.split("\n").map((line, index) => {
@@ -250,20 +250,20 @@ function ProfessorRequestsPanel() {
                             {(user?.role === "professor" || user?.role === "secretary") && (
                                 <>
                                     <hr />
-                                    <h5 className="mt-3">הגב על בקשה זו:</h5>
+                                    <h5 className="mt-3">Reply :</h5>
                                     <form onSubmit={handleResponseSubmit}>
                                         <div className="mb-3">
                                 <textarea
                                     className="form-control"
                                     rows="4"
-                                    placeholder="כתוב תגובה כאן..."
+                                    placeholder="submit your reply here..."
                                     value={responseText}
                                     onChange={(e) => setResponseText(e.target.value)}
                                     required
                                 ></textarea>
                                         </div>
                                         <div className="mb-3">
-                                            <label className="form-label">צרף קבצים (לא חובה):</label>
+                                            <label className="form-label">Upload Files :</label>
                                             <input
                                                 type="file"
                                                 className="form-control"
@@ -271,12 +271,11 @@ function ProfessorRequestsPanel() {
                                                 onChange={(e) => setResponseFiles([...e.target.files])}
                                             />
                                         </div>
-                                        <button className="btn btn-primary" type="submit">שלח תגובה</button>
+                                        <button className="btn btn-primary" type="submit">Submit</button>
                                     </form>
                                 </>
                             )}
 
-                            {/* שינוי סטטוס (רק למזכירה) */}
                             {(user?.role === "secretary" || user?.role === "professor") && (
                                 <div className="mt-3">
                                     <FormControl variant="outlined" className="me-2" sx={{ minWidth: 200 }}>
@@ -338,10 +337,10 @@ function getStatusClass(status) {
 
 function getStatusText(status) {
     switch (status) {
-        case "pending": return "ממתין";
-        case "approved": return "אושר";
-        case "rejected": return "נדחה";
-        case "not read": return "טרם נקרא";
+        case "pending": return "Pending";
+        case "approved": return "Approved";
+        case "rejected": return "Rejected";
+        case "not read": return "Not Read";
         default: return status;
     }
 }
