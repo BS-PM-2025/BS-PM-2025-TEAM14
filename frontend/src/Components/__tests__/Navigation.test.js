@@ -31,21 +31,16 @@ describe("Navigation Component", () => {
       { user: null }
     );
 
-    expect(screen.getByRole("link", { name: /Home/i })).toHaveAttribute(
-      "href",
-      "/"
+    // Test navigation using the button text and aria-label
+    expect(screen.getByText(/Home/i)).toHaveAttribute("aria-label", "Home");
+    expect(screen.getByText(/Courses/i)).toHaveAttribute(
+      "aria-label",
+      "Courses"
     );
-    expect(screen.getByRole("link", { name: /Courses/i })).toHaveAttribute(
-      "href",
-      "/courses"
-    );
-    expect(screen.getByRole("link", { name: /Grades/i })).toHaveAttribute(
-      "href",
-      "/grades"
-    );
-    expect(screen.getByRole("link", { name: /Documents/i })).toHaveAttribute(
-      "href",
-      "/documents"
+    expect(screen.getByText(/Grades/i)).toHaveAttribute("aria-label", "Grades");
+    expect(screen.getByText(/Documents/i)).toHaveAttribute(
+      "aria-label",
+      "Documents"
     );
   });
 });

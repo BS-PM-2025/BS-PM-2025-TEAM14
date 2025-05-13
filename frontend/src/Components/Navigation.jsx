@@ -22,6 +22,7 @@ const Navigation = ({ darkMode, setDarkMode }) => {
       key={to}
       component={Link}
       to={to}
+      aria-label={label}
       sx={{
         color: theme.palette.mode === "dark" ? "#fff" : "#000",
         textTransform: "none",
@@ -87,6 +88,11 @@ const Navigation = ({ darkMode, setDarkMode }) => {
           <IconButton
             sx={{ color: "white" }}
             onClick={() => setDarkMode(!darkMode)}
+            aria-label={
+              theme.palette.mode === "dark"
+                ? "Switch to light mode"
+                : "Switch to dark mode"
+            }
           >
             {theme.palette.mode === "dark" ? <Brightness4 /> : <Brightness7 />}
           </IconButton>
