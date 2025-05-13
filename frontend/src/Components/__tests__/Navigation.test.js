@@ -1,33 +1,51 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import Navigation from '../Navigation';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import Navigation from "../Navigation";
+import { UserProvider } from "../../context/UserContext";
 
+// Create a wrapper component that provides the UserContext
+const renderWithUserContext = (
+  ui,
+  { user = null, setUserData = jest.fn() } = {}
+) => {
+  return render(<UserProvider>{ui}</UserProvider>);
+};
 
-describe('Navigation Component', () => {
-  test('renders all navigation links', () => {
-    render(<Navigation />);
-    
-    // Check that all expected links exist
-    expect(screen.getByText(/home/i)).toBeInTheDocument();
-    expect(screen.getByText(/submit a request/i)).toBeInTheDocument();
-    expect(screen.getByText(/requests/i)).toBeInTheDocument();
-    expect(screen.getByText(/upload files/i)).toBeInTheDocument();
-    expect(screen.getByText(/reload files/i)).toBeInTheDocument();
-    expect(screen.getByText(/users/i)).toBeInTheDocument();
-    expect(screen.getByText(/grades/i)).toBeInTheDocument();
+describe("Navigation Component", () => {
+  test("renders all navigation links", () => {
+    renderWithUserContext(
+      <Navigation darkMode={false} setDarkMode={jest.fn()} />,
+      { user: null }
+    );
+
+    expect(screen.getByText(/Home/i)).toBeInTheDocument();
+    expect(screen.getByText(/Courses/i)).toBeInTheDocument();
+    expect(screen.getByText(/Grades/i)).toBeInTheDocument();
+    expect(screen.getByText(/Documents/i)).toBeInTheDocument();
   });
 
-  test('links have correct hrefs', () => {
-    render(<Navigation />);
-    
-    // Check that links have the correct href attributes
-    expect(screen.getByText(/home/i).closest('a')).toHaveAttribute('href', '/');
-    expect(screen.getByText(/submit a request/i).closest('a')).toHaveAttribute('href', '/submit_request');
-    expect(screen.getByText(/requests/i).closest('a')).toHaveAttribute('href', '/Requests');
-    expect(screen.getByText(/upload files/i).closest('a')).toHaveAttribute('href', '/upload');
-    expect(screen.getByText(/reload files/i).closest('a')).toHaveAttribute('href', '/reload');
-    expect(screen.getByText(/users/i).closest('a')).toHaveAttribute('href', '/users');
-    expect(screen.getByText(/grades/i).closest('a')).toHaveAttribute('href', '/grades');
+  test("links have correct hrefs", () => {
+    renderWithUserContext(
+      <Navigation darkMode={false} setDarkMode={jest.fn()} />,
+      { user: null }
+    );
+
+    expect(screen.getByRole("link", { name: /Home/i })).toHaveAttribute(
+      "href",
+      "/"
+    );
+    expect(screen.getByRole("link", { name: /Courses/i })).toHaveAttribute(
+      "href",
+      "/courses"
+    );
+    expect(screen.getByRole("link", { name: /Grades/i })).toHaveAttribute(
+      "href",
+      "/grades"
+    );
+    expect(screen.getByRole("link", { name: /Documents/i })).toHaveAttribute(
+      "href",
+      "/documents"
+    );
   });
 });
