@@ -1,37 +1,48 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import Logout from '../Logout';
-import { removeToken } from '../../utils/auth';
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import Logout from "../Logout";
+import { UserProvider } from "../../context/UserContext";
+import { removeToken } from "../../utils/auth";
 
-// Mock the modules we need
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn()
+// Mock the modules
+jest.mock("react-router-dom", () => ({
+  useNavigate: () => jest.fn(),
 }));
 
-jest.mock('../../utils/auth', () => ({
-  removeToken: jest.fn()
+jest.mock("../../utils/auth", () => ({
+  removeToken: jest.fn(),
 }));
 
-describe('Logout Component', () => {
-  test('renders logout button', () => {
-    render(<Logout />);
-    const logoutButton = screen.getByRole('button', { name: /logout/i });
-    expect(logoutButton).toBeInTheDocument();
+// Create a wrapper component that provides the UserContext
+const renderWithUserContext = (
+  ui,
+  { user = null, setUserData = jest.fn() } = {}
+) => {
+  return render(<UserProvider>{ui}</UserProvider>);
+};
+
+describe("Logout Component", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  test('calls removeToken and navigate when clicked', () => {
+  test("renders logout button", () => {
+    renderWithUserContext(<Logout />, { setUserData: jest.fn() });
+    expect(screen.getByRole("button", { name: /Logout/i })).toBeInTheDocument();
+  });
+
+  test("calls removeToken and navigate when clicked", () => {
     const navigate = jest.fn();
-    
-    // Override the useNavigate mock for this test
-    jest.spyOn(require('react-router-dom'), 'useNavigate').mockImplementation(() => navigate);
-    
-    render(<Logout />);
-    const logoutButton = screen.getByRole('button', { name: /logout/i });
-    
-    fireEvent.click(logoutButton);
-    
+    jest
+      .spyOn(require("react-router-dom"), "useNavigate")
+      .mockImplementation(() => navigate);
+
+    renderWithUserContext(<Logout />, { setUserData: jest.fn() });
+
+    fireEvent.click(screen.getByRole("button", { name: /Logout/i }));
+
     expect(removeToken).toHaveBeenCalled();
-    expect(navigate).toHaveBeenCalledWith('/');
+    expect(navigate).toHaveBeenCalledWith("/");
   });
 });
