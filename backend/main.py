@@ -19,7 +19,8 @@ from db_connection import *
 import bcrypt
 import cryptography
 import jwt
-from jwt import PyJWTError
+#from jwt import PyJWTError
+from jwt.exceptions import InvalidTokenError as PyJWTError
 from typing import Optional
 from datetime import datetime, timedelta
 from fastapi import HTTPException
