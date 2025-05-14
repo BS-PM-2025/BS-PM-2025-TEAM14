@@ -20,16 +20,23 @@ import bcrypt
 import cryptography
 import jwt
 #from jwt import PyJWTError
-from jwt.exceptions import InvalidTokenError as PyJWTError
+#from jwt.exceptions import InvalidTokenError as PyJWTError
 from typing import Optional
 from datetime import datetime, timedelta
 from fastapi import HTTPException
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
-
 from pydantic import BaseModel, constr
 from typing import List
+
+try:
+    # Works on PyJWT < 2.10
+    from jwt.exceptions import InvalidTokenError as PyJWTError
+except ImportError:
+    # Works on PyJWT >= 2.10
+    from jwt.exceptions import JWTError as PyJWTError
+
 
 # Import the AI Service - using the Python wrapper
 from AIService import processMessage
