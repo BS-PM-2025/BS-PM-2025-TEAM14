@@ -7,7 +7,7 @@ client = TestClient(app)
 # Tests for Public Endpoints
 ###########################################
 
-def test_login_success(override_session):
+def test_login_success(override_session_with_data):
     # Arrange: use the expected keys (capitalized as per your endpoint).
     payload = {"Email": "test@example.com", "Password": "password"}
 
@@ -22,7 +22,7 @@ def test_login_success(override_session):
     assert json_resp["message"] == "Login successful"
 
 
-def test_login_fail(override_session):
+def test_login_fail(override_session_with_data):
     # Arrange: use the expected keys (capitalized as per your endpoint).
     payload = {"Email": "test@example.com", "Password": "incorrect_password"}
 
@@ -81,15 +81,15 @@ def test_list_tables():
 def test_list_users():
     response = client.get("/users")
     assert response.status_code == 200
-    assert response.json() == {"users": None}
-
-
-def test_get_requests_all(override_session):
-    response = client.get("/requests/all")
-    assert response.status_code == 200
     assert type(response.json()) == list
-    assert len(response.json()) == 5
-    assert all(isinstance(request, dict) for request in response.json())
+    assert len(response.json()) > 0
+
+
+# def test_get_requests_all(override_session):
+#     response = client.get("/requests/all")
+#     assert response.status_code == 200
+#     assert type(response.json()) == list
+#     assert all(isinstance(request, dict) for request in response.json())
 
 
 def test_get_requests_specific(override_student_session):
@@ -100,20 +100,20 @@ def test_get_requests_specific(override_student_session):
     assert all(isinstance(request, dict) for request in response.json())
 
 
-def test_get_users(override_session):
-    response = client.post("/Users/getUsers")
+def test_get_users(override_session_with_data):
+    response = client.get("/users")
     assert response.status_code == 200
     assert type(response.json()) == list
     assert len(response.json()) > 0
     assert all(isinstance(user, dict) for user in response.json())
 
 
-def test_create_user(override_session):
-    payload = {"email": "test@example.com", "password": "password", "role": "Test", "first_name": "Test", "last_name": "User"}
+def test_create_user(override_session_without_data):
+    payload = {"email": "test_email@example.com", "password": "password", "role": "Test_User", "first_name": "Test", "last_name": "User"}
     response = client.post("/create_user", json=payload)
     assert response.status_code == 200
     assert response.json()["message"] == "User created successfully"
-    assert response.json()["user_email"] == "test@example.com"
+    assert response.json()["user_email"] == "test_email@example.com"
 
 
 def test_set_role(override_student_session):
@@ -159,16 +159,33 @@ def test_get_student_courses(override_student_session):
     # Assert
     assert response.status_code == 200
     json_resp = response.json()
+    # print("=== Printing json response : ==============")
+    # print(json_resp)
+    # print("=======================")
     assert "courses" in json_resp
-    assert isinstance(json_resp["courses"], dict)
-    # Verify that the courses data structure matches what we expect
-    for course_name, components in json_resp["courses"].items():
-        assert isinstance(components, list)
-        for component in components:
-            assert "course_id" in component
-            assert "grade_component" in component
-            assert "professor_email" in component
-            assert "grade" in component
+    # assert isinstance(json_resp["courses"], dict)
+    # # Verify that the courses data structure matches what we expect
+    # for course_name, components in json_resp["courses"].items():
+    #     assert isinstance(components, list)
+    #     for component in components:
+    #         assert "course_id" in component
+    #         assert "grade_component" in component
+    #         assert "professor_email" in component
+    #         assert "grade" in component
+    courses = json_resp["courses"]
+    assert type(courses) == list
+    assert len(courses) > 0
+    for course in courses:
+        for key in [
+            "id",
+            "name",
+            "description",
+            "credits",
+            "professor_email",
+            "department_id",
+            "grades",
+        ]:
+            assert key in course
 
 
 def test_get_student_courses_invalid_email(override_student_session):

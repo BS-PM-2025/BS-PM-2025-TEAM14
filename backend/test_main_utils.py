@@ -25,6 +25,7 @@ class FakeUser:
             "last_name": self.last_name
         }
 
+
 class FakeRequest:
     def __init__(self, id, title, student_email, details, files, created_date, status, timeline):
         self.id = id
@@ -36,33 +37,46 @@ class FakeRequest:
         self.created_date = created_date
         self.timeline = timeline
 
+
 class FakeCourse:
-    def __init__(self, id, name, description, credits, professor_email):
+    def __init__(self, id, name, description, credits, professor_email, department_id):
         self.id = id
         self.name = name
         self.description = description
         self.credits = credits
         self.professor_email = professor_email
+        self.department_id = department_id
+
 
 class FakeResult:
     def __init__(self, data):
-        self.data = data
+        self._data = data
+
+    def scalar(self):
+        if isinstance(self._data, list):
+            return self._data[0] if self._data else None
+        return self._data
 
     def scalars(self):
         return self
 
+    def scalar_one_or_none(self):
+        if isinstance(self._data, list):
+            return self._data[0] if self._data else None
+        return self._data
+
     def all(self):
         # If data is a list, return it; if it is a single object, return [object]
-        if isinstance(self.data, list):
-            return self.data
-        elif self.data is not None:
-            return [self.data]
+        if isinstance(self._data, list):
+            return self._data
+        elif self._data is not None:
+            return [self._data]
         return []
 
     def first(self):
-        if isinstance(self.data, list):
-            return self.data[0] if self.data else None
-        return self.data
+        if isinstance(self._data, list):
+            return self._data[0] if self._data else None
+        return self._data
 
 
 class FakeAsyncSession:
@@ -80,8 +94,11 @@ class FakeAsyncSession:
         if "from users" in query_str :
             # Here, return the fake user for testing login.
             if "where" in query_str:
-                fake_user = FakeUser(self.expected_email, hashed, self.expected_role, "Test", "User")
-                return FakeResult(fake_user)
+                if self.expected_email:
+                    fake_user = FakeUser(self.expected_email, hashed, self.expected_role, "Test", "User")
+                    return FakeResult(fake_user)
+                else:
+                    return FakeResult(None)
             else:
                 fake_users = [FakeUser(f"{self.expected_email}", hashed, self.expected_role, "Test",
                                        f"User {i}") for i in range(5)]
@@ -103,10 +120,21 @@ class FakeAsyncSession:
 
         if "from courses" in query_str:
             fake_courses = [FakeCourse(i, f"Course {i}", f"Description {i}", i,
-                                       "test_professor@example.com") for i in range(1,6)]
+                                       "test_professor@example.com", i) for i in range(1,6)]
             return FakeResult(fake_courses)
 
-
+        if "from student_courses" in query_str:
+            rows = []
+            for cid in range(1, 4):
+                sc = FakeStudentCourse("test_student@example.com", cid)
+                course = FakeCourse(cid, f"Course {cid}",
+                                    f"Description {cid}", cid,
+                                    "test_professor@example.com", cid)
+                # give a grade only to course 1 & 2
+                grade = FakeGrade(cid, "test_student@example.com",
+                                  f"Exam {cid}", 90 + cid) if cid < 3 else None
+                rows.append((sc, course, grade))
+            return FakeResult(rows)
         return FakeResult(None)
 
     async def add(self, obj):
@@ -121,6 +149,9 @@ class FakeAsyncSession:
     async def close(self):
         pass
 
+    async def flush(self):
+        pass
+
     # Make the FakeAsyncSession act as an async context manager.
     async def __aenter__(self):
         return self
@@ -128,9 +159,26 @@ class FakeAsyncSession:
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.close()
 
-# Dependency override to inject our fake session.
-async def get_fake_session():
+
+class FakeStudentCourse:
+    def __init__(self, student_email, course_id):
+        self.student_email = student_email
+        self.course_id = course_id
+
+
+class FakeGrade:
+    def __init__(self, course_id, student_email, component, grade):
+        self.course_id = course_id
+        self.student_email = student_email
+        self.grade_component = component
+        self.grade = grade
+
+# # Dependency override to inject our fake session.
+async def get_fake_session_with_expected_data():
     return FakeAsyncSession(expected_email="test@example.com", expected_role="Test")
+
+async def get_fake_session():
+    return FakeAsyncSession()
 
 # Create a custom dependency override factory that returns a FakeAsyncSession
 def get_fake_session_student():
@@ -142,8 +190,14 @@ def get_fake_session_professor():
     return FakeAsyncSession(expected_email="test_professor@example.com", expected_role="professor")
 
 @pytest.fixture
-def override_session(monkeypatch):
-    app.dependency_overrides[get_session] = get_fake_session        # default async session
+def override_session_with_data(monkeypatch):
+    app.dependency_overrides[get_session] = get_fake_session_with_expected_data        # default async session
+    yield
+    app.dependency_overrides.pop(get_session, None)
+
+@pytest.fixture
+def override_session_without_data(monkeypatch):
+    app.dependency_overrides[get_session] = get_fake_session      # default async session
     yield
     app.dependency_overrides.pop(get_session, None)
 
