@@ -1,6 +1,5 @@
 from test_main_utils import *
 
-
 client = TestClient(app)
 
 ###########################################
@@ -195,6 +194,7 @@ def test_get_student_courses_invalid_email(override_student_session):
     # Assert - Should fail with 404 status code
     assert response.status_code == 404
     assert "Student not found" in response.json()["detail"]
+
 
 def test_get_student_courses_empty_email(override_student_session):
     # Act - Using an empty email

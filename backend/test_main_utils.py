@@ -1,10 +1,25 @@
-import bcrypt
+import warnings
+from sqlalchemy.exc import SAWarning
+
+warnings.filterwarnings(
+    "ignore",
+    message=r".*relationship .* overlaps.*",
+    category=SAWarning,
+)
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"datetime\.datetime\.utcnow\(\) is deprecated",
+    category=DeprecationWarning,
+)
+
 import pytest
+from fastapi.testclient import TestClient
 import main
 import os
 import io
+import bcrypt
 from main import app, get_session
-from fastapi.testclient import TestClient
 
 
 class FakeUser:
@@ -137,7 +152,7 @@ class FakeAsyncSession:
             return FakeResult(rows)
         return FakeResult(None)
 
-    async def add(self, obj):
+    def add(self, obj):
         pass
 
     async def refresh(self, obj):
