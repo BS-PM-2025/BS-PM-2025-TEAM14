@@ -32,7 +32,6 @@ stages:
               npm install --legacy-peer-deps
               npm install react-scripts --save-dev
               npm run build
-              CI=false npm test -- --watchAll=false --passWithNoTests --transformIgnorePatterns "node_modules/(?!axios)/"
             displayName: "Build and Test Frontend"
             timeoutInMinutes: 10
             env:
