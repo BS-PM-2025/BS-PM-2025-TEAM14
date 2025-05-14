@@ -19,7 +19,7 @@ from db_connection import *
 import bcrypt
 import cryptography
 import jwt
-from jwt.exceptions import PyJWTError
+from jwt import PyJWTError
 from typing import Optional
 from datetime import datetime, timedelta
 from fastapi import HTTPException
