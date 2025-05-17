@@ -93,7 +93,12 @@ class Notifications(Base):
     user = relationship("Users", back_populates="notifications")
     request = relationship("Requests", back_populates="notifications")
 
-#grades
+# Request Routing Rules table
+class RequestRoutingRules(Base):
+    __tablename__ = "request_routing_rules"
+    type = Column(String(100), primary_key=True, index=True)
+    destination = Column(String(100), nullable=False) 
+
 
 # Student-Courses table
 class StudentCourses(Base):

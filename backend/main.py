@@ -641,12 +641,21 @@ async def create_general_request(
                 not schedule_change["professors"]
         ):
             raise HTTPException(status_code=400, detail="Invalid schedule change data")
-        #course_id = schedule_change.get('course_id')
-        course_id = None
+        course_id = schedule_change.get('course_id')
         course_component = None
     else:
         course_id = None
         course_component = None
+
+    # Check routing rules for the request type
+    result = await session.execute(
+        select(RequestRoutingRules).where(RequestRoutingRules.type == title)
+    )
+    routing_rule = result.scalar_one_or_none()
+
+    # If there's a routing rule and it specifies secretary, set course_id to None
+    if routing_rule and routing_rule.destination == "secretary":
+        course_id = None
 
     new_request = await add_request(
         session=session,
@@ -1442,5 +1451,46 @@ async def get_requests_dashboard(user_email: str, session: AsyncSession = Depend
     if role == "professor":
         return await get_professor_requests(user_email, session)
 '''
+
+@app.get("/api/request_routing_rules")
+async def get_request_routing_rules(session: AsyncSession = Depends(get_session)):
+    try:
+        result = await session.execute(select(RequestRoutingRules))
+        rules = result.scalars().all()
+        return rules
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/request_routing_rules/{rule_type}")
+async def update_request_routing_rule(
+    rule_type: str,
+    rule_data: dict = Body(...),
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        # Validate destination
+        destination = rule_data.get("destination")
+        if destination not in ["secretary", "lecturer"]:
+            raise HTTPException(status_code=400, detail="Invalid destination. Must be 'secretary' or 'lecturer'")
+
+        # Get the existing rule
+        result = await session.execute(
+            select(RequestRoutingRules).where(RequestRoutingRules.type == rule_type)
+        )
+        rule = result.scalar_one_or_none()
+
+        if rule:
+            # Update existing rule
+            rule.destination = destination
+        else:
+            # Create new rule
+            rule = RequestRoutingRules(type=rule_type, destination=destination)
+            session.add(rule)
+
+        await session.commit()
+        return {"message": "Routing rule updated successfully"}
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
