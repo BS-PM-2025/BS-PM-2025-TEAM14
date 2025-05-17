@@ -20,6 +20,7 @@ import AssignStudentToCourse from "./AssignStudentToCourse";
 import ProfessorUnavailability from "./ProfessorUnavailability";
 import TransferRequests from "./TransferRequests";
 import ProfessorRequestsPanel from "./ProfessorRequestsPanel";
+import AdminRequestRoute from "./AdminRequestRoute";
 
 function AppRoutes({ darkMode, setDarkMode }) {
   const { user } = useUser();
@@ -68,6 +69,7 @@ function AppRoutes({ darkMode, setDarkMode }) {
           }
         />
         <Route path="/transfer-requests" element={<TransferRequests />} />
+        <Route path="/admin/request-routing" element={<AdminRequestRoute />} />
       </Routes>
     </Router>
   );

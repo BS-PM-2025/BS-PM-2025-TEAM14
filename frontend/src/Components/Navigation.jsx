@@ -78,6 +78,13 @@ const Navigation = ({ darkMode, setDarkMode }) => {
           {user?.role === "secretary" && (
             <>{navItem("/Student's Requests", "Student's Requests")}</>
           )}
+
+          {user?.role === "admin" && (
+            <>
+              {navItem("/admin/request-routing", "Request Routing")}
+              {navItem("/users", "Users")}
+            </>
+          )}
         </Box>
 
         <NotificationBell />
