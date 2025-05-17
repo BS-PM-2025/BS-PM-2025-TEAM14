@@ -40,7 +40,11 @@ const NotificationBell = () => {
       );
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data);
+        // Sort notifications by date, newest first
+        const sortedData = data.sort((a, b) => 
+          new Date(b.created_date) - new Date(a.created_date)
+        );
+        setNotifications(sortedData);
         setUnreadCount(data.filter((n) => !n.is_read).length);
       }
     } catch (error) {
@@ -51,7 +55,7 @@ const NotificationBell = () => {
   // Effect for initial fetch and polling
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
   }, []);
 
