@@ -15,7 +15,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from starlette.requests import Request
 from starlette.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from db_connection import *
+from backend.db_connection import *
 import bcrypt
 import cryptography
 import jwt
@@ -37,7 +37,7 @@ except ImportError:
 
 
 # Import the AI Service - using the Python wrapper
-from AIService import processMessage
+from backend.AIService import processMessage
 
 # Model for AI chat requests
 class ChatRequest(BaseModel):
@@ -62,6 +62,8 @@ class AssignStudentsRequest(BaseModel):
 # Session Management and Authentication #
 SECRET_KEY = "SSRSTEAM14"  # In production, use a secure secret key
 ALGORITHM = "HS256"
+DOCUMENTS_ROOT = Path("Documents")
+
 
 def create_access_token(user_data: dict):
     to_encode = user_data.copy()
@@ -230,7 +232,8 @@ async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: st
 
 @app.get("/reloadFiles/{userEmail}")
 async def reload_files(userEmail: str):
-    root_path = os.path.join("Documents", userEmail)
+    #root_path = os.path.join("Documents", userEmail)
+    root_path = DOCUMENTS_ROOT / userEmail
     files = []
     file_paths = []
     for root, _, filenames in os.walk(root_path):

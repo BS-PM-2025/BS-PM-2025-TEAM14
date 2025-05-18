@@ -15,11 +15,11 @@ warnings.filterwarnings(
 
 import pytest
 from fastapi.testclient import TestClient
-import main
+import backend.main as main
 import os
 import io
 import bcrypt
-from main import app, get_session
+from backend.main import app, get_session
 
 
 class FakeUser:

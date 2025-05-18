@@ -1,4 +1,4 @@
-from test_main_utils import *
+from backend.tests.test_main_utils import *
 
 client = TestClient(app)
 
@@ -268,7 +268,7 @@ def test_upload_file_success(monkeypatch, tmp_path):
     )
     assert os.path.exists(created_file_path)
 
-
+'''
 def test_reload_files(monkeypatch, tmp_path):
     """
     Test /reloadFiles by creating a temporary folder structure.
@@ -289,7 +289,7 @@ def test_reload_files(monkeypatch, tmp_path):
 
     # 3. Create the fake directory structure that the endpoint will traverse.
     #    The endpoint calls: root_path = os.path.join("Documents", user_email)
-    base_dir = os.path.join("Documents", user_email)  # This uses our fake join now.
+    base_dir = os.path.join("../Documents", user_email)  # This uses our fake join now.
     # Ensure the base_dir exists.
     os.makedirs(base_dir, exist_ok=True)
 
@@ -310,7 +310,41 @@ def test_reload_files(monkeypatch, tmp_path):
     # Since both full_file_path and root_path were computed with our fake join, the relative path should be "dummy.txt".
     assert "dummy.txt" in json_resp.get("files", [])
     assert "dummy.txt" in json_resp.get("file_paths", [])
+'''
 
+
+def test_reload_files(monkeypatch, tmp_path):
+    """
+    Exercise GET /reloadFiles/{user_email}
+
+    We point main.DOCUMENTS_ROOT to a tmp folder so the endpoint scans a
+    throw-away directory tree instead of the real Documents/ disk location.
+    """
+    # ----- arrange ----------------------------------------------------------
+    user_email = "test@example.com"
+
+    # 1. Fake root:   tmp_path/Documents
+    documents_root = tmp_path / "Documents"
+    documents_root.mkdir()
+
+    # 2. Tell the production code to use that root.
+    #    (main.py should reference this constant instead of hard-coding 'Documents')
+    monkeypatch.setattr(main, "DOCUMENTS_ROOT", documents_root)
+
+    # 3. Build   tmp_path/Documents/<user_email>/dummy.txt
+    user_dir = documents_root / user_email
+    user_dir.mkdir(parents=True)
+    dummy_file = user_dir / "dummy.txt"
+    dummy_file.write_text("dummy content")
+
+    # ----- act --------------------------------------------------------------
+    res = client.get(f"/reloadFiles/{user_email}")
+
+    # ----- assert -----------------------------------------------------------
+    assert res.status_code == 200
+    payload = res.json()
+    assert "dummy.txt" in payload["files"]
+    assert "dummy.txt" in payload["file_paths"]
 
 # Similarly, tests for endpoints that require authentication or a professor role
 # would involve overriding the token verification dependencies or simulating a token.

@@ -3,7 +3,7 @@ import os
 from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text, DateTime, Boolean
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from config import DATABASE_URL
+from backend.config import DATABASE_URL
 from datetime import datetime
 from sqlalchemy.sql import text
 from sqlalchemy.future import select
