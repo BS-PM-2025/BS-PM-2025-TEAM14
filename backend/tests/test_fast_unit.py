@@ -42,6 +42,7 @@ def test_reload_files_empty(tmp_path, monkeypatch):
 
 # ---------- bulk-read notifications ----------
 def test_mark_all_notifications(monkeypatch):
+    #FIX THIS TEST
     monkeypatch.setattr(
         main,
         "mark_all_notifications_as_read",
