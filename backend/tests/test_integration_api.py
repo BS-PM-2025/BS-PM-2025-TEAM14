@@ -36,7 +36,7 @@ async def client(session):
         yield ac
     app.dependency_overrides.pop(get_session, None)
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="session")
 async def test_full_flow(client):
     user = {
         "email": "full@test",

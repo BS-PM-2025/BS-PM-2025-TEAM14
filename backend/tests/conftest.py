@@ -32,10 +32,11 @@ def override_professor_session(monkeypatch):
     yield
     app.dependency_overrides.pop(get_session, None)
 
-
+'''
 @pytest.fixture(scope="session")
 def event_loop():
     """Create a session-scoped event loop so session fixtures can use it."""
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
+'''
