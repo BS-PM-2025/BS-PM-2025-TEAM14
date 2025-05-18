@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio
 def anyio_backend():
     return "asyncio"
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def db_engine(tmp_path_factory):
     url = f"sqlite+aiosqlite:///{tmp_path_factory.mktemp('db')}/test.db"
     eng = create_async_engine(url, future=True)
