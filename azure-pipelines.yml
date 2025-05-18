@@ -72,8 +72,15 @@ stages:
             displayName: "Publish Code Coverage XML"
 
           - task: PublishTestResults@2
-            displayName: "Publish Tests Report to Dashboard"
+            displayName: "Publish Tests to Dashboard"
             inputs:
               testResultsFormat: JUnit
               testResultsFiles: backend/pytest-report.xml
               mergeTestResults: true
+
+          - task: PublishCodeCoverageResults@1
+            displayName: "Publish Coverage to Dashboard"
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: "backend/coverage.xml"
+              reportDirectory: "backend/coverage_html"
