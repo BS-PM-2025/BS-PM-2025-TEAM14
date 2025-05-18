@@ -62,11 +62,11 @@ stages:
             displayName: "Aggregate test count"
 
           - publish: backend/pytest-report.json
-            artifact: test-metrics
+            artifact: test-metrics-json
             displayName: "Publish pytest JSON Report"
 
           - publish: backend/pytest-report.xml
-            artifact: test-metrics
+            artifact: test-metrics-xml
             displayName: "Publish pytest XML report"
 
           - task: PublishTestResults@2
