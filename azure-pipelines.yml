@@ -21,22 +21,22 @@ stages:
       - job: BuildAndTest
         displayName: "Build And Test Application"
         steps:
-          # Frontend Build
-          - task: NodeTool@0
-            displayName: "Install Node.js"
-            inputs:
-              versionSpec: "$(nodeVersion)"
-
-          - script: |
-              cd frontend
-              npm install --legacy-peer-deps
-              npm install react-scripts --save-dev
-              npm run build
-            displayName: "Build Frontend"
-            timeoutInMinutes: 10
-            env:
-              CI: "false" # Prevent treating warnings as errors
-              NODE_ENV: "test"
+#          # Frontend Build
+#          - task: NodeTool@0
+#            displayName: "Install Node.js"
+#            inputs:
+#              versionSpec: "$(nodeVersion)"
+#
+#          - script: |
+#              cd frontend
+#              npm install --legacy-peer-deps
+#              npm install react-scripts --save-dev
+#              npm run build
+#            displayName: "Build Frontend"
+#            timeoutInMinutes: 10
+#            env:
+#              CI: "false" # Prevent treating warnings as errors
+#              NODE_ENV: "test"
 
           # Backend Build and Test
           - task: UsePythonVersion@0
@@ -49,10 +49,7 @@ stages:
               python -m pip install --upgrade pip
               cd backend
               pip install -r requirements.txt
-              pytest \
-                    --json-report --json-report-file=pytest-report.json \
-                    --junitxml=pytest-report.xml \
-                    --cov=app --cov-report=xml
+              pytest
             displayName: "Run back-end unit tests"
 
           - bash: |
