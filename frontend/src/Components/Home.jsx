@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useUser } from './UserContext';
-import { getToken, removeToken } from '../utils/auth';
+import { getToken, removeToken, forceLogout, isTokenValid, checkBackendHealth } from '../utils/auth';
 import { Modal, Box, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -42,12 +42,25 @@ const Home = () => {
   });
 
   useEffect(() => {
-    const checkLoginStatus = () => {
+    const checkLoginStatus = async () => {
       const token = getToken();
       if (token) {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (!user && userData) {
-          setUserData(userData);
+        try {
+          // Check if backend is running
+          const isBackendHealthy = await checkBackendHealth();
+          if (!isBackendHealthy) {
+            console.log('Backend is down, forcing logout');
+            forceLogout();
+            return;
+          }
+
+          const userData = JSON.parse(localStorage.getItem('user'));
+          if (!user && userData) {
+            setUserData(userData);
+          }
+        } catch (error) {
+          console.error('Error checking login status:', error);
+          removeToken();
         }
       } else {
         if (user) {
@@ -56,11 +69,18 @@ const Home = () => {
       }
     };
 
+    // Check login status on mount
     checkLoginStatus();
+
+    // Set up interval to check backend health every 5 seconds
+    const healthCheckInterval = setInterval(checkLoginStatus, 5000);
+
+    // Add event listeners
     window.addEventListener('storage', checkLoginStatus);
     window.addEventListener('focus', checkLoginStatus);
 
     return () => {
+      clearInterval(healthCheckInterval);
       window.removeEventListener('storage', checkLoginStatus);
       window.removeEventListener('focus', checkLoginStatus);
     };
