@@ -16,12 +16,12 @@ variables:
 
 stages:
   - stage: Build
-    displayName: "Build and Test"
+    displayName: "Build • Test • Report"
     jobs:
       - job: BuildAndTest
-        displayName: "Build and Test Applications"
+        displayName: "Build Frontend, Test Backend"
         steps:
-          # Frontend Build and Test
+          # Frontend Build
           - task: NodeTool@0
             displayName: "Install Node.js"
             inputs:
@@ -49,52 +49,30 @@ stages:
               python -m pip install --upgrade pip
               cd backend
               pip install -r requirements.txt
-              pytest
-            displayName: "Install Dependencies and Run Tests"
+              pytest \
+                    --json-report --json-report-file=pytest-report.json \
+                    --junitxml=pytest-report.xml
+            displayName: "Run back-end unit tests"
 
-#  - stage: Deploy
-#    displayName: "Deploy"
-#    dependsOn: Build
-#    condition: succeeded()
-#    jobs:
-#      - deployment: DeployFrontend
-#        displayName: "Deploy Frontend"
-#        environment: "production"
-#        strategy:
-#          runOnce:
-#            deploy:
-#              steps:
-#                - task: ArchiveFiles@2
-#                  inputs:
-#                    rootFolderOrFile: "frontend/build"
-#                    includeRootFolder: false
-#                    archiveType: "zip"
-#                    archiveFile: "$(Build.ArtifactStagingDirectory)/frontend.zip"
-#                    replaceExistingArchive: true
-#
-#                - task: PublishBuildArtifacts@1
-#                  inputs:
-#                    PathtoPublish: "$(Build.ArtifactStagingDirectory)/frontend.zip"
-#                    ArtifactName: "frontend"
-#                    publishLocation: "Container"
-#
-#      - deployment: DeployBackend
-#        displayName: "Deploy Backend"
-#        environment: "production"
-#        strategy:
-#          runOnce:
-#            deploy:
-#              steps:
-#                - task: ArchiveFiles@2
-#                  inputs:
-#                    rootFolderOrFile: "backend"
-#                    includeRootFolder: false
-#                    archiveType: "zip"
-#                    archiveFile: "$(Build.ArtifactStagingDirectory)/backend.zip"
-#                    replaceExistingArchive: true
-#
-#                - task: PublishBuildArtifacts@1
-#                  inputs:
-#                    PathtoPublish: "$(Build.ArtifactStagingDirectory)/backend.zip"
-#                    ArtifactName: "backend"
-#                    publishLocation: "Container"
+          - script: |
+              python - <<'PY'
+              import json, pathlib
+              report = pathlib.Path('backend/pytest-report.json')
+              total = 0
+            if report.exists():
+              total = json.loads(report.read_text())['summary']['collected']
+              print(f"##vso[task.setvariable variable=UNIT_TEST_COUNT]{total}")
+              print("TOTAL UNIT TESTS:", total)
+              PY
+            displayName: "Aggregate test count"
+
+          - publish: backend/pytest-report.json
+            artifact: test-metrics
+            displayName: "Publish pytest JSON Report"
+
+          - task: PublishTestResults@2
+            displayName: "Publish pytest results"
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: backend/pytest-report.xml
+              mergeTestResults: true
