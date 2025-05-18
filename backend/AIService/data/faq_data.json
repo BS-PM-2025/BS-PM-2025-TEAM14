@@ -65,6 +65,17 @@
         "en": "To check the status of any request, go to 'My Requests' section where you'll see all your submitted requests with their current status and expected completion time.",
         "he": "כדי לבדוק את הסטטוס של כל בקשה, עבור למדור 'הבקשות שלי' שם תראה את כל הבקשות שהגשת עם הסטטוס הנוכחי שלהן וזמן הסיום המשוער."
       }
+    },
+    {
+      "id": "assignment_submission",
+      "patterns": {
+        "en": ["how to submit assignment", "submit assignment", "hand in assignment", "turn in assignment", "assignment submission"],
+        "he": ["איך מגישים מטלה", "הגשת מטלה", "להגיש מטלה", "מגישים מטלה", "הגשה של מטלה"]
+      },
+      "response": {
+        "en": "To submit an assignment, go to the course page, find the assignment section, and click 'Submit Assignment'. Make sure to attach all required files and submit before the deadline.",
+        "he": "כדי להגיש מטלה, עבור לדף הקורס, מצא את מדור המטלות ולחץ על 'הגשת מטלה'. וודא שצירפת את כל הקבצים הנדרשים והגש לפני המועד האחרון."
+      }
     }
   ]
 } 

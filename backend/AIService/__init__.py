@@ -86,6 +86,11 @@ def process_keywords(text: str, language: str = "en") -> List[str]:
     # Filter out stop words for the specified language or use English as fallback
     language_stop_words = stop_words.get(language, stop_words["en"])
     keywords = [word for word in words if word not in language_stop_words]
+    
+    # Handle Hebrew definite articles
+    if language == "he":
+        keywords = [word[1:] if word.startswith('ה') else word for word in keywords]
+    
     return keywords
 
 
@@ -110,9 +115,9 @@ def calculate_match_score(query: str, pattern: str, language: str = "en") -> Tup
     
     # Check if pattern is contained in query or vice versa
     if pattern_lower in query_lower:
-        return 0.8 * (len(pattern_lower) / len(query_lower)), "pattern_in_query"
+        return 0.9 * (len(pattern_lower) / len(query_lower)), "pattern_in_query"
     if query_lower in pattern_lower:
-        return 0.7 * (len(query_lower) / len(pattern_lower)), "query_in_pattern"
+        return 0.8 * (len(query_lower) / len(pattern_lower)), "query_in_pattern"
     
     # Keyword matching
     query_keywords = process_keywords(query_lower, language)
@@ -138,7 +143,7 @@ def calculate_match_score(query: str, pattern: str, language: str = "en") -> Tup
     # Calculate score based on keyword matches
     if matches > 0:
         # For Hebrew, we reduce the threshold to account for complex word forms
-        multiplier = 0.6 if language == "en" else 0.5
+        multiplier = 0.8 if language == "en" else 0.7
         score = multiplier * (matches / max(len(query_keywords), len(pattern_keywords)))
         return score, "keyword"
     
@@ -243,8 +248,18 @@ async def processMessage(message: str, language: Optional[str] = None) -> Dict[s
     print(f"\nDEBUG: Processing message: '{message}', language: {language}")
     
     try:
-        # For now, we'll implement a simplified version similar to the Node.js service
-        # In production, you might call the Node.js service via exec, HTTP, or a more optimized IPC method
+        # Handle empty or None message
+        if not message or not message.strip():
+            error_messages = {
+                "en": "Please provide a question or request.",
+                "he": "אנא ספק שאלה או בקשה."
+            }
+            return {
+                "text": error_messages.get(language, error_messages["en"]),
+                "source": "system",
+                "language": language or "en",
+                "success": False
+            }
         
         # Detect language (very basic)
         if not language:
