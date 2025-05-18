@@ -51,7 +51,8 @@ stages:
               pip install -r requirements.txt
               pytest \
                     --json-report --json-report-file=pytest-report.json \
-                    --junitxml=pytest-report.xml
+                    --junitxml=pytest-report.xml \
+                    --cov=app --cov-report=xml
             displayName: "Run back-end unit tests"
 
           - bash: |
@@ -68,6 +69,10 @@ stages:
           - publish: backend/pytest-report.xml
             artifact: test-metrics-xml
             displayName: "Publish pytest XML report"
+
+          - publish: backend/coverage.xml
+            artifact: coverage
+            displayName: "Publish Code Coverage XML"
 
           - task: PublishTestResults@2
             displayName: "Publish pytest XML results"
