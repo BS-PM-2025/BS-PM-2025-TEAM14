@@ -287,6 +287,8 @@ function ProfessorRequestsPanel() {
                                             label="Change Request Status"
                                         >
                                             <MenuItem value="pending">Pending</MenuItem>
+                                            <MenuItem value="in process">In Process</MenuItem>
+                                            <MenuItem value="require editing">Require Editing</MenuItem>
                                             <MenuItem value="approved">Approve</MenuItem>
                                             <MenuItem value="rejected">Reject</MenuItem>
                                         </Select>
@@ -328,6 +330,8 @@ function ProfessorRequestsPanel() {
 function getStatusClass(status) {
     switch (status) {
         case "pending": return "bg-warning text-dark";
+        case "in process": return "bg-info text-white";
+        case "require editing": return "bg-warning text-dark";
         case "approved": return "bg-success text-white";
         case "rejected": return "bg-danger text-white";
         case "not read": return "bg-secondary text-white";
@@ -338,6 +342,8 @@ function getStatusClass(status) {
 function getStatusText(status) {
     switch (status) {
         case "pending": return "Pending";
+        case "in process": return "In Process";
+        case "require editing": return "Require Editing";
         case "approved": return "Approved";
         case "rejected": return "Rejected";
         case "not read": return "Not Read";

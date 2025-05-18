@@ -122,34 +122,47 @@ function StudentRequests({ emailUser }) {
     const handleEditSubmit = async e => {
         e.preventDefault();
         try {
-             await axios.put(
+            // Validate request status before attempting edit
+            if (!["pending", "require editing"].includes(selectedRequest.status)) {
+                alert(`Cannot edit request with status: ${selectedRequest.status}`);
+                return;
+            }
+            
+            const response = await axios.put(
                 `http://localhost:8000/Requests/EditRequest/${selectedRequest.id}`,
                 {
-                    details: editDetails,
-                    files: selectedRequest.files // or editFiles
+                    details: editDetails
                 },
-                 {
-                     headers: {
-                         "Content-Type": "application/json",
-                         "Authorization": `Bearer ${getToken()}`
-                     }
-                 }
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getToken()}`
+                    }
+                }
             );
+
             // 1) update the list
             setVisibleRequests(prev =>
                 prev.map(r =>
                     r.id === selectedRequest.id
-                        ? { ...r, details: editDetails /*, files: editFiles*/ }
+                        ? { ...r, details: editDetails }
                         : r
                 )
             );
             // 2) update the selectedRequest so the modal shows the new text
-            setSelectedRequest(r => ({ ...r, details: editDetails /*, files: editFiles*/ }));
+            setSelectedRequest(r => ({ ...r, details: editDetails }));
             // 3) exit edit-mode
             setIsEditing(false);
+            alert("הבקשה עודכנה בהצלחה");
         } catch (err) {
-            console.error("Error updating request:", err);
-            alert("אירעה שגיאה בעת עדכון הבקשה.");
+            let errorMessage = "אירעה שגיאה בעת עדכון הבקשה.";
+            if (err.response?.data?.detail) {
+                errorMessage = err.response.data.detail;
+            }
+            alert(errorMessage);
+            
+            // If there's an error, exit edit mode
+            setIsEditing(false);
         }
     };
 
@@ -344,7 +357,7 @@ function StudentRequests({ emailUser }) {
                                         סגירה
                                     </button>
 
-                                    {(selectedRequest.status === "pending" || selectedRequest.status === "not read") && !isEditing && (
+                                    {(selectedRequest.status === "pending" || selectedRequest.status === "require editing") && !isEditing && (
                                         <Fab
                                             color="secondary"
                                             aria-label="edit"

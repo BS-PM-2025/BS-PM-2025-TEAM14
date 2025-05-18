@@ -16,6 +16,17 @@ const NotificationCenter = ({
   selectedNotification,
   onSelectNotification,
 }) => {
+  const getNotificationTypeText = (type) => {
+    switch (type) {
+      case "status_change":
+        return "Status Update";
+      case "transfer":
+        return "Request Transfer";
+      default:
+        return type;
+    }
+  };
+
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
       <Box sx={{ width: 600, display: "flex", height: "100%" }}>
@@ -37,13 +48,21 @@ const NotificationCenter = ({
                 }
                 onClick={() => onSelectNotification(notif)}
                 alignItems="flex-start"
+                sx={{
+                  backgroundColor: notif.is_read ? "inherit" : "action.hover",
+                }}
               >
                 <ListItemText
                   primary={notif.message}
                   secondary={
-                    notif.created_at
-                      ? new Date(notif.created_at).toLocaleString()
-                      : ""
+                    <>
+                      <Typography variant="caption" display="block">
+                        {new Date(notif.created_date).toLocaleString()}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {getNotificationTypeText(notif.type)}
+                      </Typography>
+                    </>
                   }
                   sx={{
                     whiteSpace: "nowrap",
@@ -74,9 +93,7 @@ const NotificationCenter = ({
                 color="text.secondary"
                 gutterBottom
               >
-                {selectedNotification.created_at
-                  ? new Date(selectedNotification.created_at).toLocaleString()
-                  : ""}
+                {new Date(selectedNotification.created_date).toLocaleString()}
               </Typography>
               <Divider sx={{ my: 2 }} />
               <Typography variant="body1">
@@ -88,7 +105,7 @@ const NotificationCenter = ({
                   color="text.secondary"
                   sx={{ mt: 2, display: "block" }}
                 >
-                  Type: {selectedNotification.type}
+                  Type: {getNotificationTypeText(selectedNotification.type)}
                 </Typography>
               )}
             </>

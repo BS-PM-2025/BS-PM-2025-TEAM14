@@ -276,28 +276,16 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
 
         # If the user is a secretary, return all relevant requests
         if user.role == "secretary":
-            print("fetching secretary requests", user_email)
             secretary_result = await session.execute(select(Secretaries).where(Secretaries.email == user_email))
             secretary = secretary_result.scalar_one_or_none()
             if not secretary:
                 raise HTTPException(status_code=404, detail="Secretary not found")
             department = secretary.department_id
-            '''
-            all_requests = await session.execute(select(Requests))
-            requests = all_requests.scalars().all()
-            relevant_requests = []
-            for request in requests:
-                request_student = request.student_email
-                student_result = await session.execute(select(Students).where(Students.email == request_student))
-                student = student_result.scalar_one_or_none()
-                # Ensure student is not None and belongs to the same department
-                if student and student.department_id == department and request.status == "pending":
-                    relevant_requests.append(request)
-            return relevant_requests'''
+            
             relevant_requests_result = await session.execute(
                 select(Requests)
                 .join(Students, Requests.student_email == Students.email)
-                .where(Students.department_id == department, Requests.status == "pending")
+                .where(Students.department_id == department)
             )
             relevant_requests = relevant_requests_result.scalars().all()
             return [
@@ -337,33 +325,6 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
-'''
-@app.post("/update_status")
-async def update_status(request: int, status: str, session: AsyncSession = Depends(get_session)):
-    try:
-        # result = await session.execute(select(Users).filter(Users.email == user_email))
-        # user = result.scalar_one_or_none()
-        #
-        # if not user:
-        #     raise HTTPException(status_code=404, detail="User not found")
-        #
-        #
-        # if user.role != "secretary":
-        #     raise HTTPException(status_code=403, detail="Only a secretary can change the status")
-
-        result = await session.execute(select(Requests).filter(Requests.id == request_id))
-        request = result.scalar_one_or_none()
-
-        if not request:
-            raise HTTPException(status_code=404, detail="Request not found")
-
-        request.status = status
-        await session.commit()
-
-        return {"message": "Status updated successfully"}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")'''
 
 @app.post("/update_status")
 async def update_status(request: Request, session: AsyncSession = Depends(get_session)):
@@ -388,11 +349,21 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
         request.status = status
         request.timeline["status_changes"].append({"date": datetime.now().isoformat(), "status": status})
         flag_modified(request, "timeline")
-        await session.commit()
+        
+        # Create notification for the student
+        await create_notification(
+            session=session,
+            user_email=request.student_email,
+            request_id=request_id,
+            message=f"Your request '{request.title}' status has been changed to {status}",
+            type="status_change"
+        )
 
+        await session.commit()
         return {"message": "Status updated successfully"}
 
     except Exception as e:
+        await session.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")
 
 @app.get("/requests/professor/{professor_email}")
@@ -407,10 +378,7 @@ async def get_professor_requests(professor_email: str, session: AsyncSession = D
 
         result = await session.execute(
             select(Requests).where(
-                and_(
-                    Requests.course_id.in_(course_ids),
-                    Requests.status == "pending"
-                )
+                Requests.course_id.in_(course_ids)
             )
         )
         requests = result.scalars().all()
@@ -691,37 +659,77 @@ async def delete_request(request_id: int, session: AsyncSession = Depends(get_se
         raise HTTPException(status_code=500, detail=f"Error deleting request: {str(e)}")
 
 @app.put("/Requests/EditRequest/{request_id}")
-async def edit_request(request_id: int, request: Request ,session: AsyncSession = Depends(get_session),
-                       student: dict = Depends(verify_token_student)
-                       ):
-    try :
+async def edit_request(request_id: int, request: Request, session: AsyncSession = Depends(get_session),
+                       student: dict = Depends(verify_token_student)):
+    try:
         existing_request = await session.get(Requests, request_id)
+        
         if not existing_request:
             raise HTTPException(status_code=404, detail="Request not found")
-        if existing_request.status != "pending":
-            raise HTTPException(status_code=400, detail="Cannot edit a request that is not pending")
-        data = await request.json()
-        print(data)
+        
+        # Verify the student owns this request
+        if existing_request.student_email != student.get('user_email'):
+            raise HTTPException(status_code=403, detail="You can only edit your own requests")
+        
+        # Check request status
+        if existing_request.status not in ["pending", "require editing"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot edit a request that is not pending or require editing. Current status: {existing_request.status}"
+            )
+        
+        try:
+            data = await request.json()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Invalid request data format")
+        
+        if "details" not in data:
+            raise HTTPException(status_code=400, detail="Missing 'details' in request data")
+        
         # Edit the request
         existing_request.details = data["details"]
-        # existing_request.files = data["files"]
-
-        existing_request_timeline = dict(existing_request.timeline)
+        
+        # Initialize timeline if it doesn't exist
+        if not existing_request.timeline:
+            existing_request.timeline = {
+                "created": existing_request.created_date.isoformat() if existing_request.created_date else datetime.now().isoformat(),
+                "status_changes": [],
+                "edits": []
+            }
+        
+        # Ensure timeline is a dictionary
+        if isinstance(existing_request.timeline, str):
+            try:
+                existing_request.timeline = json.loads(existing_request.timeline)
+            except json.JSONDecodeError:
+                existing_request.timeline = {
+                    "created": existing_request.created_date.isoformat() if existing_request.created_date else datetime.now().isoformat(),
+                    "status_changes": [],
+                    "edits": []
+                }
+        
+        # Add edit to timeline
+        if "edits" not in existing_request.timeline:
+            existing_request.timeline["edits"] = []
+        
+        existing_request.timeline["edits"].append({
+            "details": data["details"],
+            "date": datetime.now().isoformat()
+        })
+        
         try:
-            edits = existing_request_timeline["edits"]
-            edits.append((f"details: {data['details']}", datetime.now().isoformat()))
-        except KeyError as e:
-            print("Error", e)
-            edits = [(f"details: {data['details']}", datetime.now().isoformat())]
-        existing_request_timeline["edits"] = edits
-        existing_request.timeline = existing_request_timeline
-        flag_modified(existing_request, "timeline")
-        #session.add(existing_request)
-        await session.commit()
+            flag_modified(existing_request, "timeline")
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(status_code=500, detail=f"Error saving changes: {str(e)}")
 
         return {"message": "Request updated successfully"}
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        await session.rollback()
         raise HTTPException(status_code=500, detail=f"Error editing request: {str(e)}")
 
 @app.get("/student/{student_email:path}/courses")
