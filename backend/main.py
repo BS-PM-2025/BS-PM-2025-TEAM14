@@ -200,7 +200,6 @@ async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: st
     try:
         # Validate file size (example: 10MB limit)
         MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
-        file_size = 0
         file_content = await file.read()
         file_size = len(file_content)
         
@@ -1431,10 +1430,7 @@ async def mark_notification_read(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/notifications/read-all")
-async def mark_all_notifications_read(
-    session: AsyncSession = Depends(get_session),
-    token_data: dict = Depends(verify_token)
-):
+async def mark_all_notifications_read(session: AsyncSession = Depends(get_session), token_data: dict = Depends(verify_token)):
     """Mark all notifications for the current user as read."""
     try:
         count = await mark_all_notifications_as_read(session, token_data["user_email"])

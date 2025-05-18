@@ -6,6 +6,26 @@ client = TestClient(app)
 # Tests for Public Endpoints
 ###########################################
 
+@pytest.mark.parametrize(
+    "activate_fixture,email,password,expected_code",
+    [
+        # success – user exists & good password
+        ("override_session_with_data",  "student1@sce.ac.il", "password", 200),
+        # user not in DB  → 404
+        ("override_session_without_data","nosuch@sce.ac.il",  "password", 404),
+        # bad password    → 401
+        ("override_session_with_data",  "student1@sce.ac.il", "BAD",      401),
+    ],
+)
+
+def test_login_matrix(request, activate_fixture, email, password, expected_code):
+    """
+    Each row picks the right fake-session fixture, then calls /login exactly once.
+    """
+    request.getfixturevalue(activate_fixture)          # ① enable override
+    r = client.post("/login", json={"Email": email, "Password": password})
+    assert r.status_code == expected_code              # ② assert branch
+
 def test_login_success(override_session_with_data):
     # Arrange: use the expected keys (capitalized as per your endpoint).
     payload = {"Email": "test@example.com", "Password": "password"}
@@ -76,8 +96,8 @@ def test_list_tables():
     assert response.status_code == 200
     assert response.json() == {"tables": None}
 
-
-def test_list_users():
+@pytest.mark.asyncio
+async def test_list_users():
     response = client.get("/users")
     assert response.status_code == 200
     assert type(response.json()) == list
@@ -114,6 +134,13 @@ def test_create_user(override_session_without_data):
     assert response.json()["message"] == "User created successfully"
     assert response.json()["user_email"] == "test_email@example.com"
 
+def test_create_user_duplicate(monkeypatch):
+    async def fake_add_user(sess, *a, **kw):
+        raise main.HTTPException(status_code=409, detail="User already exists")
+    monkeypatch.setattr(main, "add_user", fake_add_user)
+    r = client.post("/create_user", json=dict(
+        email="dupe@test", password="x", first_name="D", last_name="U", role="student"))
+    assert r.status_code == 409
 
 def test_set_role(override_student_session):
     payload = {"user_email": "test_student@example.com", "role": "Test"}
@@ -207,6 +234,11 @@ def test_get_student_courses_empty_email(override_student_session):
 ###########################################
 # Tests for File Upload / Reload Endpoints
 ###########################################
+
+def test_upload_missing_filetype(monkeypatch):
+    data = {"file": ("x.txt", io.BytesIO(b"hi"))}
+    r = client.post("/uploadfile/foo@bar", files=data)     # no fileType param
+    assert r.status_code == 422                            # FastAPI validation error
 
 def fake_join_factory(tmp_documents_path):
     """

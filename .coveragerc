@@ -1,0 +1,13 @@
+[run]
+source = backend
+branch = True
+
+omit =
+    backend/AIService/*
+    backend/db_connection.py
+    */tests/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__:

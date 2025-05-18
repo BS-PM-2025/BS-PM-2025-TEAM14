@@ -203,28 +203,3 @@ def get_fake_session_student():
 def get_fake_session_professor():
     # Set for professor testing.
     return FakeAsyncSession(expected_email="test_professor@example.com", expected_role="professor")
-
-@pytest.fixture
-def override_session_with_data(monkeypatch):
-    app.dependency_overrides[get_session] = get_fake_session_with_expected_data        # default async session
-    yield
-    app.dependency_overrides.pop(get_session, None)
-
-@pytest.fixture
-def override_session_without_data(monkeypatch):
-    app.dependency_overrides[get_session] = get_fake_session      # default async session
-    yield
-    app.dependency_overrides.pop(get_session, None)
-
-@pytest.fixture
-def override_student_session(monkeypatch):
-    app.dependency_overrides[get_session] = get_fake_session_student
-    yield
-    # Clean up after test by removing override:
-    app.dependency_overrides.pop(get_session, None)
-
-@pytest.fixture
-def override_professor_session(monkeypatch):
-    app.dependency_overrides[get_session] = get_fake_session_professor
-    yield
-    app.dependency_overrides.pop(get_session, None)
