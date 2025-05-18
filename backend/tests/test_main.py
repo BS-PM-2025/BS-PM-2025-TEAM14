@@ -26,6 +26,7 @@ def test_login_matrix(request, activate_fixture, email, password, expected_code)
     r = client.post("/login", json={"Email": email, "Password": password})
     assert r.status_code == expected_code              # ② assert branch
 
+
 def test_login_success(override_session_with_data):
     # Arrange: use the expected keys (capitalized as per your endpoint).
     payload = {"Email": "test@example.com", "Password": "password"}
