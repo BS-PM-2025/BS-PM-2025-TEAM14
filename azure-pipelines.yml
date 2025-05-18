@@ -50,7 +50,7 @@ stages:
               cd backend
               pip install -r requirements.txt
               pytest
-            displayName: "Run back-end unit tests"
+            displayName: "Run Backend Unit Tests"
 
           - bash: |
               total=$(python -c "import json, pathlib, sys; p=pathlib.Path('backend/pytest-report.json'); 
@@ -78,7 +78,7 @@ stages:
               testResultsFiles: backend/pytest-report.xml
               mergeTestResults: true
 
-          - task: PublishCodeCoverageResults@1
+          - task: PublishCodeCoverageResults@2
             displayName: "Publish Coverage to Dashboard"
             inputs:
               codeCoverageTool: Cobertura
