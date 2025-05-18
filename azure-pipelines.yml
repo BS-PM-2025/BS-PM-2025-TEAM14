@@ -55,7 +55,7 @@ stages:
             displayName: "Run back-end unit tests"
 
           - script: |
-              python - <<'PY'
+              python -c "
               import json, pathlib
               report = pathlib.Path('backend/pytest-report.json')
               total = 0
@@ -63,7 +63,7 @@ stages:
                 total = json.loads(report.read_text())['summary']['collected']
                 print(f"##vso[task.setvariable variable=UNIT_TEST_COUNT]{total}")
                 print("TOTAL UNIT TESTS:", total)
-                PY
+                "
             displayName: "Aggregate test count"
 
           - publish: backend/pytest-report.json
