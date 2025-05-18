@@ -8,9 +8,11 @@ from backend.db_connection import Base  # wherever your declarative Base lives
 
 pytestmark = pytest.mark.asyncio
 
+'''
 @pytest.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
+'''
 
 @pytest_asyncio.fixture
 async def db_engine(tmp_path_factory):
@@ -36,7 +38,7 @@ async def client(session):
         yield ac
     app.dependency_overrides.pop(get_session, None)
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio
 async def test_full_flow(client):
     user = {
         "email": "full@test",
