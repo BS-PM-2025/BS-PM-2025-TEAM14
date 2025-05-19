@@ -327,43 +327,39 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
 
 @app.post("/update_status")
 async def update_status(request: Request, session: AsyncSession = Depends(get_session)):
-    try:
-        # Get JSON data from the request body
-        data = await request.json()
-        request_id = data.get("request_id")
-        status = data.get("status")
-
-        # Validate incoming data
-        if not request_id or not status:
-            raise HTTPException(status_code=400, detail="request_id and status are required")
-
-        # Fetch the request from the database
-        result = await session.execute(select(Requests).filter(Requests.id == request_id))
-        request = result.scalar_one_or_none()
-
-        if not request:
-            raise HTTPException(status_code=404, detail="Request not found")
-
-        # Update the status
-        request.status = status
-        request.timeline["status_changes"].append({"date": datetime.now().isoformat(), "status": status})
-        flag_modified(request, "timeline")
-        
-        # Create notification for the student
-        await create_notification(
-            session=session,
-            user_email=request.student_email,
-            request_id=request_id,
-            message=f"Your request '{request.title}' status has been changed to {status}",
-            type="status_change"
-        )
-
-        await session.commit()
-        return {"message": "Status updated successfully"}
-
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating status: {str(e)}")
+    data = await request.json()
+    request_id = data.get("request_id")
+    new_status = data.get("status")
+    
+    if not request_id or not new_status:
+        raise HTTPException(status_code=400, detail="Missing request_id or status")
+    
+    # Get the request
+    result = await session.execute(select(Requests).where(Requests.id == request_id))
+    request = result.scalar_one_or_none()
+    
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Update status
+    request.status = new_status
+    
+    # Update timeline
+    if not request.timeline:
+        request.timeline = {}
+    if "status_changes" not in request.timeline:
+        request.timeline["status_changes"] = []
+    
+    request.timeline["status_changes"].append({
+        "from": request.status,
+        "to": new_status,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    
+    flag_modified(request, "timeline")
+    await session.commit()
+    
+    return {"message": "Status updated successfully"}
 
 @app.get("/requests/professor/{professor_email}")
 async def get_professor_requests(professor_email: str, session: AsyncSession = Depends(get_session)):
@@ -1093,70 +1089,48 @@ async def get_department_transfer_requests(
     
     return formatted_requests
 
+class ResponseRequest(BaseModel):
+    request_id: int
+    professor_email: str
+    response_text: str
+
 @app.post("/submit_response")
 async def submit_response(
-        request_id: int = Form(...),
-        professor_email: str = Form(...),
-        response_text: str = Form(...),
-        files: Optional[List[UploadFile]] = File(None),
-        db: AsyncSession = Depends(get_session)):
-    saved_files = []
-    upload_dir = f"Documents/{professor_email}/{request_id}"
-    os.makedirs(upload_dir, exist_ok=True)
-
-    if files:
-        for file in files:
-            file_path = os.path.join(upload_dir, file.filename)
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            saved_files.append(file.filename)
-
-    try:
-        result = await db.execute(select(Requests).where(Requests.id == request_id))
-        request = result.scalar_one()
-
-        # עדכון ה-timeline
-        if not request.timeline:
-            request.timeline = {
-                "created": request.created_date.isoformat() if request.created_date else datetime.now().isoformat(),
-                "status_changes": []
-            }
-
-        request.timeline["status_changes"].append({
-            "status": "responded",
-            "by": professor_email,
-            "date": datetime.now().isoformat()
-        })
-        request.status = "responded"
-        flag_modified(request, "timeline")
-        await db.commit()
-        await db.flush()
-
-        db.add(request)
-
-        response = Responses(
-            request_id=request_id,
-            professor_email=professor_email,
-            response_text=response_text,
-            files=saved_files if saved_files else None,
-            created_date=datetime.now().date()
-        )
-        db.add(response)
-        await db.commit()
-
-        return {"message": "Response submitted and timeline updated"}
-
-    except NoResultFound:
-        await db.rollback()
-        return {"error": "Request not found"}, 404
-
-    except Exception as e:
-        await db.rollback()
-        print("Error:", e)
-        return {"error": "Failed to submit response"}, 500
-
-    finally:
-        await db.close()
+    response_data: ResponseRequest,
+    db: AsyncSession = Depends(get_session)
+):
+    # Get the request
+    result = await db.execute(select(Requests).where(Requests.id == response_data.request_id))
+    request = result.scalar_one_or_none()
+    
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Create response
+    response = RequestResponses(
+        request_id=response_data.request_id,
+        professor_email=response_data.professor_email,
+        response_text=response_data.response_text,
+        created_date=datetime.utcnow()
+    )
+    
+    db.add(response)
+    
+    # Update request timeline
+    if not request.timeline:
+        request.timeline = {}
+    if "responses" not in request.timeline:
+        request.timeline["responses"] = []
+    
+    request.timeline["responses"].append({
+        "professor_email": response_data.professor_email,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    
+    flag_modified(request, "timeline")
+    await db.commit()
+    
+    return {"message": "Response submitted and timeline updated"}
 
 
 @app.get("/request/responses/{request_id}")
@@ -1208,132 +1182,44 @@ async def get_student_courses_for_request(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class TransferRequest(BaseModel):
+    new_course_id: str
+    reason: str
+
 @app.put("/request/{request_id}/transfer")
 async def transfer_request(
     request_id: int,
-    transfer_data: dict = Body(...),
+    transfer_data: TransferRequest,
     session: AsyncSession = Depends(get_session)
 ):
-    try:
-        new_course_id = transfer_data.get("new_course_id")
-        transfer_reason = transfer_data.get("reason", "No reason provided")
-        
-        # Get the request
-        result = await session.execute(select(Requests).where(Requests.id == request_id))
-        request = result.scalar_one_or_none()
-        
-        if not request:
-            raise HTTPException(status_code=404, detail="Request not found")
-            
-        # Update the course_id (can be null)
-        request.course_id = new_course_id
-        
-        # Update timeline
-        if not request.timeline:
-            request.timeline = {
-                "created": request.created_date.isoformat() if request.created_date else datetime.now().isoformat(),
-                "status_changes": []
-            }
-            
-        request.timeline["status_changes"].append({
-            "status": "transferred",
-            "new_course_id": new_course_id if new_course_id else "Department Secretary",
-            "reason": transfer_reason,
-            "date": datetime.now().isoformat()
-        })
-
-        # Create notifications
-        # 1. Notify the student
-        if new_course_id:
-            # Get the professor for this course from student_courses
-            result = await session.execute(
-                select(StudentCourses)
-                .where(
-                    and_(
-                        StudentCourses.course_id == new_course_id,
-                        StudentCourses.student_email == request.student_email
-                    )
-                )
-            )
-            student_course = result.scalar_one_or_none()
-            
-            if student_course and student_course.professor_email:
-                await create_notification(
-                    session=session,
-                    user_email=request.student_email,
-                    request_id=request_id,
-                    message=f"Your request '{request.title}' has been transferred to {student_course.professor_email}. Reason: {transfer_reason}",
-                    type="transfer"
-                )
-            else:
-                await create_notification(
-                    session=session,
-                    user_email=request.student_email,
-                    request_id=request_id,
-                    message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
-                    type="transfer"
-                )
-        else:
-            await create_notification(
-                session=session,
-                user_email=request.student_email,
-                request_id=request_id,
-                message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
-                type="transfer"
-            )
-
-        # 2. If transferred to a course, notify the professor
-        if new_course_id:
-            # Get the professor for this course from student_courses
-            result = await session.execute(
-                select(StudentCourses)
-                .where(
-                    and_(
-                        StudentCourses.course_id == new_course_id,
-                        StudentCourses.student_email == request.student_email
-                    )
-                )
-            )
-            student_course = result.scalar_one_or_none()
-            
-            if student_course and student_course.professor_email:
-                await create_notification(
-                    session=session,
-                    user_email=student_course.professor_email,
-                    request_id=request_id,
-                    message=f"A new request '{request.title}' has been assigned to you from {request.student_email}. Reason for transfer: {transfer_reason}",
-                    type="transfer"
-                )
-        else:
-            # If transferred to Department Secretary, notify the relevant secretary
-            # First get the student's department
-            result = await session.execute(
-                select(Students).where(Students.email == request.student_email)
-            )
-            student = result.scalar_one_or_none()
-            
-            if student and student.department_id:
-                # Get the secretary for this department
-                result = await session.execute(
-                    select(Secretaries).where(Secretaries.department_id == student.department_id)
-                )
-                secretary = result.scalar_one_or_none()
-                
-                if secretary:
-                    await create_notification(
-                        session=session,
-                        user_email=secretary.email,
-                        request_id=request_id,
-                        message=f"A new request '{request.title}' has been transferred to you from {request.student_email}. Reason for transfer: {transfer_reason}",
-                        type="transfer"
-                    )
-        
-        await session.commit()
-        return {"message": "Request transferred successfully"}
-        
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    # Get the request
+    result = await session.execute(select(Requests).where(Requests.id == request_id))
+    request = result.scalar_one_or_none()
+    
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Update course_id
+    old_course_id = request.course_id
+    request.course_id = transfer_data.new_course_id
+    
+    # Update timeline
+    if not request.timeline:
+        request.timeline = {}
+    if "transfers" not in request.timeline:
+        request.timeline["transfers"] = []
+    
+    request.timeline["transfers"].append({
+        "from": old_course_id,
+        "to": transfer_data.new_course_id,
+        "reason": transfer_data.reason,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    
+    flag_modified(request, "timeline")
+    await session.commit()
+    
+    return {"message": "Request transferred successfully"}
 
 @app.get("/admin/transfer-requests")
 async def get_all_transfer_requests(
