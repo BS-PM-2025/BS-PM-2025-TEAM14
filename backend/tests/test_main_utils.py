@@ -20,6 +20,7 @@ import os
 import io
 import bcrypt
 from backend.main import app, get_session
+from datetime import datetime
 
 
 class FakeUser:
@@ -42,7 +43,7 @@ class FakeUser:
 
 
 class FakeRequest:
-    def __init__(self, id, title, student_email, details, files, created_date, status, timeline):
+    def __init__(self, id, title, student_email, details, files, status, created_date, timeline, course_id=None):
         self.id = id
         self.title = title
         self.student_email = student_email
@@ -51,6 +52,22 @@ class FakeRequest:
         self.status = status
         self.created_date = created_date
         self.timeline = timeline
+        self.course_id = course_id
+        
+        # Create a proper SQLAlchemy state mock
+        class State:
+            def __init__(self):
+                self.manager = {
+                    'timeline': type('obj', (object,), {
+                        'impl': type('obj', (object,), {
+                            'dispatch': type('obj', (object,), {
+                                'modified': lambda state, token: None,
+                                '_modified_token': object()
+                            })()
+                        })()
+                    })()
+                }
+        self._sa_instance_state = State()
 
 
 class FakeCourse:
@@ -96,17 +113,20 @@ class FakeResult:
 
 class FakeAsyncSession:
     def __init__(self, expected_email=None, expected_role=None):
-        """
-        The test can provide an expected email and role.
-        """
         self.expected_email = expected_email
         self.expected_role = expected_role
+        self.responses = []  # Store responses for testing
 
     async def execute(self, query):
         query_str = str(query).lower()
-        print("FakeAsyncSession.execute:", query_str)        # Check if the query is selecting from the Users table.
+        print("FakeAsyncSession.execute:", query_str)
         hashed = bcrypt.hashpw("password".encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        if "from users" in query_str :
+        
+        # Handle request responses
+        if "from request_responses" in query_str:
+            return FakeResult(self.responses)
+            
+        if "from users" in query_str:
             # Here, return the fake user for testing login.
             if "where" in query_str:
                 if self.expected_email:
@@ -121,13 +141,19 @@ class FakeAsyncSession:
 
         if "from requests" in query_str:
             if "where" in query_str:
-                fake_request = FakeRequest(1, f"Request 1", self.expected_email, f"Details 1",
-                                           None, None, None, None)
-                return FakeResult(fake_request)
+                # Check if we're looking for a specific request ID (match any filter by requests.id)
+                if "requests.id" in query_str:
+                    # Simulate not found for 99999
+                    if "99999" in query_str:
+                        return FakeResult(None)
+                    return FakeResult(FakeRequest(1, "Test Request", "test_student@example.com", "This is a test request", {}, "pending", datetime.now(), {"created": datetime.now().isoformat(), "status_changes": []}, course_id="CS101"))
+                # If the query is for requests by student_email, return a list with the fake request
+                if "where requests.student_email" in query_str:
+                    return FakeResult([FakeRequest(1, "Test Request", "test_student@example.com", "This is a test request", {}, "pending", datetime.now(), {"created": datetime.now().isoformat(), "status_changes": []})])
+                return FakeResult(None)  # Return None for any other request ID
             else:
-                fake_requests = [FakeRequest(i,f"Request {i}", f"test_student{i}@example.com", f"Details {i}",
-                                             None, None, None, None) for i in range(1,6)]
-            return FakeResult(fake_requests)
+                fake_requests = [FakeRequest(i, f"Request {i}", f"test_student{i}@example.com", f"Details {i}", None, None, "pending", None) for i in range(1, 6)]
+                return FakeResult(fake_requests)
 
         if "from professors" in query_str:
             fake_professor = FakeUser("test_professor@example.com", hashed, "professor", "Test", "User")
@@ -153,6 +179,9 @@ class FakeAsyncSession:
         return FakeResult(None)
 
     def add(self, obj):
+        # Store responses when they're added
+        if hasattr(obj, 'request_id') and hasattr(obj, 'professor_email'):
+            self.responses.append(obj)
         pass
 
     async def refresh(self, obj):
@@ -173,6 +202,21 @@ class FakeAsyncSession:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.close()
+
+    async def get(self, model, pk):
+        # Simulate getting a request by primary key
+        if hasattr(model, "__name__") and model.__name__ == "Requests":
+            if pk == 1:
+                return FakeRequest(1, "Request 1", "test_student@example.com", "Details 1", None, None, "pending", None)
+            else:
+                return None
+        return None
+
+    async def rollback(self):
+        pass
+
+    async def delete(self, obj):
+        pass
 
 
 class FakeStudentCourse:

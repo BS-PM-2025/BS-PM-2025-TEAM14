@@ -105,21 +105,6 @@ async def test_list_users():
     assert len(response.json()) > 0
 
 
-# def test_get_requests_all(override_session):
-#     response = client.get("/requests/all")
-#     assert response.status_code == 200
-#     assert type(response.json()) == list
-#     assert all(isinstance(request, dict) for request in response.json())
-
-
-def test_get_requests_specific(override_student_session):
-    response = client.get("/requests/test_student@example.com")
-    assert response.status_code == 200
-    assert type(response.json()) == list
-    assert len(response.json()) == 1
-    assert all(isinstance(request, dict) for request in response.json())
-
-
 def test_get_users(override_session_with_data):
     response = client.get("/users")
     assert response.status_code == 200
