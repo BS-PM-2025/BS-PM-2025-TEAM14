@@ -1383,5 +1383,3 @@ async def update_request_routing_rule(
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
-

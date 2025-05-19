@@ -2,10 +2,6 @@
 source = backend
 branch = True
 
-omit =
-    backend/AIService/*
-    backend/db_connection.py
-    */tests/*
 
 [report]
 exclude_lines =
