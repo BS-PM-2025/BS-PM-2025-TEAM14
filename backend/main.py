@@ -1390,48 +1390,135 @@ async def get_student_courses_for_request(
         raise HTTPException(status_code=500, detail=str(e))
 
 class TransferRequest(BaseModel):
-    new_course_id: str
+    new_course_id: Optional[str] = None
     reason: str
 
 @app.put("/request/{request_id}/transfer")
 async def transfer_request(
     request_id: int,
-    transfer_data: TransferRequest,
+    transfer_data: dict = Body(...),
     session: AsyncSession = Depends(get_session)
 ):
-    start_time = time.time()
-    # Get the request
-    result = await session.execute(select(Requests).where(Requests.id == request_id))
-    request = result.scalar_one_or_none()
-    
-    if not request:
-        end_time = time.time()
-        print(f"transfer_request run-time is {end_time - start_time:.3f} sec")
-        raise HTTPException(status_code=404, detail="Request not found")
-    
-    # Update course_id
-    old_course_id = request.course_id
-    request.course_id = transfer_data.new_course_id
-    
-    # Update timeline
-    if not request.timeline:
-        request.timeline = {}
-    if "transfers" not in request.timeline:
-        request.timeline["transfers"] = []
-    
-    request.timeline["transfers"].append({
-        "from": old_course_id,
-        "to": transfer_data.new_course_id,
-        "reason": transfer_data.reason,
-        "timestamp": datetime.utcnow().isoformat()
-    })
-    
-    flag_modified(request, "timeline")
-    await session.commit()
-    
-    end_time = time.time()
-    print(f"transfer_request run-time is {end_time - start_time:.3f} sec")
-    return {"message": "Request transferred successfully"}
+    try:
+        new_course_id = transfer_data.get("new_course_id")
+        transfer_reason = transfer_data.get("reason", "No reason provided")
+        
+        # Get the request
+        result = await session.execute(select(Requests).where(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+        
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+            
+        # Update the course_id (can be null)
+        request.course_id = new_course_id
+        
+        # Update timeline
+        if not request.timeline:
+            request.timeline = {
+                "created": request.created_date.isoformat() if request.created_date else datetime.now().isoformat(),
+                "status_changes": []
+            }
+            
+        request.timeline["status_changes"].append({
+            "status": "transferred",
+            "new_course_id": new_course_id if new_course_id else "Department Secretary",
+            "reason": transfer_reason,
+            "date": datetime.now().isoformat()
+        })
+
+        # Create notifications
+        # 1. Notify the student
+        if new_course_id:
+            # Get the professor for this course from student_courses
+            result = await session.execute(
+                select(StudentCourses)
+                .where(
+                    and_(
+                        StudentCourses.course_id == new_course_id,
+                        StudentCourses.student_email == request.student_email
+                    )
+                )
+            )
+            student_course = result.scalar_one_or_none()
+            
+            if student_course and student_course.professor_email:
+                await create_notification(
+                    session=session,
+                    user_email=request.student_email,
+                    request_id=request_id,
+                    message=f"Your request '{request.title}' has been transferred to {student_course.professor_email}. Reason: {transfer_reason}",
+                    type="transfer"
+                )
+            else:
+                await create_notification(
+                    session=session,
+                    user_email=request.student_email,
+                    request_id=request_id,
+                    message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
+                    type="transfer"
+                )
+        else:
+            await create_notification(
+                session=session,
+                user_email=request.student_email,
+                request_id=request_id,
+                message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
+                type="transfer"
+            )
+
+        # 2. If transferred to a course, notify the professor
+        if new_course_id:
+            # Get the professor for this course from student_courses
+            result = await session.execute(
+                select(StudentCourses)
+                .where(
+                    and_(
+                        StudentCourses.course_id == new_course_id,
+                        StudentCourses.student_email == request.student_email
+                    )
+                )
+            )
+            student_course = result.scalar_one_or_none()
+            
+            if student_course and student_course.professor_email:
+                await create_notification(
+                    session=session,
+                    user_email=student_course.professor_email,
+                    request_id=request_id,
+                    message=f"A new request '{request.title}' has been assigned to you from {request.student_email}. Reason for transfer: {transfer_reason}",
+                    type="transfer"
+                )
+        else:
+            # If transferred to Department Secretary, notify the relevant secretary
+            # First get the student's department
+            result = await session.execute(
+                select(Students).where(Students.email == request.student_email)
+            )
+            student = result.scalar_one_or_none()
+            
+            if student and student.department_id:
+                # Get the secretary for this department
+                result = await session.execute(
+                    select(Secretaries).where(Secretaries.department_id == student.department_id)
+                )
+                secretary = result.scalar_one_or_none()
+                
+                if secretary:
+                    await create_notification(
+                        session=session,
+                        user_email=secretary.email,
+                        request_id=request_id,
+                        message=f"A new request '{request.title}' has been transferred to you from {request.student_email}. Reason for transfer: {transfer_reason}",
+                        type="transfer"
+                    )
+        
+        await session.commit()
+        return {"message": "Request transferred successfully"}
+        
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/admin/transfer-requests")
 async def get_all_transfer_requests(
