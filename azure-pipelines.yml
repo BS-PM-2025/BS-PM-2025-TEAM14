@@ -49,26 +49,35 @@ stages:
               python -m pip install --upgrade pip
               cd backend
               pip install -r requirements.txt
-              cd ..
-              pytest
-            displayName: "Run Backend Unit Tests"
+            displayName: "Install Python and Requirements"
+
+          - script: |
+              pytest \
+              --cov=backend \
+              --cov-report xml:backend/tests/coverage.xml \
+              --cov-report html:backend/tests/coverage_html \
+              --junitxml=backend/tests/pytest-report.xml \
+              --json-report \
+              --json-report-file=backend/tests/pytest-report.json \
+              -q
+            displayName: "Run Backend Tests"
 
           - bash: |
-              total=$(python -c "import json, pathlib, sys; p=pathlib.Path('backend/pytest-report.json'); 
+              total=$(python -c "import json, pathlib, sys; p=pathlib.Path('backend/tests/pytest-report.json'); 
               print(json.loads(p.read_text())['summary']['collected'] if p.exists() else 0)")
               echo \"##vso[task.setvariable variable=UNIT_TEST_COUNT]$total\"
               echo \"TOTAL UNIT TESTS: $total\"
             displayName: "Aggregate Test Count"
 
-          - publish: backend/pytest-report.json
+          - publish: backend/tests/pytest-report.json
             artifact: test-metrics-json
             displayName: "Publish pytest JSON Report"
 
-          - publish: backend/pytest-report.xml
+          - publish: backend/tests/pytest-report.xml
             artifact: test-metrics-xml
             displayName: "Publish pytest XML report"
 
-          - publish: backend/coverage.xml
+          - publish: backend/tests/coverage.xml
             artifact: coverage
             displayName: "Publish Code Coverage XML"
 
@@ -76,12 +85,12 @@ stages:
             displayName: "Publish Tests to Dashboard"
             inputs:
               testResultsFormat: JUnit
-              testResultsFiles: backend/pytest-report.xml
+              testResultsFiles: backend/tests/pytest-report.xml
               mergeTestResults: true
 
           - task: PublishCodeCoverageResults@2
             displayName: "Publish Coverage to Dashboard"
             inputs:
               codeCoverageTool: Cobertura
-              summaryFileLocation: "backend/coverage.xml"
-              reportDirectory: "backend/coverage_html"
+              summaryFileLocation: "backend/tests/coverage.xml"
+              reportDirectory: "backend/tests/coverage_html"
