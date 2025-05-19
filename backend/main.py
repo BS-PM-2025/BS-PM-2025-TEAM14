@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 import urllib.parse
@@ -140,11 +141,15 @@ app.add_middleware(
 
 @app.get("/")
 def home():
+    start_time = time.time()
+    end_time = time.time()
+    print(f"home run-time is {end_time - start_time:.3f} sec")
     return {"message": "Welcome to FastAPI Backend!"}
 
 
 @app.post("/login")
 async def login(request: Request, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     data = await request.json()
     email = data.get("Email")
     password = data.get("Password")
@@ -156,16 +161,23 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
         if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
             access_token = create_access_token({"user_email": user.email, "role": user.role, "first_name": user.first_name,
                                                 "last_name": user.last_name})
+            end_time = time.time()
+            print(f"login run-time is {end_time - start_time:.3f} sec")
             return {"access_token": access_token, "token_type": "bearer", "message": "Login successful"}
         else:
+            end_time = time.time()
+            print(f"login run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=401, detail="Invalid password")
     else:
+        end_time = time.time()
+        print(f"login run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="User not found")
 
 
 # AI Service endpoint
 @app.post("/api/ai/chat")
 async def ai_chat(chat_request: ChatRequest):
+    start_time = time.time()
     try:
         print(f"\nAPI DEBUG: Received chat request - message: '{chat_request.message}', language: {chat_request.language}")
         
@@ -173,8 +185,12 @@ async def ai_chat(chat_request: ChatRequest):
         response = await processMessage(chat_request.message, chat_request.language)
         
         print(f"API DEBUG: AI response - source: {response.get('source')}, success: {response.get('success')}")
+        end_time = time.time()
+        print(f"ai_chat run-time is {end_time - start_time:.3f} sec")
         return response
     except Exception as e:
+        end_time = time.time()
+        print(f"ai_chat run-time is {end_time - start_time:.3f} sec")
         print(f"API ERROR: Error processing message: {str(e)}")
         raise HTTPException(
             status_code=500,
@@ -184,11 +200,17 @@ async def ai_chat(chat_request: ChatRequest):
 
 @app.get("/databases")
 def list_databases():
+    start_time = time.time()
+    end_time = time.time()
+    print(f"list_databases run-time is {end_time - start_time:.3f} sec")
     return {"databases": None}
 
 
 @app.get("/tables/{database_name}")
 def list_tables(database_name: str):
+    start_time = time.time()
+    end_time = time.time()
+    print(f"list_tables run-time is {end_time - start_time:.3f} sec")
     return {"tables": None}
 
 
@@ -197,6 +219,7 @@ def list_tables(database_name: str):
 
 @app.post("/uploadfile/{userEmail}")
 async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: str = Form(...)):
+    start_time = time.time()
     try:
         # Validate file size (example: 10MB limit)
         MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
@@ -204,6 +227,8 @@ async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: st
         file_size = len(file_content)
         
         if file_size > MAX_FILE_SIZE:
+            end_time = time.time()
+            print(f"upload_file run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(
                 status_code=400, 
                 detail="File size too large. Maximum size is 10MB"
@@ -218,11 +243,15 @@ async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: st
         with open(file_path, "wb") as f:
             f.write(file_content)
 
+        end_time = time.time()
+        print(f"upload_file run-time is {end_time - start_time:.3f} sec")
         return {
             "message": "File uploaded successfully",
             "path": f"{userEmail}/{fileType}/{file.filename}"
         }
     except Exception as e:
+        end_time = time.time()
+        print(f"upload_file run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(
             status_code=500,
             detail=f"Error uploading file: {str(e)}"
@@ -231,7 +260,7 @@ async def upload_file(userEmail: str, file: UploadFile = File(...), fileType: st
 
 @app.get("/reloadFiles/{userEmail}")
 async def reload_files(userEmail: str):
-    #root_path = os.path.join("Documents", userEmail)
+    start_time = time.time()
     root_path = DOCUMENTS_ROOT / userEmail
     files = []
     file_paths = []
@@ -245,11 +274,14 @@ async def reload_files(userEmail: str):
             files.append(filename)
             file_paths.append(file_path)
     print({"files": files, "file_paths": file_paths})
+    end_time = time.time()
+    print(f"reload_files run-time is {end_time - start_time:.3f} sec")
     return {"files": files, "file_paths": file_paths}
 
 
 @app.get("/downloadFile/{userId}/{file_path:path}")
 async def download_file(userId: str, file_path: str):
+    start_time = time.time()
     print(file_path)
     decoded_path = urllib.parse.unquote(file_path)
 
@@ -257,20 +289,27 @@ async def download_file(userId: str, file_path: str):
     print(f"Downloading file from: {full_path}")
 
     if not os.path.isfile(full_path):
+        end_time = time.time()
+        print(f"download_file run-time is {end_time - start_time:.3f} sec")
         print("File not found!")
         return {"error": "File not found"}
 
+    end_time = time.time()
+    print(f"download_file run-time is {end_time - start_time:.3f} sec")
     return FileResponse(full_path, filename=os.path.basename(full_path))
 
 
 @app.get("/requests/{user_email}")
 async def get_requests(user_email: str, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     try:
         # Fetch the user role from the database based on the email
         result = await session.execute(select(Users).filter(Users.email == user_email))
         user = result.scalar_one_or_none()
 
         if not user:
+            end_time = time.time()
+            print(f"get_requests run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail="User not found")
 
         # If the user is a secretary, return all relevant requests
@@ -278,6 +317,8 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
             secretary_result = await session.execute(select(Secretaries).where(Secretaries.email == user_email))
             secretary = secretary_result.scalar_one_or_none()
             if not secretary:
+                end_time = time.time()
+                print(f"get_requests run-time is {end_time - start_time:.3f} sec")
                 raise HTTPException(status_code=404, detail="Secretary not found")
             department = secretary.department_id
             
@@ -287,6 +328,8 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
                 .where(Students.department_id == department)
             )
             relevant_requests = relevant_requests_result.scalars().all()
+            end_time = time.time()
+            print(f"get_requests run-time is {end_time - start_time:.3f} sec")
             return [
                 {
                     "id": req.id,
@@ -308,7 +351,8 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
             )
 
         requests = result.scalars().all()
-
+        end_time = time.time()
+        print(f"get_requests run-time is {end_time - start_time:.3f} sec")
         return [
             {
                 "id": req.id,
@@ -323,15 +367,20 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
             for req in requests
         ]
     except Exception as e:
+        end_time = time.time()
+        print(f"get_requests run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
 @app.post("/update_status")
 async def update_status(request: Request, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     data = await request.json()
     request_id = data.get("request_id")
     new_status = data.get("status")
     
     if not request_id or not new_status:
+        end_time = time.time()
+        print(f"update_status run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=400, detail="Missing request_id or status")
     
     # Get the request
@@ -339,6 +388,8 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
     request = result.scalar_one_or_none()
     
     if not request:
+        end_time = time.time()
+        print(f"update_status run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Request not found")
     
     # Update status
@@ -359,16 +410,21 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
     flag_modified(request, "timeline")
     await session.commit()
     
+    end_time = time.time()
+    print(f"update_status run-time is {end_time - start_time:.3f} sec")
     return {"message": "Status updated successfully"}
 
 @app.get("/requests/professor/{professor_email}")
 async def get_professor_requests(professor_email: str, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     try:
         result = await session.execute(
             select(Courses.id).where(Courses.professor_email == professor_email))
         course_ids = [row[0] for row in result.all()]
 
         if not course_ids:
+            end_time = time.time()
+            print(f"get_professor_requests run-time is {end_time - start_time:.3f} sec")
             return []
 
         result = await session.execute(
@@ -378,6 +434,8 @@ async def get_professor_requests(professor_email: str, session: AsyncSession = D
         )
         requests = result.scalars().all()
 
+        end_time = time.time()
+        print(f"get_professor_requests run-time is {end_time - start_time:.3f} sec")
         return [
             {
                 "id": req.id,
@@ -395,11 +453,14 @@ async def get_professor_requests(professor_email: str, session: AsyncSession = D
         ]
 
     except Exception as e:
+        end_time = time.time()
+        print(f"get_professor_requests run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
 
 @app.post("/create_user")
 async def create_user(request: Request, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     data = await request.json()
     first_name = data.get("first_name")
     last_name = data.get("last_name")
@@ -411,29 +472,38 @@ async def create_user(request: Request, session: AsyncSession = Depends(get_sess
     # This already handles adding the student/professor internally:
     new_user = await add_user(session, email, first_name, last_name, hashed_password, role)
 
+    end_time = time.time()
+    print(f"create_user run-time is {end_time - start_time:.3f} sec")
     return {"message": "User created successfully", "user_email": new_user.email}
 
 
 @app.get("/users")
 async def get_users(role: str = None, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     query = select(Users)
     if role:
         query = query.where(Users.role == role)
     result = await session.execute(query)
+    end_time = time.time()
+    print(f"get_users run-time is {end_time - start_time:.3f} sec")
     return result.scalars().all()
 
 
 @app.get("/courses")
 async def get_courses(professor_email: bool = None, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     query = select(Courses)
     if professor_email:
         query = query.where(Courses.professor_email is not None)
     print(query)
     result = await session.execute(select(Courses))
+    end_time = time.time()
+    print(f"get_courses run-time is {end_time - start_time:.3f} sec")
     return result.scalars().all()
 
 @app.post("/Users/setRole")
 async def set_role(request: Request, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     print("in the set role function")
     data = await request.json()
     user_email = data.get("user_email")
@@ -445,38 +515,54 @@ async def set_role(request: Request, session: AsyncSession = Depends(get_session
     if user:
         user.role = role  # Update the role
         await session.commit()  # Commit changes
+        end_time = time.time()
+        print(f"set_role run-time is {end_time - start_time:.3f} sec")
         return {"message": "Role updated successfully", "user": {"email": user.email, "role": user.role}}
     else:
+        end_time = time.time()
+        print(f"set_role run-time is {end_time - start_time:.3f} sec")
         return {"error": "User not found"}
 
 
 @app.post("/Users/getUser/{UserEmail}")
 async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     print("in the func", UserEmail)
     res_user = await session.execute(select(Users).where(Users.email == UserEmail))
     user = res_user.scalars().first()
     if not user:
+        end_time = time.time()
+        print(f"get_user run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="User not found")
 
     # Fetch role-specific data
     if user.role == "student":
         student_data = await session.execute(select(Students).filter(Students.email == user.email))
         student = student_data.scalars().first()
+        end_time = time.time()
+        print(f"get_user run-time is {end_time - start_time:.3f} sec")
         return {**user.__dict__, "student_data": student}
 
     if user.role == "professor":
         professor_data = await session.execute(select(Professors).filter(Professors.email == user.email))
         professor = professor_data.scalars().first()
+        end_time = time.time()
+        print(f"get_user run-time is {end_time - start_time:.3f} sec")
         return {**user.__dict__, "professor_data": professor}
 
+    end_time = time.time()
+    print(f"get_user run-time is {end_time - start_time:.3f} sec")
     return user
 
 
 @app.get("/professor/courses/{professor_email}")
 async def get_courses(professor_email: str, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     result = await session.execute(select(Professors).filter(Professors.email == professor_email))
-    professor = result.scalars().first()
+    professor = result.scalar_one_or_none()
     if not professor:
+        end_time = time.time()
+        print(f"get_courses run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Professor not found")
 
     result = await session.execute(select(Courses).filter(Courses.professor_email == professor_email))
@@ -492,6 +578,8 @@ async def get_courses(professor_email: str, session: AsyncSession = Depends(get_
     } for course in courses]
     courses_names = [course.name for course in courses]
 
+    end_time = time.time()
+    print(f"get_courses run-time is {end_time - start_time:.3f} sec")
     return {"courses": courses_data}
 
 
@@ -503,11 +591,14 @@ async def submit_grades(
         session: AsyncSession = Depends(get_session),
         token_data: dict = Depends(verify_token_professor)
 ):
+    start_time = time.time()
     print(course_id, data)
     grade_component = data.get("gradeComponent")
     grades = data.get("grades")  # dict: { "student@email.com": 95 }
 
     if not grade_component or not grades:
+        end_time = time.time()
+        print(f"submit_grades run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=400, detail="Missing grade component or grades")
 
     professor_email = token_data.get("user_email")
@@ -516,8 +607,10 @@ async def submit_grades(
         result = await session.execute(
             select(Students).filter(Students.email == student_email)
         )
-        student = result.scalars().first()
+        student = result.scalar_one_or_none()
         if not student:
+            end_time = time.time()
+            print(f"submit_grades run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail=f"Student {student_email} not found")
 
         # Check if grade exists
@@ -544,12 +637,15 @@ async def submit_grades(
             session.add(new_grade)
 
     await session.commit()
+    end_time = time.time()
+    print(f"submit_grades run-time is {end_time - start_time:.3f} sec")
     return {"message": "Grades submitted successfully"}
 
 
 @app.get("/course/{course_id}/students")
 async def get_students(course_id: str, session: AsyncSession = Depends(get_session),
                        token_data: dict = Depends(verify_token_professor)):
+    start_time = time.time()
     result = await session.execute(
         select(Courses)
         .filter(Courses.id == course_id)
@@ -558,8 +654,12 @@ async def get_students(course_id: str, session: AsyncSession = Depends(get_sessi
     course = result.scalars().first()
 
     if not course:
+        end_time = time.time()
+        print(f"get_students run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Course not found")
 
+    end_time = time.time()
+    print(f"get_students run-time is {end_time - start_time:.3f} sec")
     return jsonable_encoder(course.students)
 
 
@@ -569,6 +669,7 @@ async def create_general_request(
         request: Request,
         session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     print("in submit request")
     data = await request.json()
     title = data.get("title")
@@ -580,6 +681,8 @@ async def create_general_request(
     course_id = data.get("course_id")
     print(data)
     if not title or not student_email or not details:
+        end_time = time.time()
+        print(f"create_general_request run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=400, detail="Missing required fields")
 
     timeline = {
@@ -594,6 +697,8 @@ async def create_general_request(
     if title == "Grade Appeal Request" and grade_appeal:
         required_keys = {"course_id", "grade_component", "current_grade"}
         if not required_keys.issubset(grade_appeal.keys()):
+            end_time = time.time()
+            print(f"create_general_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=400, detail="Invalid grade appeal data")
         course_id = grade_appeal.get('course_id')
         course_component = grade_appeal.get('grade_component')
@@ -604,6 +709,8 @@ async def create_general_request(
                 not isinstance(schedule_change["professors"], list) or
                 not schedule_change["professors"]
         ):
+            end_time = time.time()
+            print(f"create_general_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=400, detail="Invalid schedule change data")
         course_id = schedule_change.get('course_id')
         course_component = None
@@ -634,40 +741,58 @@ async def create_general_request(
         timeline=timeline
     )
 
+    end_time = time.time()
+    print(f"create_general_request run-time is {end_time - start_time:.3f} sec")
     return {"message": "Request created successfully", "request_id": new_request.id}
 
 @app.delete("/Requests/{request_id}")
 async def delete_request(request_id: int, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     try:
         # Fetch the request to ensure it exists
         request = await session.get(Requests, request_id)
         if not request:
+            end_time = time.time()
+            print(f"delete_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail="Request not found")
         if request.status != "pending":
+            end_time = time.time()
+            print(f"delete_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=400, detail="Cannot delete a request that is not pending")
         # Delete the request
         await session.delete(request)
         await session.commit()
 
+        end_time = time.time()
+        print(f"delete_request run-time is {end_time - start_time:.3f} sec")
         return {"message": "Request deleted successfully"}
     except Exception as e:
+        end_time = time.time()
+        print(f"delete_request run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=f"Error deleting request: {str(e)}")
 
 @app.put("/Requests/EditRequest/{request_id}")
 async def edit_request(request_id: int, request: Request, session: AsyncSession = Depends(get_session),
                        student: dict = Depends(verify_token_student)):
+    start_time = time.time()
     try:
         existing_request = await session.get(Requests, request_id)
         
         if not existing_request:
+            end_time = time.time()
+            print(f"edit_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail="Request not found")
         
         # Verify the student owns this request
         if existing_request.student_email != student.get('user_email'):
+            end_time = time.time()
+            print(f"edit_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=403, detail="You can only edit your own requests")
         
         # Check request status
         if existing_request.status not in ["pending", "require editing"]:
+            end_time = time.time()
+            print(f"edit_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(
                 status_code=400, 
                 detail=f"Cannot edit a request that is not pending or require editing. Current status: {existing_request.status}"
@@ -676,9 +801,13 @@ async def edit_request(request_id: int, request: Request, session: AsyncSession 
         try:
             data = await request.json()
         except Exception as e:
+            end_time = time.time()
+            print(f"edit_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=400, detail="Invalid request data format")
         
         if "details" not in data:
+            end_time = time.time()
+            print(f"edit_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=400, detail="Missing 'details' in request data")
         
         # Edit the request
@@ -717,19 +846,30 @@ async def edit_request(request_id: int, request: Request, session: AsyncSession 
             await session.commit()
         except Exception as e:
             await session.rollback()
+            end_time = time.time()
+            print(f"edit_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=500, detail=f"Error saving changes: {str(e)}")
 
+        end_time = time.time()
+        print(f"edit_request run-time is {end_time - start_time:.3f} sec")
         return {"message": "Request updated successfully"}
 
     except HTTPException as he:
+        end_time = time.time()
+        print(f"edit_request run-time is {end_time - start_time:.3f} sec")
         raise he
     except Exception as e:
         await session.rollback()
+        end_time = time.time()
+        print(f"edit_request run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=f"Error editing request: {str(e)}")
 
 @app.get("/student/{student_email:path}/courses")
 async def get_student_courses(student_email: str, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     if not student_email or "@" not in student_email:
+        end_time = time.time()
+        print(f"get_student_courses run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Student not found")
 
     # Query to get courses along with the grades for the student
@@ -767,11 +907,13 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
     courses_list = list(courses_data.values())
 
     print(courses_list)
-
+    end_time = time.time()
+    print(f"get_student_courses run-time is {end_time - start_time:.3f} sec")
     return {"courses": courses_list}
 
 @app.get("/grades/{student_email}")
 async def get_grades(student_email: str, db: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     stmt = (
         select(Grades, Courses.name)
         .join(Courses, Courses.id == Grades.course_id)  # Join on course_id
@@ -781,6 +923,8 @@ async def get_grades(student_email: str, db: AsyncSession = Depends(get_session)
     grades = result.all()
 
     if not grades:
+        end_time = time.time()
+        print(f"get_grades run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="No grades found for this student")
 
     formatted_grades = [
@@ -795,6 +939,8 @@ async def get_grades(student_email: str, db: AsyncSession = Depends(get_session)
         for grade, course_name in grades
     ]
 
+    end_time = time.time()
+    print(f"get_grades run-time is {end_time - start_time:.3f} sec")
     return formatted_grades
 
 
@@ -803,6 +949,7 @@ async def assign_students(
         data: AssignStudentsRequest,
         db: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     stmt = select(StudentCourses).filter(StudentCourses.course_id == data.course_id)
     result = await db.execute(stmt)
     existing_students = result.scalars().all()
@@ -819,6 +966,8 @@ async def assign_students(
         await assign_student_to_course(db, email, data.course_id)
 
     await db.commit()
+    end_time = time.time()
+    print(f"assign_students run-time is {end_time - start_time:.3f} sec")
     return {"message": "Students assigned successfully"}
 
 
@@ -827,6 +976,7 @@ async def assign_professor(
         data: AssignProfessorRequest,
         db: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     result = await db.execute(select(Courses).filter(Courses.professor_email == data.professor_email))
     existing_courses = result.scalars().all()
 
@@ -842,16 +992,20 @@ async def assign_professor(
         await assign_professor_to_course(db, data.professor_email, course_id)
 
     await db.commit()
-
+    end_time = time.time()
+    print(f"assign_professor run-time is {end_time - start_time:.3f} sec")
     return {"message": "Courses assigned successfully"}
 
 
 
 @app.get("/assigned_students")
 async def get_assigned_students(course_id: str, db: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     stmt = select(StudentCourses.student_email).filter(StudentCourses.course_id == course_id)
     result = await db.execute(stmt)
     assigned_students = result.scalars().all()
+    end_time = time.time()
+    print(f"get_assigned_students run-time is {end_time - start_time:.3f} sec")
     return [{"email": email} for email in assigned_students]
 
 
@@ -879,10 +1033,13 @@ async def add_unavailability_period(
     period: UnavailabilityPeriod,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     # Verify professor exists
     result = await session.execute(select(Professors).where(Professors.email == professor_email))
-    professor = result.scalars().first()
+    professor = result.scalar_one_or_none()
     if not professor:
+        end_time = time.time()
+        print(f"add_unavailability_period run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Professor not found")
 
     # Create new unavailability period
@@ -897,6 +1054,8 @@ async def add_unavailability_period(
     await session.commit()
     await session.refresh(new_period)
     
+    end_time = time.time()
+    print(f"add_unavailability_period run-time is {end_time - start_time:.3f} sec")
     return {"message": "Unavailability period added successfully", "period": new_period}
 
 @app.get("/professor/unavailability/{professor_email}")
@@ -904,9 +1063,12 @@ async def get_unavailability_periods(
     professor_email: str,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     result = await session.execute(select(Professors).where(Professors.email == professor_email))
-    professor = result.scalars().first()
+    professor = result.scalar_one_or_none()
     if not professor:
+        end_time = time.time()
+        print(f"get_unavailability_periods run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Professor not found")
 
     result = await session.execute(
@@ -916,6 +1078,8 @@ async def get_unavailability_periods(
     )
     periods = result.scalars().all()
     
+    end_time = time.time()
+    print(f"get_unavailability_periods run-time is {end_time - start_time:.3f} sec")
     return {"periods": periods}
 
 @app.delete("/professor/unavailability/{period_id}")
@@ -923,13 +1087,18 @@ async def delete_unavailability_period(
     period_id: int,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     period = await session.get(ProfessorUnavailability, period_id)
     if not period:
+        end_time = time.time()
+        print(f"delete_unavailability_period run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Unavailability period not found")
 
     await session.delete(period)
     await session.commit()
     
+    end_time = time.time()
+    print(f"delete_unavailability_period run-time is {end_time - start_time:.3f} sec")
     return {"message": "Unavailability period deleted successfully"}
 
 @app.get("/professor/availability/{professor_email}")
@@ -938,9 +1107,12 @@ async def check_professor_availability(
     date: datetime,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     result = await session.execute(select(Professors).where(Professors.email == professor_email))
-    professor = result.scalars().first()
+    professor = result.scalar_one_or_none()
     if not professor:
+        end_time = time.time()
+        print(f"check_professor_availability run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Professor not found")
 
     result = await session.execute(
@@ -953,6 +1125,8 @@ async def check_professor_availability(
     )
     periods = result.scalars().all()
     
+    end_time = time.time()
+    print(f"check_professor_availability run-time is {end_time - start_time:.3f} sec")
     if periods:
         return {
             "is_available": False,
@@ -962,13 +1136,13 @@ async def check_professor_availability(
     return {"is_available": True}
 
 
-
 @app.get("/student_courses/professor/{student_email}/{course_id}")
 async def get_student_professor(
     student_email: str,
     course_id: str,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     result = await session.execute(
         select(StudentCourses.professor_email)
         .where(
@@ -978,7 +1152,11 @@ async def get_student_professor(
     )
     student_course = result.scalars().first()
     if not student_course:
+        end_time = time.time()
+        print(f"get_student_professor run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="No professor found for this student in the specified course")
+    end_time = time.time()
+    print(f"get_student_professor run-time is {end_time - start_time:.3f} sec")
     return {"professor_email": student_course}
 
 @app.get("/student/{student_email}/professors")
@@ -986,12 +1164,15 @@ async def get_student_professors(
     student_email: str,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     try:
         # First, get all courses for the student
         student_courses_query = select(StudentCourses).where(StudentCourses.student_email == student_email)
         student_courses = (await session.execute(student_courses_query)).scalars().all()
         
         if not student_courses:
+            end_time = time.time()
+            print(f"get_student_professors run-time is {end_time - start_time:.3f} sec")
             return {"professors": []}
             
         # Get unique professor emails from the courses
@@ -1013,8 +1194,12 @@ async def get_student_professors(
             for prof in professors
         ]
         
+        end_time = time.time()
+        print(f"get_student_professors run-time is {end_time - start_time:.3f} sec")
         return {"professors": professors_data}
     except Exception as e:
+        end_time = time.time()
+        print(f"get_student_professors run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1024,8 +1209,11 @@ async def get_department_transfer_requests(
     session: AsyncSession = Depends(get_session),
     token_data: dict = Depends(verify_token)
 ):
+    start_time = time.time()
     # Verify the user is a secretary
     if token_data["role"] not in ["admin", "secretary"]:
+        end_time = time.time()
+        print(f"get_department_transfer_requests run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin and secretary can access this endpoint"
@@ -1038,6 +1226,8 @@ async def get_department_transfer_requests(
     secretary = secretary.scalar_one_or_none()
     
     if not secretary:
+        end_time = time.time()
+        print(f"get_department_transfer_requests run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Secretary not found"
@@ -1087,6 +1277,8 @@ async def get_department_transfer_requests(
         }
         formatted_requests.append(formatted_request)
     
+    end_time = time.time()
+    print(f"get_department_transfer_requests run-time is {end_time - start_time:.3f} sec")
     return formatted_requests
 
 class ResponseRequest(BaseModel):
@@ -1099,11 +1291,14 @@ async def submit_response(
     response_data: ResponseRequest,
     db: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     # Get the request
     result = await db.execute(select(Requests).where(Requests.id == response_data.request_id))
     request = result.scalar_one_or_none()
     
     if not request:
+        end_time = time.time()
+        print(f"submit_response run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Request not found")
     
     # Create response
@@ -1130,16 +1325,21 @@ async def submit_response(
     flag_modified(request, "timeline")
     await db.commit()
     
+    end_time = time.time()
+    print(f"submit_response run-time is {end_time - start_time:.3f} sec")
     return {"message": "Response submitted and timeline updated"}
 
 
 @app.get("/request/responses/{request_id}")
 async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_session)):
+    start_time = time.time()
     result = await db.execute(
         select(Responses).where(Responses.request_id == request_id)
     )
     responses = result.scalars().all()
 
+    end_time = time.time()
+    print(f"get_request_responses run-time is {end_time - start_time:.3f} sec")
     return [
         {
             "id": r.id,
@@ -1157,12 +1357,15 @@ async def get_student_courses_for_request(
     request_id: int,
     session: AsyncSession = Depends(get_session)
 ):
+    start_time = time.time()
     try:
         # Get the request to find the student email
         result = await session.execute(select(Requests).where(Requests.id == request_id))
         request = result.scalar_one_or_none()
         
         if not request:
+            end_time = time.time()
+            print(f"get_student_courses_for_request run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail="Request not found")
             
         # Get all courses for the student
@@ -1173,6 +1376,8 @@ async def get_student_courses_for_request(
         )
         courses = result.all()
         
+        end_time = time.time()
+        print(f"get_student_courses_for_request run-time is {end_time - start_time:.3f} sec")
         return [{
             "course_id": course.id,
             "course_name": course.name,
@@ -1180,54 +1385,151 @@ async def get_student_courses_for_request(
         } for sc, course in courses]
         
     except Exception as e:
+        end_time = time.time()
+        print(f"get_student_courses_for_request run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=str(e))
 
 class TransferRequest(BaseModel):
-    new_course_id: str
+    new_course_id: Optional[str] = None
     reason: str
 
 @app.put("/request/{request_id}/transfer")
 async def transfer_request(
     request_id: int,
-    transfer_data: TransferRequest,
+    transfer_data: dict = Body(...),
     session: AsyncSession = Depends(get_session)
 ):
-    # Get the request
-    result = await session.execute(select(Requests).where(Requests.id == request_id))
-    request = result.scalar_one_or_none()
-    
-    if not request:
-        raise HTTPException(status_code=404, detail="Request not found")
-    
-    # Update course_id
-    old_course_id = request.course_id
-    request.course_id = transfer_data.new_course_id
-    
-    # Update timeline
-    if not request.timeline:
-        request.timeline = {}
-    if "transfers" not in request.timeline:
-        request.timeline["transfers"] = []
-    
-    request.timeline["transfers"].append({
-        "from": old_course_id,
-        "to": transfer_data.new_course_id,
-        "reason": transfer_data.reason,
-        "timestamp": datetime.utcnow().isoformat()
-    })
-    
-    flag_modified(request, "timeline")
-    await session.commit()
-    
-    return {"message": "Request transferred successfully"}
+    try:
+        new_course_id = transfer_data.get("new_course_id")
+        transfer_reason = transfer_data.get("reason", "No reason provided")
+        
+        # Get the request
+        result = await session.execute(select(Requests).where(Requests.id == request_id))
+        request = result.scalar_one_or_none()
+        
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+            
+        # Update the course_id (can be null)
+        request.course_id = new_course_id
+        
+        # Update timeline
+        if not request.timeline:
+            request.timeline = {
+                "created": request.created_date.isoformat() if request.created_date else datetime.now().isoformat(),
+                "status_changes": []
+            }
+            
+        request.timeline["status_changes"].append({
+            "status": "transferred",
+            "new_course_id": new_course_id if new_course_id else "Department Secretary",
+            "reason": transfer_reason,
+            "date": datetime.now().isoformat()
+        })
+
+        # Create notifications
+        # 1. Notify the student
+        if new_course_id:
+            # Get the professor for this course from student_courses
+            result = await session.execute(
+                select(StudentCourses)
+                .where(
+                    and_(
+                        StudentCourses.course_id == new_course_id,
+                        StudentCourses.student_email == request.student_email
+                    )
+                )
+            )
+            student_course = result.scalar_one_or_none()
+            
+            if student_course and student_course.professor_email:
+                await create_notification(
+                    session=session,
+                    user_email=request.student_email,
+                    request_id=request_id,
+                    message=f"Your request '{request.title}' has been transferred to {student_course.professor_email}. Reason: {transfer_reason}",
+                    type="transfer"
+                )
+            else:
+                await create_notification(
+                    session=session,
+                    user_email=request.student_email,
+                    request_id=request_id,
+                    message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
+                    type="transfer"
+                )
+        else:
+            await create_notification(
+                session=session,
+                user_email=request.student_email,
+                request_id=request_id,
+                message=f"Your request '{request.title}' has been transferred to Department Secretary. Reason: {transfer_reason}",
+                type="transfer"
+            )
+
+        # 2. If transferred to a course, notify the professor
+        if new_course_id:
+            # Get the professor for this course from student_courses
+            result = await session.execute(
+                select(StudentCourses)
+                .where(
+                    and_(
+                        StudentCourses.course_id == new_course_id,
+                        StudentCourses.student_email == request.student_email
+                    )
+                )
+            )
+            student_course = result.scalar_one_or_none()
+            
+            if student_course and student_course.professor_email:
+                await create_notification(
+                    session=session,
+                    user_email=student_course.professor_email,
+                    request_id=request_id,
+                    message=f"A new request '{request.title}' has been assigned to you from {request.student_email}. Reason for transfer: {transfer_reason}",
+                    type="transfer"
+                )
+        else:
+            # If transferred to Department Secretary, notify the relevant secretary
+            # First get the student's department
+            result = await session.execute(
+                select(Students).where(Students.email == request.student_email)
+            )
+            student = result.scalar_one_or_none()
+            
+            if student and student.department_id:
+                # Get the secretary for this department
+                result = await session.execute(
+                    select(Secretaries).where(Secretaries.department_id == student.department_id)
+                )
+                secretary = result.scalar_one_or_none()
+                
+                if secretary:
+                    await create_notification(
+                        session=session,
+                        user_email=secretary.email,
+                        request_id=request_id,
+                        message=f"A new request '{request.title}' has been transferred to you from {request.student_email}. Reason for transfer: {transfer_reason}",
+                        type="transfer"
+                    )
+        
+        await session.commit()
+        return {"message": "Request transferred successfully"}
+        
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/admin/transfer-requests")
 async def get_all_transfer_requests(
     session: AsyncSession = Depends(get_session),
     token_data: dict = Depends(verify_token)
 ):
+    start_time = time.time()
     # Verify the user is an admin
     if token_data["role"] != "admin":
+        end_time = time.time()
+        print(f"get_all_transfer_requests run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin can access this endpoint"
@@ -1272,6 +1574,8 @@ async def get_all_transfer_requests(
         }
         formatted_requests.append(formatted_request)
     
+    end_time = time.time()
+    print(f"get_all_transfer_requests run-time is {end_time - start_time:.3f} sec")
     return formatted_requests
 
 # Notification endpoints
@@ -1281,10 +1585,13 @@ async def get_notifications(
     session: AsyncSession = Depends(get_session),
     token_data: dict = Depends(verify_token)
 ):
+    start_time = time.time()
     try:
         print(f"Getting notifications for user: {user_email}")
         notifications = await get_user_notifications(session, user_email)
         print(f"Found {len(notifications)} notifications")
+        end_time = time.time()
+        print(f"get_notifications run-time is {end_time - start_time:.3f} sec")
         return [
             {
                 "id": notification.id,
@@ -1297,6 +1604,8 @@ async def get_notifications(
             for notification in notifications
         ]
     except Exception as e:
+        end_time = time.time()
+        print(f"get_notifications run-time is {end_time - start_time:.3f} sec")
         print(f"Error in get_notifications: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1306,22 +1615,32 @@ async def mark_notification_read(
     session: AsyncSession = Depends(get_session),
     token_data: dict = Depends(verify_token)
 ):
-    """Mark a specific notification as read."""
+    start_time = time.time()
     try:
         success = await mark_notification_as_read(session, notification_id)
         if not success:
+            end_time = time.time()
+            print(f"mark_notification_read run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail="Notification not found")
+        end_time = time.time()
+        print(f"mark_notification_read run-time is {end_time - start_time:.3f} sec")
         return {"message": "Notification marked as read"}
     except Exception as e:
+        end_time = time.time()
+        print(f"mark_notification_read run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/notifications/read-all")
 async def mark_all_notifications_read(session: AsyncSession = Depends(get_session), token_data: dict = Depends(verify_token)):
-    """Mark all notifications for the current user as read."""
+    start_time = time.time()
     try:
         count = await mark_all_notifications_as_read(session, token_data["user_email"])
+        end_time = time.time()
+        print(f"mark_all_notifications_read run-time is {end_time - start_time:.3f} sec")
         return {"message": f"{count} notifications marked as read"}
     except Exception as e:
+        end_time = time.time()
+        print(f"mark_all_notifications_read run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=str(e))
 
 '''
