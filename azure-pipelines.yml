@@ -49,6 +49,7 @@ stages:
               python -m pip install --upgrade pip
               cd backend
               pip install -r requirements.txt
+              cd ..
               pytest
             displayName: "Run Backend Unit Tests"
 
