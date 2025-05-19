@@ -286,50 +286,6 @@ def test_upload_file_success(monkeypatch, tmp_path):
     )
     assert os.path.exists(created_file_path)
 
-'''
-def test_reload_files(monkeypatch, tmp_path):
-    """
-    Test /reloadFiles by creating a temporary folder structure.
-    We redirect the "Documents" folder to a temporary location so that the
-    production code uses the tmp_path structure.
-    """
-    # Arrange
-    user_email = "test@example.com"
-
-    # 1. Create a temporary "Documents" directory inside tmp_path.
-    tmp_documents = tmp_path / "Documents"
-    tmp_documents.mkdir()
-
-    # 2. Monkey-patch os.path.join so that when the code calls os.path.join("Documents", user_email),
-    # it uses our temporary Documents folder.
-    fake_join = fake_join_factory(tmp_documents)
-    monkeypatch.setattr(os.path, "join", fake_join)
-
-    # 3. Create the fake directory structure that the endpoint will traverse.
-    #    The endpoint calls: root_path = os.path.join("Documents", user_email)
-    base_dir = os.path.join("../Documents", user_email)  # This uses our fake join now.
-    # Ensure the base_dir exists.
-    os.makedirs(base_dir, exist_ok=True)
-
-    # 4. Create a dummy file in base_dir.
-    dummy_file_path = os.path.join(base_dir, "dummy.txt")
-    # Write the file using the normal open (it will write to tmp_path/Documents/test@example.com/dummy.txt)
-    with open(dummy_file_path, "w") as f:
-        f.write("dummy content")
-
-    # 5. No need to monkey-patch os.walk; since the directory exists, it will return proper paths.
-    # Act
-    response = client.get(f"/reloadFiles/{user_email}")
-
-    # Assert
-    assert response.status_code == 200
-    json_resp = response.json()
-    # In the endpoint, it uses os.path.relpath(full_file_path, root_path)
-    # Since both full_file_path and root_path were computed with our fake join, the relative path should be "dummy.txt".
-    assert "dummy.txt" in json_resp.get("files", [])
-    assert "dummy.txt" in json_resp.get("file_paths", [])
-'''
-
 
 def test_reload_files(monkeypatch, tmp_path):
     """
