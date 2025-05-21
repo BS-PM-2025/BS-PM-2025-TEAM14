@@ -393,6 +393,7 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
         raise HTTPException(status_code=404, detail="Request not found")
     
     # Update status
+    old_status = request.status
     request.status = new_status
     
     # Update timeline
@@ -402,10 +403,19 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
         request.timeline["status_changes"] = []
     
     request.timeline["status_changes"].append({
-        "from": request.status,
+        "from": old_status,
         "to": new_status,
         "timestamp": datetime.utcnow().isoformat()
     })
+    
+    # Create notification for the student
+    await create_notification(
+        session=session,
+        user_email=request.student_email,
+        request_id=request_id,
+        message=f"Your request '{request.title}' status has been changed from '{old_status}' to '{new_status}'",
+        type="status_change"
+    )
     
     flag_modified(request, "timeline")
     await session.commit()
