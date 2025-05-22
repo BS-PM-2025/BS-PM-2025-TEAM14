@@ -12,8 +12,11 @@ import {
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 import { useUser } from "./UserContext";
 import NotificationBell from "./NotificationBell";
+import Logout from "./Logout"
+import "../CSS/Navigation.css"
 
-const Navigation = ({ darkMode, setDarkMode }) => {
+
+const Navigation = ({ darkMode, setDarkMode, onLogoutClick }) => {
   const { user } = useUser();
   const theme = useTheme(); // זה מחזיר את כל האובייקט של ה-theme
 
@@ -24,9 +27,10 @@ const Navigation = ({ darkMode, setDarkMode }) => {
       to={to}
       aria-label={label}
       sx={{
-        color: theme.palette.mode === "dark" ? "#fff" : "#000",
+        color: theme.palette.mode === "dark" ? "#fff" : "#fff",
         textTransform: "none",
-        fontWeight: 500,
+        fontSize: 16,
+        fontWeight: "bold",
       }}
     >
       {label}
@@ -48,17 +52,14 @@ const Navigation = ({ darkMode, setDarkMode }) => {
 
           {user?.role === "student" && (
             <>
-              {navItem("/submit_request", "Submit Request")}
+              {navItem("/submit_request", "Submit New Request")}
               {navItem("/Requests", "Requests")}
-              {navItem("/upload", "Upload Files")}
-              {navItem("/reload", "Reload Files")}
             </>
           )}
 
           {user?.role === "professor" && (
             <>
               {navItem("/Student's Requests", "Student's Requests")}
-              {navItem("/users", "Users")}
               {navItem("/grades", "Grades")}
               {navItem("/manage-availability", "Manage Availability")}
             </>
@@ -82,15 +83,19 @@ const Navigation = ({ darkMode, setDarkMode }) => {
           {user?.role === "admin" && (
             <>
               {navItem("/admin/request-routing", "Request Routing")}
-              {navItem("/users", "Users")}
+              {navItem("/users", "Manage Users")}
             </>
           )}
         </Box>
 
+          {user && (
+              <Logout />
+          )}
+
         <NotificationBell />
 
         <Tooltip
-          title={theme.palette.mode === "dark" ? "למצב בהיר" : "למצב כהה"}
+          title={theme.palette.mode === "dark" ? "Bright Mode" : "Dark Mode"}
         >
           <IconButton
             sx={{ color: "white" }}
@@ -104,7 +109,9 @@ const Navigation = ({ darkMode, setDarkMode }) => {
             {theme.palette.mode === "dark" ? <Brightness4 /> : <Brightness7 />}
           </IconButton>
         </Tooltip>
+
       </Toolbar>
+
     </AppBar>
   );
 };

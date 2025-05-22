@@ -23,6 +23,7 @@ const Logout = () => {
     // Close dialog and navigate
     setShowLogoutDialog(false);
     navigate('/');
+
   };
 
   const cancelLogout = () => {
@@ -31,7 +32,7 @@ const Logout = () => {
 
   return (
     <>
-      <button className="btn btn-danger" onClick={handleLogout}>
+      <button className="btn btn-danger logout-button" onClick={handleLogout}>
         Logout
       </button>
       
