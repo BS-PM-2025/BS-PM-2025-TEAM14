@@ -48,7 +48,7 @@ const UserGrades: React.FC<UserGradesProps> = ({ userEmail }) => {
         fetchGrades();
     }, [userEmail]);
 
-    if (loading) return <div className="grades-loading">טוען ציונים...</div>;
+    if (loading) return <div className="grades-loading">Loading grades...</div>;
 
     return (
         <div className="grades-container">
@@ -62,7 +62,7 @@ const UserGrades: React.FC<UserGradesProps> = ({ userEmail }) => {
                     <div key={courseId} className="course-grade-card">
                         <div className="course-info">
                             <h3>{courseName}</h3>
-                            <p>ממוצע: {average}</p>
+                            <p>Average: {average}</p>
                         </div>
                         <ScoreGauge scoreValue={parseFloat(average)} />
                         <ul className="grade-list">

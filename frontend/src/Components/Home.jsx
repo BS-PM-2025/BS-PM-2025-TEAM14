@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useUser } from './UserContext';
-import { getToken, removeToken, forceLogout, isTokenValid, checkBackendHealth } from '../utils/auth';
+import { getToken, removeToken, forceLogout, checkBackendHealth } from '../utils/auth';
 import { Modal, Box, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -11,7 +11,7 @@ import UserGrades from './UserGrades';
 import ProfessorView from './ProfessorView';
 import axios from 'axios';
 import '../CSS/Home.css';
-import DashboardTab from "./DashboardTab";
+
 
 const motivationalQuotes = [
   "Success is not the key to happiness. Happiness is the key to success.",
@@ -275,7 +275,7 @@ const Home = () => {
             {user && (
                 <div className="dashboard-tabs">
                   <div className="tabs-header">
-                    {['dashboard', ...(isStudent ? ['courses', 'grades'] : []), 'lecturer availability'].map((tab) => (
+                    {['dashboard', ...(isStudent ? ['courses', 'grades'] : []), 'lecturer Availability'].map((tab) => (
                         <button
                             key={tab}
                             className={`tab-button ${activeTab === tab ? 'active' : ''}`}
@@ -314,7 +314,7 @@ const Home = () => {
                         </section>
                       </div>
                     )}
-                    {activeTab === 'lecturer availability' && user.role === 'student' && (
+                    {activeTab === 'lecturer Availability' && user.role === 'student' && (
                       <ProfessorView studentEmail={user.user_email} />
                     )}
                     {isStudent && activeTab === 'grades' && <UserGrades userEmail={user.user_email} />}

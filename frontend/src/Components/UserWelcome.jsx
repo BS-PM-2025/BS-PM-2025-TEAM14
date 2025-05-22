@@ -3,16 +3,8 @@ import { motion } from 'framer-motion';
 import { useUser } from './UserContext';
 import ScoreGauge from "./Gauge";
 
-const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick, greeting, quote, userAvg }) => {
+const UserWelcome = ({ onLoginClick, itemVariants, greeting, quote, userAvg }) => {
     const { user } = useUser(); // We only need user here, no need for setUserData
-
-    const getUserDisplayName = () => {
-        if (!user) return '';
-        if (user.username) return user.username;
-        if (user.name) return user.name;
-        if (user.user_email) return user.user_email.split('@')[0];
-        return 'User';
-    };
 
     useEffect(() => {
         console.log("User changed in UserWelcome:", user);

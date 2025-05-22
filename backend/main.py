@@ -1311,14 +1311,6 @@ async def submit_response(
         print(f"submit_response run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Request not found")
     
-    # Create response
-    response = RequestResponses(
-        request_id=response_data.request_id,
-        professor_email=response_data.professor_email,
-        response_text=response_data.response_text,
-        created_date=datetime.utcnow()
-    )
-    
     db.add(response)
     
     # Update request timeline
