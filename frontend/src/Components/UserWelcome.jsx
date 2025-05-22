@@ -48,6 +48,14 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick, greeting, quot
                                 </div>
                             )}
                         </div>
+
+                    </div>
+                    <div className="user-info">
+                        <h2>Hello, {getUserDisplayName()}!</h2>
+                        <ScoreGauge scoreValue={90} />
+                        <p className="user-role">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</p>
+                    </div>
+
                     )}
                     {/* Main row: Gauge left, Role center, Logout right */}
                     {userAvg === undefined ? (
@@ -120,6 +128,7 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick, greeting, quot
                             </div>
                         </div>
                     )}
+
                 </div>
             ) : (
                 <motion.div className="guest-welcome" variants={itemVariants}>
