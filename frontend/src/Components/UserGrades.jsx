@@ -64,7 +64,7 @@ const UserGrades: React.FC<UserGradesProps> = ({ userEmail }) => {
                             <h3>{courseName}</h3>
                             <p>ממוצע: {average}</p>
                         </div>
-                        <ScoreGauge scoreValue={parseFloat(average)} />
+                        (<ScoreGauge scoreValue={parseFloat(average)} />
                         <ul className="grade-list">
                             {grades.map((grade, index) => (
                                 <li key={index} className="grade-item">
