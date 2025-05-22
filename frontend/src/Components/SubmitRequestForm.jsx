@@ -18,6 +18,7 @@ const RequestForm = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [user, setUser] = useState(null);
   const [professorUnavailable, setProfessorUnavailable] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -148,31 +149,22 @@ const RequestForm = () => {
     e.preventDefault();
     setError("");
     setMessage("");
+    setFieldErrors({});
 
-    if (!title || !details) {
-      setError("Title or details are missing.");
-      return;
-    }
-
-    // Additional validation for grade appeal
-    // if (title === "Grade Appeal Request" && !selectedGrade?.grade) {
-    //   setError("Please select a grade to appeal.");
-    //   return;
-    // }
-
-    // Additional validation for schedule change
-    if (title === "Schedule Change Request" && !selectedCourse) {
-      setError("Please select a course for schedule change.");
-      return;
-    }
-
-    // Additional validation for military service and exam accommodation
+    const errors = {};
+    if (!title) errors.title = "Please select a request type.";
+    if (!details) errors.details = "Please enter request details.";
+    if (title === "Schedule Change Request" && !selectedCourse)
+      errors.selectedCourse = "Please select a course for schedule change.";
     if (
       (title === "Military Service Request" ||
         title === "Exam Accommodations Request") &&
       files.length === 0
-    ) {
-      setError("File attachment is required for this type of request.");
+    )
+      errors.files = "File attachment is required for this type of request.";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
@@ -280,7 +272,16 @@ const RequestForm = () => {
 
   return (
     <div className="request-form-container">
-      <h2>Submit A New Request</h2>
+      <div className="form-header-image">
+        <div className="form-header-overlay">
+          <h2 className="form-header-title">Submit a New Request</h2>
+        </div>
+        <img
+          src="https://i.pinimg.com/736x/93/64/69/936469689d5c78c32e58c28875b89111.jpg"
+          alt="Form header background"
+          className="form-header-bg"
+        />
+      </div>
       <form onSubmit={handleSubmit} className="request-form">
         <div className="form-group">
           <label htmlFor="title">Request Type*</label>
@@ -289,17 +290,16 @@ const RequestForm = () => {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
-              setSelectedGrade(null); // Reset grade selection when request type changes
-              setGradeInfo(""); // Reset grade info
-              setSelectedCourse(null); // Reset course selection
+              setSelectedGrade(null);
+              setGradeInfo("");
+              setSelectedCourse(null);
               if (
                 e.target.value !== "Grade Appeal Request" &&
                 e.target.value !== "Schedule Change Request"
               ) {
-                setDetails(""); // Reset details if not grade appeal or schedule change
+                setDetails("");
               }
             }}
-            required
           >
             <option value="">Select a request type</option>
             {requestTypes.map((type, index) => (
@@ -308,6 +308,9 @@ const RequestForm = () => {
               </option>
             ))}
           </select>
+          {fieldErrors.title && (
+            <div className="error-message">{fieldErrors.title}</div>
+          )}
         </div>
 
         {title === "Grade Appeal Request" && (
@@ -329,7 +332,7 @@ const RequestForm = () => {
         )}
 
         <div className="form-group">
-          <label htmlFor="details">Details*</label>
+          <label htmlFor="details">Request Details*</label>
           {title === "Grade Appeal Request" && gradeInfo && (
             <div className="grade-info">
               <pre>{gradeInfo}</pre>
@@ -339,7 +342,6 @@ const RequestForm = () => {
             id="details"
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            required
             placeholder={
               title === "Grade Appeal Request"
                 ? "Please explain why you are appealing this grade..."
@@ -348,14 +350,39 @@ const RequestForm = () => {
                 : "Enter request details..."
             }
           />
+          {fieldErrors.details && (
+            <div className="error-message">{fieldErrors.details}</div>
+          )}
         </div>
 
         <div className="form-group">
-          <label htmlFor="files">Attach Files (Optional)</label>
-          <input type="file" id="files" multiple onChange={handleFileChange} />
+          <label htmlFor="files">
+            Attach Supporting Documents (
+            {title === "Military Service Request" ||
+            title === "Exam Accommodations Request"
+              ? "Required"
+              : "Optional"}
+            )
+          </label>
+          <input
+            type="file"
+            id="files"
+            multiple
+            onChange={handleFileChange}
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            style={{ display: "none" }}
+            ref={(input) => (window.fileInputRef = input)}
+          />
+          <button
+            type="button"
+            className="custom-file-btn"
+            onClick={() => window.fileInputRef && window.fileInputRef.click()}
+          >
+            Choose Files
+          </button>
           {files.length > 0 && (
             <div className="selected-files">
-              <h4>Selected Files:</h4>
+              <h4>Selected Documents:</h4>
               <ul>
                 {files.map((file, index) => (
                   <li key={index}>
@@ -364,33 +391,54 @@ const RequestForm = () => {
                       type="button"
                       className="remove-file-btn"
                       onClick={() => handleRemoveFile(index)}
+                      aria-label="Remove file"
                     >
-                      X
+                      ×
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
           )}
+          {fieldErrors.files && (
+            <div className="error-message">{fieldErrors.files}</div>
+          )}
         </div>
 
         {title === "Grade Appeal Request" && professorUnavailable && (
-          <div className="warning-message">
-            <h4>Lecturer Unavailability Notice</h4>
-            <p>Your lecturer is unavailable during the following periods:</p>
-            <ul>
-              {professorUnavailable.map((period, index) => (
-                <li key={index}>
-                  {new Date(period.start_date).toLocaleDateString()} -{" "}
-                  {new Date(period.end_date).toLocaleDateString()}
-                  {period.reason && ` (${period.reason})`}
-                </li>
-              ))}
-            </ul>
-            <p>
-              Please consider this when submitting your grade appeal request.
-            </p>
+          <div className="notice-card">
+            <span className="notice-icon" role="img" aria-label="calendar">
+              📅
+            </span>
+            <div className="notice-card-content">
+              <div className="notice-card-title">
+                Professor Unavailability Notice
+              </div>
+              <div className="notice-card-desc">
+                Your professor will be unavailable during the following periods:
+              </div>
+              <ul className="notice-card-list">
+                {professorUnavailable.map((period, index) => (
+                  <li key={index}>
+                    <span className="list-icon" role="img" aria-label="date">
+                      ⏰
+                    </span>
+                    {new Date(period.start_date).toLocaleDateString()} -{" "}
+                    {new Date(period.end_date).toLocaleDateString()}
+                    {period.reason && ` (${period.reason})`}
+                  </li>
+                ))}
+              </ul>
+              <div className="notice-card-footer">
+                Please consider this information when submitting your grade
+                appeal request.
+              </div>
+            </div>
           </div>
+        )}
+
+        {fieldErrors.selectedCourse && (
+          <div className="error-message">{fieldErrors.selectedCourse}</div>
         )}
 
         {error && <div className="error-message">{error}</div>}

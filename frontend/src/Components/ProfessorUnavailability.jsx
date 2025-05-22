@@ -22,7 +22,9 @@ import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
-import { format } from "date-fns";
+import { format, isWithinInterval, isAfter, startOfDay } from "date-fns";
+import { enGB } from "date-fns/locale";
+import "../CSS/ProfessorUnavailability.css";
 
 export default function ProfessorUnavailability({ professorEmail }) {
   const [periods, setPeriods] = useState([]);
@@ -30,6 +32,8 @@ export default function ProfessorUnavailability({ professorEmail }) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [reason, setReason] = useState("");
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     fetchUnavailabilityPeriods();
@@ -46,13 +50,24 @@ export default function ProfessorUnavailability({ professorEmail }) {
     }
   };
 
+  const isPeriodRelevant = (period) => {
+    const today = startOfDay(new Date());
+    const periodStart = new Date(period.start_date);
+    const periodEnd = new Date(period.end_date);
+
+    return (
+      isWithinInterval(today, { start: periodStart, end: periodEnd }) ||
+      isAfter(periodStart, today)
+    );
+  };
+
   const handleAddPeriod = async () => {
     try {
       await axios.post(
         `http://localhost:8000/professor/unavailability/${professorEmail}`,
         {
-          start_date: startDate,
-          end_date: endDate,
+          start_date: startDate ? format(startDate, "yyyy-MM-dd") : null,
+          end_date: endDate ? format(endDate, "yyyy-MM-dd") : null,
           reason: reason,
         }
       );
@@ -78,51 +93,101 @@ export default function ProfessorUnavailability({ professorEmail }) {
     }
   };
 
+  const handleTrashClick = (periodId) => {
+    setPendingDeleteId(periodId);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (pendingDeleteId) {
+      await handleDeletePeriod(pendingDeleteId);
+      setPendingDeleteId(null);
+      setConfirmOpen(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setPendingDeleteId(null);
+    setConfirmOpen(false);
+  };
+
+  const relevantPeriods = periods.filter(isPeriodRelevant);
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Manage Unavailability Periods
-      </Typography>
+    <Box className="prof-unavail-root" sx={{ p: 3 }}>
+      <div className="prof-unavail-header-row">
+        <Typography variant="h5" gutterBottom className="prof-unavail-header">
+          Manage Unavailability Periods
+        </Typography>
+        <div className="prof-unavail-header-img">
+          <img
+            src="https://i.pinimg.com/736x/38/82/f6/3882f6c3cf29b13087eeaaf7ddfb5ede.jpg"
+            alt="Header visual"
+          />
+        </div>
+      </div>
 
       <Button
         variant="contained"
         startIcon={<AddIcon />}
         onClick={() => setOpen(true)}
         sx={{ mb: 2 }}
+        className="prof-unavail-add-btn"
       >
         Add Unavailability Period
       </Button>
 
-      <Paper elevation={2}>
+      <Paper elevation={2} className="prof-unavail-card">
         <List>
-          {periods.map((period) => (
-            <ListItem key={period.id}>
+          {relevantPeriods.map((period) => (
+            <ListItem
+              key={period.id}
+              className={`prof-unavail-list-item${
+                pendingDeleteId === period.id
+                  ? " prof-unavail-list-item-active"
+                  : ""
+              }`}
+            >
               <ListItemText
-                primary={`${new Date(
-                  period.start_date
-                ).toLocaleDateString()} - ${new Date(
-                  period.end_date
-                ).toLocaleDateString()}`}
+                primary={`${format(
+                  new Date(period.start_date),
+                  "dd/MM/yyyy"
+                )} - ${format(new Date(period.end_date), "dd/MM/yyyy")}`}
                 secondary={period.reason || "No reason provided"}
               />
               <ListItemSecondaryAction>
                 <IconButton
                   edge="end"
                   aria-label="delete"
-                  onClick={() => handleDeletePeriod(period.id)}
+                  onClick={() => handleTrashClick(period.id)}
+                  className="prof-unavail-delete-btn"
                 >
                   <DeleteIcon />
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
           ))}
+          {relevantPeriods.length === 0 && (
+            <ListItem className="prof-unavail-list-item">
+              <ListItemText primary="No relevant unavailability periods" />
+            </ListItem>
+          )}
         </List>
       </Paper>
 
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Add Unavailability Period</DialogTitle>
-        <DialogContent>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        className="prof-unavail-dialog"
+      >
+        <DialogTitle className="prof-unavail-dialog-title">
+          Add Unavailability Period
+        </DialogTitle>
+        <DialogContent className="prof-unavail-dialog-content">
+          <LocalizationProvider
+            dateAdapter={AdapterDateFns}
+            adapterLocale={enGB}
+          >
             <Box
               sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}
             >
@@ -132,7 +197,7 @@ export default function ProfessorUnavailability({ professorEmail }) {
                   setStartDate(newValue[0]);
                   setEndDate(newValue[1]);
                 }}
-                format="DD/MM/YYYY"
+                format="dd/MM/yyyy"
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -146,18 +211,55 @@ export default function ProfessorUnavailability({ professorEmail }) {
                 fullWidth
                 multiline
                 rows={2}
+                className="prof-unavail-dialog-reason"
               />
             </Box>
           </LocalizationProvider>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+        <DialogActions className="prof-unavail-dialog-actions">
+          <Button
+            onClick={() => setOpen(false)}
+            className="prof-unavail-dialog-cancel"
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleAddPeriod}
             variant="contained"
             disabled={!startDate || !endDate}
+            className="prof-unavail-dialog-add"
           >
             Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmOpen}
+        onClose={handleCancelDelete}
+        className="prof-unavail-confirm-dialog"
+      >
+        <DialogTitle className="prof-unavail-confirm-title">
+          Confirm Deletion
+        </DialogTitle>
+        <DialogContent className="prof-unavail-confirm-content">
+          Are you sure you want to delete this unavailability period?
+        </DialogContent>
+        <DialogActions className="prof-unavail-confirm-actions">
+          <Button
+            onClick={handleCancelDelete}
+            className="prof-unavail-confirm-cancel"
+          >
+            No
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            className="prof-unavail-confirm-yes"
+            variant="contained"
+            color="error"
+          >
+            Yes
           </Button>
         </DialogActions>
       </Dialog>
