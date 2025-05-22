@@ -22,7 +22,7 @@
 .modal-container {
     width: 90%;
     max-width: 600px;
-    max-height: 60vh;
+    max-height: 60vw;
     overflow-y: auto;
     direction: ltr;
     border-radius: 20px;
