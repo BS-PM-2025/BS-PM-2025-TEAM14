@@ -32,9 +32,6 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
                         <ScoreGauge scoreValue={90} />
                         <p className="user-role">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</p>
                     </div>
-                    <button className="logout-button" onClick={onLogoutClick}>
-                        Logout
-                    </button>
                 </div>
             ) : (
                 <motion.div className="guest-welcome" variants={itemVariants}>

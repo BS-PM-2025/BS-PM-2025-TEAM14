@@ -31,12 +31,12 @@ const Logout = () => {
 
   return (
     <>
-      <button className="btn btn-danger" onClick={handleLogout}>
+      <button className="btn btn-danger logout-button" onClick={handleLogout}>
         Logout
       </button>
-      
+
       <ConfirmationDialog
-        isOpen={showLogoutDialog}
+          isOpen={showLogoutDialog}
         onClose={cancelLogout}
         onConfirm={confirmLogout}
         title="Confirm Logout"
