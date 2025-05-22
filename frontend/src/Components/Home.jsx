@@ -183,7 +183,17 @@ const Home = () => {
 
           {/* Login Modal */}
           <Modal open={openLoginModal} onClose={() => setOpenLoginModal(false)}>
-            <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              borderRadius: '20px', // Add this line
+              overflow: 'hidden'     // Add this line to prevent content overflow
+            }}>
               <Login
                   onSuccess={(userData) => {
                     setUserData(userData);

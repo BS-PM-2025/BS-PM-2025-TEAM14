@@ -29,7 +29,7 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick }) => {
                     </div>
                     <div className="user-info">
                         <h2>Hello, {getUserDisplayName()}!</h2>
-                        <ScoreGauge scoreValue={90} />
+                        {user.rule == 'student' && <ScoreGauge scoreValue={90} />}
                         <p className="user-role">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</p>
                     </div>
 

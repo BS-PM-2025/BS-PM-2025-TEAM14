@@ -1,0 +1,267 @@
+/* Modern Login Modal Styling */
+.container {
+    width: 100%;
+    max-width: 420px;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.15),
+            0 8px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Remove default margin and padding from the MuiBox wrapper */
+.MuiBox-root {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin: -1.5rem 1.7rem 1.5rem 1.5rem;
+    box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    position: relative;
+    z-index: 1;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-center h2 {
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-center h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin: 1rem auto;
+    border-radius: 2px;
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 2rem;
+}
+
+.mt-5 {
+    margin-top: 0 !important;
+}
+
+.d-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.text-danger {
+    color: #e53e3e;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.75rem;
+    background: rgba(254, 226, 226, 0.8);
+    border-radius: 8px;
+    border-left: 4px solid #e53e3e;
+    margin-bottom: 1rem;
+}
+
+/* Enhanced Material-UI Component Styling */
+.MuiTextField-root {
+    margin-bottom: 1.5rem;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.MuiTextField-root .MuiOutlinedInput-root:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #667eea;
+    box-shadow:
+            0 0 0 3px rgba(102, 126, 234, 0.1),
+            0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.MuiTextField-root .MuiInputLabel-root {
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.MuiTextField-root .MuiInputLabel-root.Mui-focused {
+    color: #667eea;
+}
+
+.MuiTextField-root .MuiOutlinedInput-input {
+    padding: 14px 16px;
+    font-size: 1rem;
+    color: #2d3748;
+}
+
+/* Enhanced Button Styling */
+.MuiButton-root {
+    padding: 14px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow:
+            0 4px 15px rgba(102, 126, 234, 0.3),
+            0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-transform: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.MuiButton-root::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.MuiButton-root:hover {
+    transform: translateY(-2px);
+    box-shadow:
+            0 8px 25px rgba(102, 126, 234, 0.4),
+            0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.MuiButton-root:hover::before {
+    left: 100%;
+}
+
+.MuiButton-root:active {
+    transform: translateY(0);
+}
+
+.MuiButton-root.Mui-disabled {
+    background: linear-gradient(135deg, #a0aec0 0%, #cbd5e0 100%);
+    box-shadow: none;
+    transform: none;
+}
+
+/* Loading Animation */
+.MuiCircularProgress-root {
+    width: 24px !important;
+    height: 24px !important;
+    color: #ffffff !important;
+}
+
+/* Icon Button Styling */
+.MuiIconButton-root {
+    color: #667eea;
+    transition: all 0.2s ease;
+}
+
+.MuiIconButton-root:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #764ba2;
+}
+
+/* Input Adornment */
+.MuiInputAdornment-root {
+    margin-right: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        max-width: 350px;
+        margin: 0;
+    }
+
+    .card {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+
+    .text-center h2 {
+        font-size: 1.75rem;
+    }
+
+    .MuiTextField-root .MuiOutlinedInput-input {
+        padding: 12px 14px;
+        font-size: 0.95rem;
+    }
+
+    .MuiButton-root {
+        padding: 12px 0;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .container {
+        max-width: 320px;
+    }
+
+    .card {
+        padding: 1.5rem 1rem;
+        margin: 0.75rem;
+    }
+}
+
+/* Smooth entrance animation */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.container {
+    animation: modalSlideIn 0.3s ease-out;
+}
