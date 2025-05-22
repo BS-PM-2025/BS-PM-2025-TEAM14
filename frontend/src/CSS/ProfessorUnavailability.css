@@ -1,0 +1,242 @@
+/* Root container */
+.prof-unavail-root {
+  max-width: 700px;
+  margin: 40px auto;
+  background: #f8fafd;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+  padding: 32px 32px 24px 32px;
+}
+
+.prof-unavail-header {
+  font-weight: 700;
+  color: #1a237e;
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+}
+
+.prof-unavail-add-btn {
+  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+  transition: background 0.2s;
+}
+.prof-unavail-add-btn:hover {
+  background: linear-gradient(90deg, #1565c0 0%, #1976d2 100%);
+}
+
+.prof-unavail-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(60, 72, 88, 0.07);
+  margin-bottom: 24px;
+  padding: 0 0 8px 0;
+}
+
+.prof-unavail-list-item {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 18px 8px 12px 16px;
+  align-items: flex-start;
+  transition: background 0.18s, box-shadow 0.18s;
+}
+.prof-unavail-list-item:last-child {
+  border-bottom: none;
+}
+
+.prof-unavail-list-item:hover {
+  background: #f3f8fd;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.07);
+  cursor: pointer;
+}
+
+.prof-unavail-list-item .MuiListItemText-primary {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: #263238;
+}
+.prof-unavail-list-item .MuiListItemText-secondary {
+  font-size: 0.98rem;
+  color: #607d8b;
+  margin-top: 2px;
+}
+
+.prof-unavail-delete-btn {
+  color: #b71c1c;
+  transition: color 0.2s;
+}
+.prof-unavail-delete-btn:hover {
+  color: #f44336;
+}
+
+.prof-unavail-dialog .MuiDialog-paper {
+  border-radius: 18px;
+  box-shadow: 0 8px 40px rgba(25, 118, 210, 0.13);
+  background: #fff;
+  padding: 0 0 8px 0;
+  min-width: 370px;
+}
+
+.prof-unavail-dialog-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1976d2;
+  padding: 24px 32px 8px 32px;
+  letter-spacing: 0.2px;
+}
+
+.prof-unavail-dialog-content {
+  padding: 16px 32px 8px 32px !important;
+  background: #f8fafd;
+  border-radius: 0 0 12px 12px;
+}
+
+.prof-unavail-dialog-reason .MuiInputBase-root {
+  background: #f4f6fb;
+  border-radius: 8px;
+}
+
+.prof-unavail-dialog-actions {
+  padding: 16px 32px 24px 32px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8fafd;
+  border-radius: 0 0 18px 18px;
+}
+
+.prof-unavail-dialog-cancel {
+  color: #607d8b;
+  font-weight: 500;
+  background: transparent;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.prof-unavail-dialog-cancel:hover {
+  background: #e3eafc;
+}
+
+.prof-unavail-dialog-add {
+  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+  transition: background 0.2s;
+}
+.prof-unavail-dialog-add:hover {
+  background: linear-gradient(90deg, #1565c0 0%, #1976d2 100%);
+}
+
+.prof-unavail-header-row {
+  position: relative;
+  margin-bottom: 24px;
+  min-height: 60px; /* or whatever fits your title */
+}
+
+.prof-unavail-header-img {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  z-index: 1;
+}
+
+.prof-unavail-header-img img {
+  width: 240px; /* or your preferred width */
+  height: 115px; /* or your preferred height */
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+  border: 2px solid #e3eafc;
+}
+
+@media (max-width: 800px) {
+  .prof-unavail-root {
+    max-width: 98vw;
+    padding: 12px 2vw 12px 2vw;
+  }
+  .prof-unavail-card {
+    padding: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .prof-unavail-dialog .MuiDialog-paper {
+    min-width: 90vw;
+    padding: 0;
+  }
+  .prof-unavail-dialog-title,
+  .prof-unavail-dialog-content,
+  .prof-unavail-dialog-actions {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .prof-unavail-header-img img {
+    width: 40px;
+    height: 40px;
+  }
+  .prof-unavail-header-row {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.prof-unavail-list-item-active {
+  background: #ffeaea !important;
+  box-shadow: 0 4px 16px rgba(244, 67, 54, 0.1);
+  border-left: 4px solid #f44336;
+  transition: background 0.18s, box-shadow 0.18s, border 0.18s;
+}
+
+.prof-unavail-confirm-dialog .MuiDialog-paper {
+  border-radius: 18px;
+  box-shadow: 0 8px 40px rgba(244, 67, 54, 0.13);
+  background: #fff;
+  min-width: 340px;
+  padding: 0 0 8px 0;
+}
+.prof-unavail-confirm-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #b71c1c;
+  padding: 24px 32px 8px 32px;
+  letter-spacing: 0.2px;
+}
+.prof-unavail-confirm-content {
+  padding: 16px 32px 8px 32px !important;
+  color: #263238;
+  font-size: 1.08rem;
+  background: #fff6f6;
+  border-radius: 0 0 12px 12px;
+}
+.prof-unavail-confirm-actions {
+  padding: 16px 32px 24px 32px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #fff6f6;
+  border-radius: 0 0 18px 18px;
+}
+.prof-unavail-confirm-cancel {
+  color: #607d8b;
+  font-weight: 500;
+  background: transparent;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.prof-unavail-confirm-cancel:hover {
+  background: #e3eafc;
+}
+.prof-unavail-confirm-yes {
+  background: linear-gradient(90deg, #f44336 0%, #ff7961 100%);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.08);
+  transition: background 0.2s;
+}
+.prof-unavail-confirm-yes:hover {
+  background: linear-gradient(90deg, #b71c1c 0%, #f44336 100%);
+}
