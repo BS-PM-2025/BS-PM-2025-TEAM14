@@ -24,40 +24,31 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick, greeting, quot
                 <div className="user-welcome" style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                     {/* Header: Greeting and Quote */}
                     {greeting && (
-                        <>
-                            <div className="user-welcome-header" style={{
-                                marginBottom: 16,
-                                marginTop: 0,
-                                textAlign: 'center',
-                                width: '100%'
-                            }}>
-                                <h2 style={{
-                                    margin: 0,
-                                    fontWeight: 700,
-                                    fontSize: '1.5rem',
-                                    color: 'var(--primary-color)',
+                        <div className="user-welcome-header" style={{
+                            marginBottom: 16,
+                            marginTop: 0,
+                            textAlign: 'center',
+                            width: '100%'
+                        }}>
+                            <h2 style={{
+                                margin: 0,
+                                fontWeight: 700,
+                                fontSize: '1.5rem',
+                                color: 'var(--primary-color)',
+                                textAlign: 'center'
+                            }}>{greeting}</h2>
+                            {quote && (
+                                <div style={{
+                                    fontSize: '1.22rem',
+                                    color: 'var(--light-text-color)',
+                                    marginTop: 2,
                                     textAlign: 'center'
-                                }}>{greeting}</h2>
-                                {quote && (
-                                    <div style={{
-                                        fontSize: '1.22rem',
-                                        color: 'var(--light-text-color)',
-                                        marginTop: 2,
-                                        textAlign: 'center'
-                                    }}>
-                                        <em>“{quote}”</em>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="user-info">
-                                <h2>Hello, {getUserDisplayName()}!</h2>
-                                <ScoreGauge scoreValue={999} />
-                                <p className="user-role">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}</p>
-                            </div>
-                        </>
+                                }}>
+                                    <em>“{quote}”</em>
+                                </div>
+                            )}
+                        </div>
                     )}
-
                     {/* Main row: Gauge left, Role center, Logout right */}
                     {userAvg === undefined ? (
                         <div className="user-welcome-main" style={{
@@ -120,13 +111,9 @@ const UserWelcome = ({ onLoginClick, itemVariants, onLogoutClick, greeting, quot
                                 </p>
                             </div>
                             <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                                <button className="logout-button" onClick={onLogoutClick}>
-                                    Logout
-                                </button>
                             </div>
                         </div>
                     )}
-
                 </div>
             ) : (
                 <motion.div className="guest-welcome" variants={itemVariants}>
