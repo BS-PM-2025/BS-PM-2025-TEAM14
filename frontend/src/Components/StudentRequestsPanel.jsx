@@ -167,7 +167,7 @@ function StudentRequests({ emailUser }) {
     };
 
     return (
-        <div className="container mt-4">
+        <div className="container-fluid mt-4">
             <h2 className="text-center mb-4">הבקשות שלי</h2>
             <div className="row">
                 {visibleRequests.map((request, index) => (

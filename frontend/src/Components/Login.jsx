@@ -4,6 +4,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { setToken } from '../utils/auth';
 import { jwtDecode } from "jwt-decode";
 import { useUser } from './UserContext'; // Import useUser to access the global user context
+import '../CSS/Login.css';
 
 const Login = ({ onSuccess, onFailure }) => {
     const { setUserData } = useUser(); // Access setUserData from the UserContext

@@ -69,17 +69,24 @@ export default function UsersList() {
 
     return (
         <div className="users-container">
-            <h2 className="users-title">Users List</h2>
-            <button onClick={fetchUsers} disabled={loading} className="refresh-button">
-                {loading ? "Loading..." : "Refresh Users"}
-            </button>
+            <div className="users-header">
+                <h2 className="users-title">Users List</h2>
+                <button
+                    onClick={fetchUsers}
+                    disabled={loading}
+                    className={`refresh-button ${loading ? 'loading' : ''}`}
+                >
+                    {loading ? "Loading..." : "🔄 Refresh"}
+                </button>
+            </div>
+
             <table className="users-table">
                 <thead>
                 <tr>
+                    <th>Email</th>
                     <th>ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
-                    <th>Email</th>
                     <th>Role</th>
                 </tr>
                 </thead>
@@ -91,12 +98,16 @@ export default function UsersList() {
                             <td>{user.id}</td>
                             <td>{user.first_name}</td>
                             <td>{user.last_name}</td>
-                            <td>{user.role}</td>
+                            <td>
+                                <span className={`role-badge role-${user.role}`}>
+                                    {user.role}
+                                </span>
+                            </td>
                         </tr>
                     ))
                 ) : (
                     <tr>
-                        <td colSpan={4} className="no-users">No users found</td>
+                        <td colSpan={5} className="no-users">No users found</td>
                     </tr>
                 )}
                 </tbody>
@@ -106,20 +117,22 @@ export default function UsersList() {
                 <div className="popup">
                     <div className="popup-content">
                         <button className="close-button" onClick={handleClosePopup}>×</button>
-                        <h3>User Details</h3>
-                        <p><strong>Email:</strong> {selectedUser.email}</p>
-                        <p><strong>ID:</strong> {selectedUser.id}</p>
-                        <p><strong>First Name:</strong> {selectedUser.first_name}</p>
-                        <p><strong>Last Name:</strong> {selectedUser.last_name}</p>
-                        <p><strong>Role:</strong>
+                        <h3>👤 User Details</h3>
+                        <p><strong>📧 Email:</strong> {selectedUser.email}</p>
+                        <p><strong>🆔 ID:</strong> {selectedUser.id}</p>
+                        <p><strong>👨‍💼 First Name:</strong> {selectedUser.first_name}</p>
+                        <p><strong>👩‍💼 Last Name:</strong> {selectedUser.last_name}</p>
+                        <p><strong>🎭 Role:</strong>
                             <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
-                                <option value="admin">Admin</option>
-                                <option value="professor">Professor</option>
-                                <option value="student">Student</option>
-                                <option value="secretary">Secretary</option>
+                                <option value="admin">👑 Admin</option>
+                                <option value="professor">👨‍🏫 Professor</option>
+                                <option value="student">🎓 Student</option>
+                                <option value="secretary">📋 Secretary</option>
                             </select>
                         </p>
-                        <button className="update-role-button" onClick={handleRoleChange}>Update Role</button>
+                        <button className="update-role-button" onClick={handleRoleChange}>
+                            ✅ Update Role
+                        </button>
                     </div>
                 </div>
             )}

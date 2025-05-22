@@ -58,7 +58,6 @@ const Navigation = ({ darkMode, setDarkMode }) => {
           {user?.role === "professor" && (
             <>
               {navItem("/Student's Requests", "Student's Requests")}
-              {navItem("/users", "Users")}
               {navItem("/grades", "Grades")}
               {navItem("/manage-availability", "Manage Availability")}
             </>
