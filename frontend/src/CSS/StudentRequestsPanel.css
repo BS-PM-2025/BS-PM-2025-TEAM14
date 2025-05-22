@@ -1,4 +1,6 @@
-/* הוספה לקובץ StudentRequestsPanel.css */
+.timeline-date {
+    margin-left: 10px;
+}
 
 .requestCloseBTN, .requestEditBTN, .requestDeleteBTN {
     margin-left: 15px;
@@ -19,15 +21,20 @@
 
 .modal-container {
     width: 90%;
-    max-width: 700px;
-    max-height: 80vh;
+    max-width: 600px;
+    max-height: 60vh;
     overflow-y: auto;
-    direction: rtl;
+    direction: ltr;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-content {
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
+    max-width: 500px;
 }
 
 .timeline {
@@ -78,9 +85,12 @@
     z-index: 1;
 }
 
-/* כרטיסיה - תוספת אנימציות */
 .request-card {
     transition: all 0.3s ease;
+}
+
+.request-card:hover {
+    background-color: #DCDCDC;
 }
 
 .fade-in {
