@@ -52,7 +52,7 @@ const Navigation = ({ darkMode, setDarkMode, onLogoutClick }) => {
 
           {user?.role === "student" && (
             <>
-              {navItem("/submit_request", "Submit New Request")}
+              {navItem("/submit_request", "Submit A New Request")}
               {navItem("/Requests", "Requests")}
             </>
           )}

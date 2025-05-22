@@ -73,14 +73,14 @@ function ProfessorRequestsPanel() {
             }
             await axios.post("http://localhost:8000/submit_response", formData);
 
-            alert("תגובתך נשלחה בהצלחה");
+            alert("Response sent successfully.");
             setSelectedRequest(null);
             setResponseText("");
             setResponseFiles([]);
             checkAuth();
         } catch (error) {
             console.error("Error submitting response:", error);
-            alert("שגיאה בשליחת תגובה");
+            alert("An error has occurred.");
         }
     };
 
