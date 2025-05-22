@@ -186,7 +186,7 @@ function StudentRequests({ emailUser }) {
                         <div className="card shadow-lg p-3 request-card">
                             <div className="card-body">
                                 <h5 className="card-title d-flex align-items-center">
-                                    {request.title}
+                                    <strong>{request.title}</strong>
                                     {request.files && request.files.length > 0 && (
                                         <FontAwesomeIcon
                                             icon={faFileAlt}
@@ -251,8 +251,7 @@ function StudentRequests({ emailUser }) {
                                                     <a
                                                         className="btn btn-sm btn-outline-primary"
                                                         href={`http://localhost:8000/downloadFile/${emailUser}/${encodeURIComponent(doc)}`}
-                                                        download
-                                                    >
+                                                        download>
                                                         Download
                                                     </a>
                                                 </li>
@@ -278,15 +277,14 @@ function StudentRequests({ emailUser }) {
                                         ))}
                                     </div>
                                 </div>
+
                                 <div className="mb-3">
                                     <h5>Staff Replies:</h5>
                                     {loadingResponses ? (
                                         <p>loading...</p>
-                                    ) : responses.length === 0 ? (
-                                        <p className="text-muted">There are no replies for this requests.</p>
-                                    ) :
-                                        (
-                                        <div className="timeline">
+                                    ) : responses.length === 0 ?
+                                        (<p className="text-muted">There are no replies for this requests.</p>) :
+                                        (<div className="timeline">
                                             {responses.map((resp, index) => (
                                                 <div key={index} className="timeline-item">
                                                     <div className="timeline-date">
@@ -302,23 +300,23 @@ function StudentRequests({ emailUser }) {
                                                                 <ul className="list-group">
                                                                     {resp.files.map((doc, idx) => (
                                                                         <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>
-                                                <FontAwesomeIcon icon={faFileAlt} className="me-2 text-primary" />
-                                                {doc}
-                                            </span>
-                                            <a
-                                                className="btn btn-sm btn-outline-primary"
-                                                href={`http://localhost:8000/downloadFile/${emailUser}/${encodeURIComponent(doc)}`}
-                                                download>
-                                                Download</a>
-                                            </li>
+                                                                        <span>
+                                                                            <FontAwesomeIcon icon={faFileAlt} className="me-2 text-primary" />
+                                                                            {doc}
+                                                                        </span>
+                                                                        <a
+                                                                            className="btn btn-sm btn-outline-primary"
+                                                                            href={`http://localhost:8000/downloadFile/${emailUser}/${encodeURIComponent(doc)}`}
+                                                                            download>
+                                                                            Download</a>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             ))}
-                                            </ul>
-                                            </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    ))}
                                         </div>
                                     )}
                                 </div>

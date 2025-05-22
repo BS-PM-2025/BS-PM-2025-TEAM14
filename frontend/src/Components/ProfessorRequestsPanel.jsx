@@ -6,6 +6,8 @@ import { getToken, getUserFromToken } from "../utils/auth";
 import { Button, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import "../CSS/ProfessorRequestsPanel.css";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faFileAlt} from "@fortawesome/free-solid-svg-icons";
 
 function ProfessorRequestsPanel() {
     const [requests, setRequests] = useState([]);
@@ -161,18 +163,22 @@ function ProfessorRequestsPanel() {
 
     return (
         <div className="container mt-4">
-            <h2 className="text-center mb-4">Pending Requests</h2>
+            <h2 className="text-center mb-4"><strong>Pending Requests</strong></h2>
 
             <div className="d-flex justify-content-end mb-3">
-                <FormControl variant="outlined" className="me-2" sx={{ minWidth: 200 }}>
-                    <InputLabel id="sort-label">Sort</InputLabel>
+                <FormControl
+                    variant="outlined"
+                    className="me-2 sort-select"
+                    sx={{ minWidth: 120 }}>
+                    <InputLabel id="sort-label">Sort By</InputLabel>
                     <Select
                         labelId="sort-label"
                         value={sortBy}
                         onChange={handleSortChange}
-                        label="מיין לפי"
+                        label="Sort By"
                         defaultValue="created_desc"
-                    >
+                        size="small"
+                     variant={"outlined"}>
                         <MenuItem value="created_desc">Date (New to Old)</MenuItem>
                         <MenuItem value="created_asc">Date (Old to New)</MenuItem>
                         <MenuItem value="title_asc">Title (A-Z)</MenuItem>
@@ -183,8 +189,10 @@ function ProfessorRequestsPanel() {
                 <Button
                     variant="outlined"
                     color="secondary"
+                    className="clear-sort-button"
                     onClick={clearSort}
-                    sx={{ minWidth: 120, alignSelf: 'flex-start', marginLeft: '10px' }}
+                    size="large"
+                    sx={{ minWidth: 120, alignSelf: 'flex-start', marginLeft: '10px', textTransform: 'none', fontSize:"20px" }}
                 >
                     Clear Sort
                 </Button>
@@ -204,7 +212,7 @@ function ProfessorRequestsPanel() {
                     >
                         <div className="card request-card shadow-lg">
                             <div className="card-body">
-                                <h5 className="card-title">{req.title}</h5>
+                                <h5 className="card-title"><strong>{req.title}</strong></h5>
                                 <p className="card-text"><strong>Date :</strong> {req.created_date}</p>
                                 <p className="card-text"><strong>From :</strong> {req.student_email}</p>
                                 <p className={`badge ${getStatusClass(req.status)}`}>{getStatusText(req.status)}</p>
@@ -225,31 +233,83 @@ function ProfessorRequestsPanel() {
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     >
                         <div className="modal-content card shadow-lg p-4">
-                            <h4>{selectedRequest.title}</h4>
-                            <p><strong>Date :</strong> {selectedRequest.created_date}</p>
-                            <p><strong>From :</strong> {selectedRequest.student_email}</p>
-                            <p><strong>Status :</strong> <span className={`badge ${getStatusClass(selectedRequest.status)}`}>{getStatusText(selectedRequest.status)}</span></p>
+                            <h4><strong>{selectedRequest.title}</strong></h4>
+                            <p><strong>Request ID:</strong> {selectedRequest.id}</p>
+                            <p><strong>Date:</strong> {selectedRequest.created_date}</p>
+                            <p><strong>From:</strong> {selectedRequest.student_email}</p>
+                            <p><strong>Status:</strong> <span
+                                className={`badge ${getStatusClass(selectedRequest.status)}`}>{getStatusText(selectedRequest.status)}</span>
+                            </p>
 
                             {/* Table View for Details */}
                             <h5 className="mt-3">Details :</h5>
                             <table className="table table-bordered mt-2">
                                 <tbody>
-                                {selectedRequest.details.split("\n").map((line, index) => {
-                                    const [key, value] = line.split(": ");
-                                    return (
-                                        <tr key={index}>
-                                            <td style={{ fontWeight: "bold", width: "30%" }}>{key}</td>
-                                            <td>{value}</td>
-                                        </tr>
-                                    );
-                                })}
+                                <tr>
+                                    <td><strong>Details:</strong></td>
+                                    <td>{selectedRequest.details}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Course:</strong></td>
+                                    <td>{selectedRequest.course_id}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Course Component:</strong></td>
+                                    <td>{selectedRequest.course_component}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Attached Files:</strong></td>
+                                    <td>{(selectedRequest.files || []).map((doc, index) => (
+                                        <li key={index}
+                                            className="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <FontAwesomeIcon icon={faFileAlt}
+                                                                     className="me-2 text-primary"/>
+                                                    {doc}
+                                                </span>
+                                            <a
+                                                className="btn btn-sm btn-outline-primary"
+                                                href={`http://localhost:8000/downloadFile/${selectedRequest.student_email}/${encodeURIComponent(doc)}`}
+                                                download>
+                                                Download
+                                            </a>
+                                        </li>
+                                    ))}</td>
+                                </tr>
+
+                                {/*{selectedRequest.details.split("\n").map((line, index) => {*/}
+                                {/*    const [key, value] = line.split(": ");*/}
+                                {/*    return (*/}
+                                {/*        <tr key={index}>*/}
+                                {/*            <td style={{fontWeight: "bold", width: "30%"}}>{key}</td>*/}
+                                {/*            <td>{value}</td>*/}
+                                {/*        </tr>*/}
+                                {/*    );*/}
+                                {/*})}*/}
                                 </tbody>
                             </table>
+                            <br/>
+                            {/* Timeline */}
+                            <div className="mb-3">
+                                <h5>Request Timeline:</h5>
+                                <div className="timeline">
+                                    {(selectedRequest?.timeline?.status_changes || []).map((statusChange, index) => (
+                                        <div className="timeline-item" key={index}>
+                                            <div className="timeline-date">
+                                                {new Date(statusChange.date).toLocaleDateString("he-IL")}
+                                            </div>
+                                            <div className="timeline-content">
+                                                <p>Status: {getStatusText(statusChange.status)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
                             {/* Response Form */}
                             {(user?.role === "professor" || user?.role === "secretary") && (
                                 <>
-                                    <hr />
+                                    <hr/>
                                     <h5 className="mt-3">Reply :</h5>
                                     <form onSubmit={handleResponseSubmit}>
                                         <div className="mb-3">
@@ -278,7 +338,7 @@ function ProfessorRequestsPanel() {
 
                             {(user?.role === "secretary" || user?.role === "professor") && (
                                 <div className="mt-3">
-                                    <FormControl variant="outlined" className="me-2" sx={{ minWidth: 200 }}>
+                                    <FormControl variant="outlined" className="me-2" sx={{minWidth: 200}}>
                                         <InputLabel id="status-label">Update Status</InputLabel>
                                         <Select
                                             labelId="status-label"
@@ -288,7 +348,7 @@ function ProfessorRequestsPanel() {
                                         >
                                             <MenuItem value="pending">Pending</MenuItem>
                                             <MenuItem value="in process">In Process</MenuItem>
-                                            <MenuItem value="require editing">Require Editing</MenuItem>
+                                            <MenuItem value="require editing">Require Edit</MenuItem>
                                             <MenuItem value="approved">Approve</MenuItem>
                                             <MenuItem value="rejected">Reject</MenuItem>
                                         </Select>
@@ -304,7 +364,8 @@ function ProfessorRequestsPanel() {
                                 <DialogTitle id="alert-dialog-title">{"Confirm Status Update"}</DialogTitle>
                                 <DialogContent>
                                     <DialogContentText id="alert-dialog-description">
-                                        <strong>Are you sure you want to change the status to {dialogData.newStatus} ?</strong>
+                                        <strong>Are you sure you want to change the status
+                                            to {dialogData.newStatus} ?</strong>
                                     </DialogContentText>
                                 </DialogContent>
                                 <DialogActions>
@@ -317,7 +378,6 @@ function ProfessorRequestsPanel() {
                                 </DialogActions>
                             </Dialog>
 
-                            <button className="btn btn-secondary mt-3" onClick={() => setSelectedRequest(null)}>סגירה</button>
                         </div>
                     </motion.div>
                 </div>
@@ -329,25 +389,39 @@ function ProfessorRequestsPanel() {
 
 function getStatusClass(status) {
     switch (status) {
-        case "pending": return "bg-warning text-dark";
-        case "in process": return "bg-info text-white";
-        case "require editing": return "bg-warning text-dark";
-        case "approved": return "bg-success text-white";
-        case "rejected": return "bg-danger text-white";
-        case "not read": return "bg-secondary text-white";
-        default: return "bg-light text-dark";
+        case "pending":
+            return "bg-warning text-dark";
+        case "in process":
+            return "bg-info text-white";
+        case "require editing":
+            return "bg-warning text-dark";
+        case "approved":
+            return "bg-success text-white";
+        case "rejected":
+            return "bg-danger text-white";
+        case "not read":
+            return "bg-secondary text-white";
+        default:
+            return "bg-light text-dark";
     }
 }
 
 function getStatusText(status) {
     switch (status) {
-        case "pending": return "Pending";
-        case "in process": return "In Process";
-        case "require editing": return "Require Editing";
-        case "approved": return "Approved";
-        case "rejected": return "Rejected";
-        case "not read": return "Not Read";
-        default: return status;
+        case "pending":
+            return "Pending";
+        case "in process":
+            return "In Process";
+        case "require editing":
+            return "Require Editing";
+        case "approved":
+            return "Approved";
+        case "rejected":
+            return "Rejected";
+        case "not read":
+            return "Not Read";
+        default:
+            return status;
     }
 }
 
