@@ -310,14 +310,28 @@ async def test_call_openai_api_not_available():
 
 @pytest.mark.asyncio
 @patch('backend.AIService.OPENAI_AVAILABLE', True)
-@patch('backend.AIService.openai_client') # Mock the client itself
-async def test_call_openai_api_openai_error(mock_openai_client):
-    # Simulate an error during the API call to OpenAI
-    mock_openai_client.chat.completions.create.side_effect = Exception("OpenAI API Error")
-    response = await call_openai_api("test message for API error", "en")
-    assert response["source"] == "openai_error"
-    assert response["success"] is False
-    assert "Sorry, I encountered an error" in response["text"]
+async def test_call_openai_api_openai_error():
+    # Save the original client if it exists
+    import backend.AIService as ai_module
+    original_client = getattr(ai_module, 'openai_client', None)
+    
+    try:
+        # Create a mock client and inject it into the module's globals
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = Exception("OpenAI API Error")
+        ai_module.openai_client = mock_client
+        
+        # Simulate an error during the API call to OpenAI
+        response = await call_openai_api("test message for API error", "en")
+        assert response["source"] == "openai_error"
+        assert response["success"] is False
+        assert "Sorry, I encountered an error" in response["text"]
+    finally:
+        # Restore the original client
+        if original_client is not None:
+            ai_module.openai_client = original_client
+        elif hasattr(ai_module, 'openai_client'):
+            delattr(ai_module, 'openai_client')
 
 @pytest.mark.asyncio
 @patch('backend.AIService.OPENAI_AVAILABLE', False) # Ensure OPENAI_AVAILABLE is False
@@ -330,18 +344,30 @@ async def test_call_openai_api_openai_not_available():
 
 @pytest.mark.asyncio
 @patch('backend.AIService.OPENAI_AVAILABLE', True)
-@patch('backend.AIService.openai_client') 
-async def test_call_openai_api_attribute_error(mock_openai_client):
+async def test_call_openai_api_attribute_error():
     """Test call_openai_api when client has AttributeError (simulating None-like behavior)."""
-    # Simulate AttributeError when trying to access client methods
-    mock_openai_client.chat.completions.create.side_effect = AttributeError("'NoneType' object has no attribute 'chat'")
+    # Save the original client if it exists
+    import backend.AIService as ai_module
+    original_client = getattr(ai_module, 'openai_client', None)
     
-    response = await call_openai_api("Test when client leads to AttributeError", "en")
-    
-    assert response is not None
-    assert response.get("source") == "openai_error"
-    assert response.get("success") is False
-    assert "Sorry, I encountered an error with the AI service" in response.get("text", "")
+    try:
+        # Create a mock client and inject it into the module's globals
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = AttributeError("'NoneType' object has no attribute 'chat'")
+        ai_module.openai_client = mock_client
+        
+        response = await call_openai_api("Test when client leads to AttributeError", "en")
+        
+        assert response is not None
+        assert response.get("source") == "openai_error"
+        assert response.get("success") is False
+        assert "Sorry, I encountered an error with the AI service" in response.get("text", "")
+    finally:
+        # Restore the original client
+        if original_client is not None:
+            ai_module.openai_client = original_client
+        elif hasattr(ai_module, 'openai_client'):
+            delattr(ai_module, 'openai_client')
 
 # Additional test to cover edge cases and improve coverage
 @pytest.mark.asyncio
