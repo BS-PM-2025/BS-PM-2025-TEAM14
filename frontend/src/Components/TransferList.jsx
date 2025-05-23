@@ -84,9 +84,9 @@ export const TransferList: React.FC<TransferListProps> = ({
     const renderList = (items: { id: string | null; email: string; first_name?: string; last_name?: string; name?: string }[], title: string, search: string, setSearch: React.Dispatch<React.SetStateAction<string>>) => (
         <Card className="w-full">
             <CardContent>
-                <Typography variant="h6" className="text-center mb-2">{title}</Typography>
+                <Typography variant="h5" className="text-center mb-2"><strong>{title}</strong></Typography>
                 <TextField
-                    label="חיפוש"
+                    label="Search"
                     variant="outlined"
                     fullWidth
                     value={search}

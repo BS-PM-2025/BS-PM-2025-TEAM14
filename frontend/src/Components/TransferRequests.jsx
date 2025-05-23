@@ -241,9 +241,9 @@ const TransferRequests = () => {
   return (
     <div className="transfer-requests-container">
       <h1>
-        {user?.role === "admin"
+        <strong>{user?.role === "admin"
           ? "All Transfer Requests"
-          : "Department Transfer Requests"}
+            : "Department Transfer Requests"}</strong>
       </h1>
 
       {/* Filters Section */}
@@ -344,8 +344,8 @@ const TransferRequests = () => {
               case "Grade Appeal Request":
                 type = "gradeAppeal";
                 break;
-              case "Military Serviece Request":
-                type = "militaryServiece";
+              case "Military Service Request":
+                type = "militaryService";
                 break;
               case "Schedule Change Request":
                 type = "scheduleChange";
@@ -362,9 +362,11 @@ const TransferRequests = () => {
                 <div className="request-header">
                   <h3>{request.title}</h3>
                   <span
-                    className={`status-badge ${request.status?.toLowerCase()}`}
+                    // className={`status-badge ${request.status?.toLowerCase()}`}
+                    className={`status-badge ${getStatusClass(request.status)}`}
                   >
-                    {request.status || "Pending"}
+                    {/*{request.status || "Pending"}*/}
+                    {getStatusText(request.status) || "Pending"}
                   </span>
                 </div>
                 <div className="request-details">
@@ -391,7 +393,7 @@ const TransferRequests = () => {
                   <div className="detail-row">
                     <span className="label">Date:</span>
                     <span className="value">
-                      {new Date(request.created_date).toLocaleDateString()}
+                      {new Date(request.created_date).toLocaleDateString("he-IL")}
                     </span>
                   </div>
                 </div>
@@ -431,7 +433,7 @@ const TransferRequests = () => {
                   className="transfer-button"
                   onClick={() => handleTransferClick(request)}
                 >
-                  Transfer Request
+                  <strong>Transfer Request</strong>
                 </button>
               </div>
             );
@@ -504,5 +506,48 @@ const TransferRequests = () => {
     </div>
   );
 };
+
+function getStatusClass(status) {
+  switch (status) {
+    case "pending":
+      return "bg-warning text-dark";
+    case "in process":
+      return "bg-info text-white";
+    case "require editing":
+      return "bg-warning text-dark";
+    case "approved":
+      return "bg-success text-white";
+    case "rejected":
+      return "bg-danger text-white";
+    case "not read":
+      return "bg-secondary text-white";
+    case "responded":
+      return "bg-secondary text-white";
+    default:
+      return "bg-light text-dark";
+  }
+}
+
+function getStatusText(status) {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "in process":
+      return "In Process";
+    case "require editing":
+      return "Editing Required";
+    case "approved":
+      return "Approved";
+    case "rejected":
+      return "Rejected";
+    case "not read":
+      return "Not Read";
+    case "responded":
+      return "Responded";
+    default:
+      return status;
+  }
+}
+
 
 export default TransferRequests;

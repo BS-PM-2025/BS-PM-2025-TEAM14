@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
     Box,
-    Typography,
     Select,
     MenuItem,
     InputLabel,
@@ -9,14 +8,9 @@ import {
     Button,
     CircularProgress,
 } from "@mui/material";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { TransferList } from "./TransferList";
 import axios from "axios";
-
-interface Course {
-    id: string;
-    name: string;
-}
 
 interface Student {
     email: string;
@@ -77,10 +71,10 @@ export default function AssignStudentsToCourse() {
                 student_emails: assignedStudents,
                 course_id: selectedCourse,
             });
-            alert("סטודנטים שויכו בהצלחה");
+            alert("Student Assign Successfully");
         } catch (error) {
             console.error("Error assigning students:", error);
-            alert("שגיאה בשיוך הסטודנטים");
+            alert("An error has occurred.");
         }
     };
 
@@ -95,41 +89,48 @@ export default function AssignStudentsToCourse() {
     return (
         <motion.div
             className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-md space-y-6"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            initial={{opacity: 0, y: 40}}
+            animate={{opacity: 1, y: 0}}
+            transition={{duration: 0.4}}
         >
-            <Typography variant="h5" className="font-semibold text-center">
-                שיוך סטודנטים לקורס
-            </Typography>
+            {/*<Typography variant="h1" className="font-semibold text-center">*/}
+            {/*    Assign Students To Course*/}
+            {/*</Typography>*/}
 
-            <FormControl fullWidth>
-                <InputLabel id="course-label">בחר קורס</InputLabel>
-                <Select
-                    labelId="course-label"
-                    value={selectedCourse}
-                    onChange={(e) => setSelectedCourse(e.target.value)}
-                    label="בחר קורס"
-                >
-                    {courses.map((course) => (
-                        <MenuItem key={course.id} value={course.id}>
-                            {course.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
+            <h1 className="text-center mb-4">
+                <strong>Assign Students To Course</strong>
+            </h1>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <FormControl sx={{ width: "50%" }} size="medium">
+                    <InputLabel id="course-label">Choose Course</InputLabel>
+                    <Select
+                        labelId="course-label"
+                        value={selectedCourse}
+                        onChange={(e) => setSelectedCourse(e.target.value)}
+                        label="Choose Course"
+                        size="medium"
+                    >
+                        {courses.map((course) => (
+                            <MenuItem key={course.id} value={course.id}>
+                                {course.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    <br/>
+                </FormControl>
+            </Box>
+            <br />
             <TransferList
                 left={students.filter((s) => !assignedStudents.includes(s.email))}
                 right={students.filter((s) => assignedStudents.includes(s.email))}
                 onChange={(ids: string[]) => setAssignedStudents(ids)}
-                leftTitle="סטודנטים זמינים"
-                rightTitle="סטודנטים משויכים"
+                leftTitle="Available Students"
+                rightTitle="Assigned Students"
             />
 
-            <Box className="flex justify-end">
-                <Button variant="contained" color="primary" onClick={handleSave}>
-                    שמור שיוך
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <Button variant="contained" color="primary" onClick={handleSave} size="large">
+                    Save
                 </Button>
             </Box>
         </motion.div>
