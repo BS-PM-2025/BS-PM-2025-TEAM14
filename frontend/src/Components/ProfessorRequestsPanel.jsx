@@ -182,7 +182,7 @@ function ProfessorRequestsPanel() {
   };
 
   return (
-    <div className="container mt-4">
+      <div className="container-fluid mt-4">
       <h2 className="text-center mb-4">
         <strong>Pending Requests</strong>
       </h2>

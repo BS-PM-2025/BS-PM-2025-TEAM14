@@ -4,6 +4,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { setToken } from '../utils/auth';
 import { jwtDecode } from "jwt-decode";
 import { useUser } from './UserContext'; // Import useUser to access the global user context
+import '../CSS/Login.css';
 
 const Login = ({ onSuccess, onFailure }) => {
     const { setUserData } = useUser(); // Access setUserData from the UserContext
@@ -62,57 +63,59 @@ const Login = ({ onSuccess, onFailure }) => {
     };
 
     return (
-        <div className="container mt-5">
-            <h2 className="text-center mb-4">Login</h2>
-            {error && <p className="text-danger text-center">{error}</p>}
-            <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
-                <div className="mb-3">
-                    <TextField
-                        label="Email"
-                        id="userId"
-                        variant="outlined"
-                        value={userId}
-                        onChange={(e) => setUserId(e.target.value)}
-                        required
-                        fullWidth
-                    />
-                </div>
-                <div className="mb-3">
-                    <TextField
-                        label="Password"
-                        type={showPassword ? 'text' : 'password'}
-                        id="password"
-                        variant="outlined"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        fullWidth
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        onClick={() => setShowPassword((prev) => !prev)}
-                                        edge="end"
-                                    >
-                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                </div>
-                <div className="d-grid">
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        disabled={loading}
-                    >
-                        {loading ? <CircularProgress size={24} /> : 'Login'}
-                    </Button>
-                </div>
-            </form>
+        <div className="login-wrapper">
+            <div className="container mt-5 login-container-custom">
+                <h2 className="text-center mb-4">Login</h2>
+                {error && <p className="text-danger text-center">{error}</p>}
+                <form onSubmit={handleSubmit} className="card p-4 shadow-sm login-form-custom">
+                    <div className="mb-3">
+                        <TextField
+                            label="Email"
+                            id="userId"
+                            variant="outlined"
+                            value={userId}
+                            onChange={(e) => setUserId(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <TextField
+                            label="Password"
+                            type={showPassword ? 'text' : 'password'}
+                            id="password"
+                            variant="outlined"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            fullWidth
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </div>
+                    <div className="d-grid">
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            disabled={loading}
+                        >
+                            {loading ? <CircularProgress size={24} /> : 'Login'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

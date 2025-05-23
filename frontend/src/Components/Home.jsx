@@ -37,6 +37,7 @@ const Home = () => {
   const [coursesError, setCoursesError] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [darkMode, setDarkMode] = useState(false); // Track dark mode state
   const navigate = useNavigate();
   const [quote] = useState(getRandomQuote());
@@ -112,6 +113,12 @@ const Home = () => {
       return () => clearTimeout(timeout);
     }
   }, [alert]);
+
+  useEffect(() => {
+    if (error || success) {
+
+    }
+  })
 
   useEffect(() => {
     if (user?.user_email) {
@@ -244,8 +251,26 @@ const Home = () => {
   return (
       <ThemeProvider theme={theme}>
         <div className="home-container">
-          <Alert severity={alert.type} className="animated-alert">{alert.message}</Alert>
-
+          {(success || error) && (
+              <Alert
+                  severity={success ? 'success' : 'error'}
+                  sx={{
+                    position: 'fixed',
+                    top: 20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 1401,
+                    width: '90%',
+                    maxWidth: 340,
+                    color: 'white',
+                    bgcolor: success ? '#2e7d32' : '#d32f2f', // ירוק / אדום
+                    borderRadius: '12px',
+                    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+                    fontWeight: 'bold',
+                  }}
+              >
+                {success || error}
+              </Alert>)}
           <div className="hero-section">
             <div className="hero-content">
               <h1 className="hero-title">Academic Management System</h1>
@@ -350,14 +375,24 @@ const Home = () => {
 
           {/* Login Modal */}
           <Modal open={openLoginModal} onClose={() => setOpenLoginModal(false)}>
-            <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+            <Box sx={{
+              position: 'fixed',
+              top: '55%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'transparent', // שנה מ-background.paper ל-transparent
+              boxShadow: 'none',      // הסר את הצל כי יש לך בCSS
+              p: 0,
+              borderRadius: 0,
+              outline: 'none',
+              border: 'none'
+            }}>
               <Login
                   onSuccess={(userData) => {
                     setUserData(userData);
                     setOpenLoginModal(false);
-                    setAlert({ type: 'success', message: 'Login successful!' });
-                  }}
-                  onFailure={() => setAlert({ type: 'error', message: 'Login failed. Please try again.' })}
+                    setSuccess("Login successful")}}
+                  onFailure={() => setError("Login failed")}
               />
             </Box>
           </Modal>
