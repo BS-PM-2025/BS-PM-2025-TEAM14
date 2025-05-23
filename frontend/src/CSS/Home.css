@@ -32,6 +32,19 @@
   overflow: hidden;
 }
 
+.MuiAlert-message{
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.MuiBox-root css-n275f9{
+ padding-top: -10px;
+}
+
 .hero-content {
   max-width: 800px;
   margin: 0 auto;
@@ -238,6 +251,10 @@
   max-width: 600px;
   margin: 0 auto 2rem;
   font-size: 1.1rem;
+}
+
+.container mt-5 login-container-custom{
+
 }
 
 .login-button {

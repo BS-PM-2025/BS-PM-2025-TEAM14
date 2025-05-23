@@ -48,9 +48,19 @@
 
 
 
+.text-center mb-4{
+    color: #fff;
+
+}
 
 
+.login-container-custom{
+    margin-top: 2rem !important;
+}
 
+.login_form-custom{
+    padding-top: -10px;
+}
 .d-grid {
     display: grid;
     gap: 1rem;

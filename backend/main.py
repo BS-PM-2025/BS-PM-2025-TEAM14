@@ -533,6 +533,16 @@ async def set_role(request: Request, session: AsyncSession = Depends(get_session
         print(f"set_role run-time is {end_time - start_time:.3f} sec")
         return {"error": "User not found"}
 
+@app.post("/Users/getUsers")
+async def get_users(request: Request, session: AsyncSession = Depends(get_session)):
+    start_time = time.time()
+    print("in the get users function")
+    res = await session.execute(select(Users))
+    users = res.scalars().all()
+    end_time = time.time()
+    print(f"get_users run-time is {end_time - start_time:.3f} sec")
+    return users
+
 
 @app.post("/Users/getUser/{UserEmail}")
 async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)):
