@@ -8,8 +8,8 @@ const AdminRequestRoute = () => {
   const [routingRules, setRoutingRules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
+  useNavigate();
   useEffect(() => {
     fetchRoutingRules();
   }, []);
@@ -37,16 +37,29 @@ const AdminRequestRoute = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (loading) {
+    return (
+        <div className="admin-request-route">
+          <div className="loading">Loading...</div>
+        </div>
+    );
+  }
+
+  if (error) {
+    return (
+        <div className="admin-request-route">
+          <div className="loading">{error}</div>
+        </div>
+    );
+  }
 
   return (
     <div className="admin-request-route">
-      <h2>Request Routing Rules</h2>
+      <h1 className="text-center"><strong>Request Routing Rules</strong></h1>
       <div className="routing-rules-container">
         {routingRules.map((rule) => (
           <div key={rule.type} className="routing-rule-card">
-            <h3>{rule.type}</h3>
+            <h3><strong>{rule.type}</strong></h3>
             <div className="destination-selector">
               <label>Destination:</label>
               <select

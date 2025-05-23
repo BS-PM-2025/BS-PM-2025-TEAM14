@@ -183,9 +183,9 @@ function ProfessorRequestsPanel() {
 
   return (
       <div className="container-fluid mt-4">
-      <h2 className="text-center mb-4">
+      <h1 className="text-center mb-4">
         <strong>Pending Requests</strong>
-      </h2>
+      </h1>
 
       <div className="d-flex justify-content-end mb-3">
         <FormControl
@@ -550,6 +550,8 @@ function getStatusClass(status) {
     case "rejected":
       return "bg-danger text-white";
     case "not read":
+      return "bg-secondary text-white";
+    case "responded":
       return "bg-secondary text-white";
     default:
       return "bg-light text-dark";
