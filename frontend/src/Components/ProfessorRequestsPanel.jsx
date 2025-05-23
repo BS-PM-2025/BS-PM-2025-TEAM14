@@ -570,6 +570,8 @@ function getStatusText(status) {
       return "Rejected";
     case "not read":
       return "Not Read";
+    case "responded":
+      return "Responded";
     default:
       return status;
   }
