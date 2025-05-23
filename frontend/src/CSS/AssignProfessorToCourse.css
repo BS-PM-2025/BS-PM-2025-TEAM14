@@ -69,20 +69,20 @@
 }
 
 .save-button {
-  background: linear-gradient(90deg, #3f51b5 0%, #5a6ee6 100%);
+  
   color: #fff;
   font-weight: 600;
   border-radius: 2rem;
   padding: 0.75rem 2.5rem;
   font-size: 1.1rem;
   box-shadow: 0 4px 16px rgba(60, 72, 100, 0.1);
-  transition: background 0.2s, transform 0.2s;
+  
 }
 
-.save-button:hover {
+/* .save-button:hover {
   background: linear-gradient(90deg, #303f9f 0%, #4a5fd6 100%);
   transform: translateY(-2px) scale(1.04);
-}
+} */
 
 @media (max-width: 900px) {
   .assign-professor-card {

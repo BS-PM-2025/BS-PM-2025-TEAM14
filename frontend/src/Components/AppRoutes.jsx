@@ -16,7 +16,7 @@ import Home from "./Home";
 import StudentRequests from "./StudentRequestsPanel";
 import { useUser } from "./UserContext";
 import AssignProfessorToCourse from "./AssignProfessorToCourse.tsx";
-import AssignStudentToCourse from "./AssignStudentToCourse";
+import AssignStudentToCourse from "./AssignStudentToCourse.tsx";
 import ProfessorUnavailability from "./ProfessorUnavailability";
 import TransferRequests from "./TransferRequests";
 import ProfessorRequestsPanel from "./ProfessorRequestsPanel";
