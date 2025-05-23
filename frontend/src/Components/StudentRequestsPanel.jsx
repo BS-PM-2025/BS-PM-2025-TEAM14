@@ -37,6 +37,7 @@ function StudentRequests({ emailUser }) {
                 }
 
                 setUser(userData);
+                console.log("User data:", userData);
             } else {
                 setUser(null);
                 navigate("/login");
@@ -73,9 +74,13 @@ function StudentRequests({ emailUser }) {
 
 
     useEffect(() => {
+        if (!user?.user_email) return; // אל תשלח בקשה אם המייל לא מוכן
+
+        console.log("------User email:", user.user_email);
+
         const fetchRequests = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/requests/${user?.user_email}`);
+                const response = await axios.get(`http://localhost:8000/requests/${user.user_email}`);
                 const data = response.data;
                 console.log(data);
 
@@ -94,7 +99,7 @@ function StudentRequests({ emailUser }) {
         };
 
         fetchRequests();
-    }, [user]);
+    }, [user?.user_email]); // שים לב שה־dependency הוא רק על המייל עצמו
 
     const handleRequestClick = (request) => {
         setSelectedRequest(request);
