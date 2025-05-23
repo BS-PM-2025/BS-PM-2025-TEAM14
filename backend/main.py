@@ -8,7 +8,7 @@ from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPExce
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from sqlalchemy import select, literal, literal_column, ColumnElement, delete, and_
+from sqlalchemy import select, literal, literal_column, ColumnElement, delete, and_, update
 import json
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
@@ -993,11 +993,17 @@ async def assign_professor(
     existing_course_ids = [course.id for course in existing_courses]
     new_course_ids = data.course_ids
 
+    # Unassign professor from courses that are no longer assigned
     for course_id in existing_course_ids:
         if course_id not in new_course_ids:
-            stmt = delete(Courses).filter(Courses.id == course_id, Courses.professor_email == data.professor_email)
+            stmt = (
+                update(Courses)
+                .where(Courses.id == course_id, Courses.professor_email == data.professor_email)
+                .values(professor_email=None)
+            )
             await db.execute(stmt)
 
+    # Assign professor to new courses
     for course_id in new_course_ids:
         await assign_professor_to_course(db, data.professor_email, course_id)
 
