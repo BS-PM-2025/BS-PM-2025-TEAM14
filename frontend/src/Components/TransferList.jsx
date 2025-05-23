@@ -167,7 +167,7 @@ export const TransferList = ({
                                     </ListItemIcon>
                                     <ListItemText
                                         primary={
-                                            item.name || `${item.first_name} ${item.last_name}`
+                                            item.name || `${item.email}`
                                         }
                                         primaryTypographyProps={{ fontWeight: 500 }}
                                     />

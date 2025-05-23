@@ -18,11 +18,11 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { TransferList } from "./TransferList";
 import "../CSS/AssignProfessorToCourse.css";
-import { FaChalkboardTeacher, FaBookOpen } from "react-icons/fa";
+import { FaUserGraduate, FaBookOpen } from "react-icons/fa";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-interface Lecturer {
+interface Student {
   email: string;
   first_name: string;
   last_name: string;
@@ -33,11 +33,11 @@ interface Course {
   name: string;
 }
 
-export default function AssignProfessorToCourse() {
-  const [lecturers, setLecturers] = useState<Lecturer[]>([]);
+export default function AssignStudentsToCourse() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [assignedCourses, setAssignedCourses] = useState<string[]>([]);
-  const [selectedLecturer, setSelectedLecturer] = useState("");
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [assignedStudents, setAssignedStudents] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -48,12 +48,12 @@ export default function AssignProfessorToCourse() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [lecturersRes, coursesRes] = await Promise.all([
-          axios.get("http://localhost:8000/users?role=professor"),
+        const [coursesRes, studentsRes] = await Promise.all([
           axios.get("http://localhost:8000/courses"),
+          axios.get("http://localhost:8000/users?role=student"),
         ]);
-        setLecturers(lecturersRes.data);
         setCourses(coursesRes.data);
+        setStudents(studentsRes.data);
       } catch (err) {
         console.error("Error loading data:", err);
       } finally {
@@ -64,42 +64,43 @@ export default function AssignProfessorToCourse() {
   }, []);
 
   useEffect(() => {
-    const fetchAssignedCourses = async () => {
-      if (selectedLecturer) {
-        try {
-          const response = await axios.get(
-            `http://localhost:8000/professor/courses/${selectedLecturer}`
-          );
-          const assignedCourseIds = response.data.courses.map(
-            (course: Course) => course.id
-          );
-          setAssignedCourses(assignedCourseIds);
-        } catch (err) {
-          console.error("Error loading assigned courses:", err);
-        }
+    const fetchAssignedStudents = async () => {
+      if (!selectedCourse) return;
+
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/assigned_students?course_id=${selectedCourse}`
+        );
+        const assignedStudentEmails = response.data.map(
+          (student: Student) => student.email
+        );
+        setAssignedStudents(assignedStudentEmails);
+      } catch (err) {
+        console.error("Error fetching assigned students:", err);
       }
     };
-    fetchAssignedCourses();
-  }, [selectedLecturer]);
+
+    fetchAssignedStudents();
+  }, [selectedCourse]);
 
   const handleSave = async () => {
-    if (!selectedLecturer || assignedCourses.length === 0) return;
+    if (!selectedCourse || assignedStudents.length === 0) return;
+
     try {
-      await axios.post("http://localhost:8000/assign_professor", {
-        professor_email: selectedLecturer,
-        course_ids: assignedCourses,
+      await axios.post("http://localhost:8000/assign_student", {
+        student_emails: assignedStudents,
+        course_id: selectedCourse,
       });
       setSnackbar({
         open: true,
-        message: "Courses assigned successfully",
+        message: "Students assigned successfully",
         severity: "success",
       });
-      setSelectedLecturer(selectedLecturer);
     } catch (error) {
-      console.error("Error assigning courses:", error);
+      console.error("Error assigning students:", error);
       setSnackbar({
         open: true,
-        message: "Failed to assign courses",
+        message: "Failed to assign students",
         severity: "error",
       });
     }
@@ -147,25 +148,24 @@ export default function AssignProfessorToCourse() {
               align="center"
               mb={4}
             >
-              Assign Lecturer to Course
+              Assign Students to Course
             </Typography>
             <FormControl fullWidth sx={{ mb: 4 }}>
-              <InputLabel id="lecturer-label">
+              <InputLabel id="course-label">
                 <Box component="span" display="flex" alignItems="center">
-                  <FaChalkboardTeacher style={{ marginRight: 8 }} /> Choose
-                  Lecturer
+                  <FaBookOpen style={{ marginRight: 8 }} /> Choose Course
                 </Box>
               </InputLabel>
               <Select
-                labelId="lecturer-label"
-                value={selectedLecturer}
-                onChange={(e) => setSelectedLecturer(e.target.value)}
-                label="Choose Lecturer"
+                labelId="course-label"
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                label="Choose Course"
                 sx={{ minWidth: 320, fontSize: "1.1rem", height: 56 }}
               >
-                {lecturers.map((lecturer) => (
-                  <MenuItem key={lecturer.email} value={lecturer.email}>
-                    {lecturer.email}
+                {courses.map((course) => (
+                  <MenuItem key={course.id} value={course.id}>
+                    {course.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -181,26 +181,30 @@ export default function AssignProfessorToCourse() {
               }}
             >
               <TransferList
-                left={courses.filter((c) => !assignedCourses.includes(c.id))}
-                right={courses.filter((c) => assignedCourses.includes(c.id))}
-                onChange={(ids) => setAssignedCourses(ids)}
+                left={students.filter(
+                  (s) => !assignedStudents.includes(s.email)
+                )}
+                right={students.filter((s) =>
+                  assignedStudents.includes(s.email)
+                )}
+                onChange={(ids) => setAssignedStudents(ids)}
                 leftTitle={
                   <>
-                    <FaBookOpen
+                    <FaUserGraduate
                       style={{ marginLeft: 6, verticalAlign: "middle" }}
                     />
-                    Available Courses
+                    Available Students
                   </>
                 }
                 rightTitle={
                   <>
-                    <FaBookOpen
+                    <FaUserGraduate
                       style={{ marginLeft: 6, verticalAlign: "middle" }}
                     />
-                    Assigned Courses
+                    Assigned Students
                   </>
                 }
-                disabled={!selectedLecturer}
+                disabled={!selectedCourse}
               />
             </Box>
             <Box display="flex" justifyContent="flex-end" mt={2}>
