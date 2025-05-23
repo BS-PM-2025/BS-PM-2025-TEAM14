@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import axios from "axios";
 import "../CSS/SubmitRequestForm.css";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +37,7 @@ const TransferRequests = () => {
   };
 
   // Apply filters
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...requests];
 
     if (filters.student) {
@@ -82,7 +82,7 @@ const TransferRequests = () => {
     }
 
     setFilteredRequests(filtered);
-  };
+  }, [filters, requests]);
 
   // Handle filter changes
   const handleFilterChange = (e) => {
@@ -96,7 +96,7 @@ const TransferRequests = () => {
   // Apply filters when filter values change
   useEffect(() => {
     applyFilters();
-  }, [filters, requests]);
+  }, [applyFilters]);
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -242,7 +242,7 @@ const TransferRequests = () => {
     <div className="transfer-requests-container">
       <h1>
         <strong>{user?.role === "admin"
-          ? "All Transfer Requests"
+          ? "Transfer All Requests"
             : "Department Transfer Requests"}</strong>
       </h1>
 
@@ -360,7 +360,7 @@ const TransferRequests = () => {
             return (
               <div key={request.id} className="request-card">
                 <div className="request-header">
-                  <h3>{request.title}</h3>
+                  <h3><strong>{request.title}</strong></h3>
                   <span
                     // className={`status-badge ${request.status?.toLowerCase()}`}
                     className={`status-badge ${getStatusClass(request.status)}`}
