@@ -10,7 +10,7 @@ import ReloadFiles from "./ReloadFiles";
 import UsersList from "./UsersList";
 import InsertGrades from "./InsertGrades";
 import SubmitRequestForm from "./SubmitRequestForm";
-import Navigation from "./Navigation";
+import NavigationBar from "./NavigationBar";
 import Login from "./Login";
 import Home from "./Home";
 import StudentRequests from "./StudentRequestsPanel";
@@ -27,7 +27,7 @@ function AppRoutes({ darkMode, setDarkMode }) {
 
   return (
     <Router>
-      <Navigation darkMode={darkMode} setDarkMode={setDarkMode} />
+      <NavigationBar darkMode={darkMode} setDarkMode={setDarkMode} />
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />

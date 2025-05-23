@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import Navigation from "../Navigation";
+import NavigationBar from "../NavigationBar";
 import { UserProvider } from "../../context/UserContext";
 
 // Create a wrapper component that provides the UserContext
@@ -12,10 +12,10 @@ const renderWithUserContext = (
   return render(<UserProvider>{ui}</UserProvider>);
 };
 
-describe("Navigation Component", () => {
+describe("NavigationBar Component", () => {
   test("renders all navigation links", () => {
     renderWithUserContext(
-      <Navigation darkMode={false} setDarkMode={jest.fn()} />,
+      <NavigationBar darkMode={false} setDarkMode={jest.fn()} />,
       { user: null }
     );
 
@@ -27,7 +27,7 @@ describe("Navigation Component", () => {
 
   test("links have correct hrefs", () => {
     renderWithUserContext(
-      <Navigation darkMode={false} setDarkMode={jest.fn()} />,
+      <NavigationBar darkMode={false} setDarkMode={jest.fn()} />,
       { user: null }
     );
 

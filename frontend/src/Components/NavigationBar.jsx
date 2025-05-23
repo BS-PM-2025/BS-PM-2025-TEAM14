@@ -15,7 +15,7 @@ import NotificationBell from "./NotificationBell";
 import Logout from "./Logout"
 import "../CSS/Navigation.css"
 
-const Navigation = ({ darkMode, setDarkMode, onLogoutClick }) => {
+const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
     const { user } = useUser();
   const theme = useTheme(); // זה מחזיר את כל האובייקט של ה-theme
 
@@ -52,7 +52,7 @@ const Navigation = ({ darkMode, setDarkMode, onLogoutClick }) => {
           {user?.role === "student" && (
             <>
               {navItem("/submit_request", "Submit A New Request")}
-              {navItem("/Requests", "Requests")}
+              {navItem("/Requests", "My Requests")}
             </>
           )}
 
@@ -113,4 +113,4 @@ const Navigation = ({ darkMode, setDarkMode, onLogoutClick }) => {
   );
 };
 
-export default Navigation;
+export default NavigationBar;
