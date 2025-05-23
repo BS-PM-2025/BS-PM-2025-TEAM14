@@ -116,9 +116,13 @@ const Home = () => {
 
   useEffect(() => {
     if (error || success) {
-
+      const timeout = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 2000);
+      return () => clearTimeout(timeout);
     }
-  })
+  }, [error, success]);
 
   useEffect(() => {
     if (user?.user_email) {
@@ -267,6 +271,15 @@ const Home = () => {
                     borderRadius: '12px',
                     boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
                     fontWeight: 'bold',
+                    '& .MuiAlert-message': {
+                      fontSize: '1.2rem',
+                      fontWeight: 500,
+                      color: '#fff',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginLeft: success ? '14%' : '20%',
+                    },
                   }}
               >
                 {success || error}
@@ -391,8 +404,8 @@ const Home = () => {
                   onSuccess={(userData) => {
                     setUserData(userData);
                     setOpenLoginModal(false);
-                    setSuccess("Login successful")}}
-                  onFailure={() => setError("Login failed")}
+                    setSuccess("Login Successfully!")}}
+                  onFailure={() => setError("Login Failed!")}
               />
             </Box>
           </Modal>

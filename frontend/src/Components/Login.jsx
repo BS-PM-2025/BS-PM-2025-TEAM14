@@ -46,7 +46,6 @@ const Login = ({ onSuccess, onFailure }) => {
                     if (onSuccess) onSuccess(decodedUser); // Notify Home component about the login success
                 } else {
                     setError('No access token received from server');
-                    if (onFailure) onFailure();
                 }
             } else {
                 const errorData = await response.json();
@@ -65,8 +64,8 @@ const Login = ({ onSuccess, onFailure }) => {
     return (
         <div className="login-wrapper">
             <div className="container mt-5 login-container-custom">
-                <h2 className="text-center mb-4">Login</h2>
-                {error && <p className="text-danger text-center">{error}</p>}
+                <h2 className="text-center mb-4" style={{ color: 'white' }}>Login</h2>
+                {/*{error && <p className="text-danger text-center">{error}</p>}*/}
                 <form onSubmit={handleSubmit} className="card p-4 shadow-sm login-form-custom">
                     <div className="mb-3">
                         <TextField

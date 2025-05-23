@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import "../CSS/UsersList.css";
 
 export default function UsersList() {
@@ -69,18 +70,18 @@ export default function UsersList() {
 
     return (
         <div className="users-container">
-            <h2 className="users-title">Users List</h2>
+            <h1 className="users-title"><strong>Users List</strong></h1>
             <button onClick={fetchUsers} disabled={loading} className="refresh-button">
                 {loading ? "Loading..." : "Refresh Users"}
             </button>
             <table className="users-table">
                 <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Email</th>
                     <th>First Name</th>
                     <th>Last Name</th>
-                    <th>Email</th>
                     <th>Role</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -88,10 +89,18 @@ export default function UsersList() {
                     users.map(user => (
                         <tr key={user.email} className="clickable-row" onClick={() => handleUserClick(user.email)}>
                             <td>{user.email}</td>
-                            <td>{user.id}</td>
                             <td>{user.first_name}</td>
                             <td>{user.last_name}</td>
                             <td>{user.role}</td>
+                            <td>
+                                <button
+                                    className="delete-button"
+                                    onClick={(e) => (console.log("Delete user:", user.email), e.stopPropagation())}
+                                    title="Delete user"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </td>
                         </tr>
                     ))
                 ) : (
