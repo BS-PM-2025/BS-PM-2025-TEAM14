@@ -200,7 +200,7 @@
 .prof-unavail-confirm-title {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #b71c1c;
+  /*color: #b71c1c;*/
   padding: 24px 32px 8px 32px;
   letter-spacing: 0.2px;
 }
@@ -208,7 +208,7 @@
   padding: 16px 32px 8px 32px !important;
   color: #263238;
   font-size: 1.08rem;
-  background: #fff6f6;
+  background: #ffffff;
   border-radius: 0 0 12px 12px;
 }
 .prof-unavail-confirm-actions {
@@ -216,7 +216,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background: #fff6f6;
+  background: #ffffff;
   border-radius: 0 0 18px 18px;
 }
 .prof-unavail-confirm-cancel {
