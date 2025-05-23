@@ -13,14 +13,20 @@
 }
 
 .course-grade-card {
-    background-color: var(--card-bg, white);
+    /*background-color: var(--card-bg, white);*/
+    background-color: white;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
     transition: background-color 0.3s;
 }
 
+.course-grade-card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
 .course-info {
+    color: #000000;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,6 +40,7 @@
 }
 
 .grade-item {
+    color: #000000;
     display: flex;
     justify-content: space-between;
     padding: 0.3rem 0;
