@@ -1,9 +1,13 @@
 import pytest
+from unittest.mock import patch, mock_open, MagicMock
+import json # Added for json.JSONDecodeError
+import os # Added for os.path related mocks
 from backend.AIService import (
     processMessage,
     process_keywords,
     calculate_match_score,
-    call_openai_api
+    call_openai_api,
+    load_faq_data # Make sure load_faq_data is importable if it wasn't already
 )
 
 # Test process_keywords function
@@ -254,3 +258,98 @@ async def test_openai_api_call():
     assert response["source"] in ["openai", "openai_fallback"]
     assert isinstance(response["text"], str)
     assert len(response["text"]) > 0 
+
+# Test load_faq_data function
+@patch('backend.AIService.os.path.dirname', return_value='/mock/dir')
+@patch('backend.AIService.os.path.abspath', side_effect=lambda x: x)
+def test_load_faq_data_success(mock_abspath, mock_dirname):
+    mock_file_content = '{"faqs": [{"id": "1", "patterns": {"en": ["pattern1"]}, "response": {"en": "response1"}}]}'
+    with patch('builtins.open', mock_open(read_data=mock_file_content)) as mock_file:
+        faqs = load_faq_data()
+        assert len(faqs) == 1
+        assert faqs[0]["id"] == "1"
+        mock_file.assert_called_once_with(os.path.join('/mock/dir', 'data', 'faq_data.json'), 'r', encoding='utf-8')
+
+@patch('backend.AIService.os.path.dirname', return_value='/mock/dir')
+@patch('backend.AIService.os.path.abspath', side_effect=lambda x: x)
+@patch('builtins.open', side_effect=FileNotFoundError)
+def test_load_faq_data_file_not_found(mock_open, mock_abspath, mock_dirname):
+    faqs = load_faq_data()
+    assert faqs == []
+
+@patch('backend.AIService.os.path.dirname', return_value='/mock/dir')
+@patch('backend.AIService.os.path.abspath', side_effect=lambda x: x)
+def test_load_faq_data_json_decode_error(mock_abspath, mock_dirname):
+    with patch('builtins.open', mock_open(read_data='invalid json')) as mock_file:
+        with patch('json.load', side_effect=json.JSONDecodeError("Error", "doc", 0)):
+            faqs = load_faq_data()
+            assert faqs == []
+
+@patch('backend.AIService.os.path.dirname', return_value='/mock/dir')
+@patch('backend.AIService.os.path.abspath', side_effect=lambda x: x)
+def test_load_faq_data_empty_json_object(mock_abspath, mock_dirname):
+    with patch('builtins.open', mock_open(read_data='{}')) as mock_file:
+        faqs = load_faq_data()
+        assert faqs == []
+
+@patch('backend.AIService.os.path.dirname', return_value='/mock/dir')
+@patch('backend.AIService.os.path.abspath', side_effect=lambda x: x)
+def test_load_faq_data_missing_faqs_key(mock_abspath, mock_dirname):
+    with patch('builtins.open', mock_open(read_data='{"other_key": "value"}')) as mock_file:
+        faqs = load_faq_data()
+        assert faqs == []
+
+# Tests for call_openai_api
+@pytest.mark.asyncio
+@patch('backend.AIService.OPENAI_AVAILABLE', False)
+async def test_call_openai_api_not_available():
+    response = await call_openai_api("test message", "en")
+    assert response["source"] == "openai_fallback"
+    assert response["success"] is True
+    assert "I can help you" in response["text"]
+
+@pytest.mark.asyncio
+@patch('backend.AIService.OPENAI_AVAILABLE', True)
+@patch('backend.AIService.openai_client') # Mock the client itself
+async def test_call_openai_api_openai_error(mock_openai_client):
+    # Simulate an error during the API call to OpenAI
+    mock_openai_client.chat.completions.create.side_effect = Exception("OpenAI API Error")
+    response = await call_openai_api("test message for API error", "en")
+    assert response["source"] == "openai_error"
+    assert response["success"] is False
+    assert "Sorry, I encountered an error" in response["text"]
+
+@pytest.mark.asyncio
+@patch('backend.AIService.OPENAI_AVAILABLE', False) # Ensure OPENAI_AVAILABLE is False
+async def test_call_openai_api_openai_not_available():
+    """Test call_openai_api when OPENAI_AVAILABLE is False."""
+    response = await call_openai_api("Test input", "en")
+    assert response["success"] is True  # Fixed: should be True for fallback
+    assert "I can help you" in response["text"]  # Use "text" key instead of "response"
+    assert response["source"] == "openai_fallback"  # Use correct source value
+
+@pytest.mark.asyncio
+@patch('backend.AIService.OPENAI_AVAILABLE', True)
+@patch('backend.AIService.openai_client') 
+async def test_call_openai_api_attribute_error(mock_openai_client):
+    """Test call_openai_api when client has AttributeError (simulating None-like behavior)."""
+    # Simulate AttributeError when trying to access client methods
+    mock_openai_client.chat.completions.create.side_effect = AttributeError("'NoneType' object has no attribute 'chat'")
+    
+    response = await call_openai_api("Test when client leads to AttributeError", "en")
+    
+    assert response is not None
+    assert response.get("source") == "openai_error"
+    assert response.get("success") is False
+    assert "Sorry, I encountered an error with the AI service" in response.get("text", "")
+
+# Additional test to cover edge cases and improve coverage
+@pytest.mark.asyncio
+async def test_process_message_with_none_language():
+    """Test processMessage with None language parameter."""
+    response = await processMessage("Hello, how are you?", None)
+    assert isinstance(response, dict)
+    assert "text" in response
+    assert "source" in response
+    assert "success" in response
+    assert response["success"] is True 
