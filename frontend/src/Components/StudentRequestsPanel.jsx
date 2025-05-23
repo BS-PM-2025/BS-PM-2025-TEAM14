@@ -398,27 +398,40 @@ function getStatusClass(status) {
     switch (status) {
         case "pending":
             return "bg-warning text-dark";
+        case "in process":
+            return "bg-info text-white";
+        case "require editing":
+            return "bg-warning text-dark";
         case "approved":
             return "bg-success text-white";
         case "rejected":
             return "bg-danger text-white";
         case "not read":
             return "bg-secondary text-white";
-        default:
+        case "responded":
             return "bg-secondary text-white";
+        default:
+            return "bg-light text-dark";
     }
 }
+
 
 function getStatusText(status) {
     switch (status) {
         case "pending":
             return "Pending";
+        case "in process":
+            return "In Process";
+        case "require editing":
+            return "Editing Required";
         case "approved":
             return "Approved";
         case "rejected":
             return "Rejected";
         case "not read":
             return "Not Read";
+        case "responded":
+            return "Responded";
         default:
             return status;
     }

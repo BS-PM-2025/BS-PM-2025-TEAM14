@@ -551,6 +551,8 @@ function getStatusClass(status) {
       return "bg-danger text-white";
     case "not read":
       return "bg-secondary text-white";
+    case "responded":
+      return "";
     default:
       return "bg-light text-dark";
   }
