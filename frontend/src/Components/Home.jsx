@@ -9,6 +9,7 @@ import Login from './Login';
 import UserWelcome from './UserWelcome';
 import UserGrades from './UserGrades';
 import ProfessorView from './ProfessorView';
+import { SystemNotificationBar, AdminAnnouncementPanel } from './SystemNotifications';
 import axios from 'axios';
 import '../CSS/Home.css';
 
@@ -255,6 +256,7 @@ const Home = () => {
   return (
       <ThemeProvider theme={theme}>
         <div className="home-container">
+          <SystemNotificationBar />
           {(success || error) && (
               <Alert
                   severity={success ? 'success' : 'error'}
@@ -313,7 +315,7 @@ const Home = () => {
             {user && (
                 <div className="dashboard-tabs">
                   <div className="tabs-header">
-                    {['dashboard', ...(isStudent ? ['courses', 'grades'] : []), 'lecturer Availability'].map((tab) => (
+                    {['dashboard', ...(isStudent ? ['courses', 'grades'] : []), 'lecturer Availability', ...((user.role === 'admin' || user.role === 'secretary') ? ['announcements'] : [])].map((tab) => (
                         <button
                             key={tab}
                             className={`tab-button ${activeTab === tab ? 'active' : ''}`}
@@ -372,6 +374,9 @@ const Home = () => {
                           )) : !loadingCourses && <p>No courses to display.</p>}
                         </div>
                       </div>
+                    )}
+                    {(user.role === 'admin' || user.role === 'secretary') && activeTab === 'announcements' && (
+                      <AdminAnnouncementPanel />
                     )}
                   </div>
                 </div>

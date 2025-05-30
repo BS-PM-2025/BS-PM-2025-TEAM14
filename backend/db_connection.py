@@ -7,7 +7,7 @@ from backend.config import DATABASE_URL
 from datetime import datetime
 from sqlalchemy.sql import text
 from sqlalchemy.future import select
-from sqlalchemy.sql import and_
+from sqlalchemy.sql import and_, or_
 
 # Define the base class
 Base = declarative_base()
@@ -92,6 +92,21 @@ class Notifications(Base):
     # Relationships
     user = relationship("Users", back_populates="notifications")
     request = relationship("Requests", back_populates="notifications")
+
+# System Announcements table for admin messages and AI-generated news
+class SystemAnnouncements(Base):
+    __tablename__ = 'system_announcements'
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    admin_email = Column(String(100), ForeignKey('users.email'), nullable=True)  # null for AI-generated
+    is_active = Column(Boolean, default=True)
+    announcement_type = Column(String(50), nullable=False, default='admin')  # 'admin' or 'ai_news'
+    created_date = Column(DateTime, default=datetime.now)
+    expires_date = Column(DateTime, nullable=True)  # optional expiration date
+    
+    # Relationship
+    admin = relationship("Users", foreign_keys=[admin_email])
 
 # Request Routing Rules table
 class RequestRoutingRules(Base):
@@ -337,6 +352,58 @@ async def mark_all_notifications_as_read(session: AsyncSession, user_email: str)
         notification.is_read = True
     await session.commit()
     return len(notifications)
+
+async def create_system_announcement(session: AsyncSession, title: str, message: str, admin_email: str = None, announcement_type: str = 'admin', expires_date: datetime = None):
+    """Create a new system announcement."""
+    announcement = SystemAnnouncements(
+        title=title,
+        message=message,
+        admin_email=admin_email,
+        announcement_type=announcement_type,
+        expires_date=expires_date
+    )
+    session.add(announcement)
+    await session.commit()
+    await session.refresh(announcement)
+    return announcement
+
+async def get_active_system_announcements(session: AsyncSession):
+    """Get all active system announcements that haven't expired."""
+    result = await session.execute(
+        select(SystemAnnouncements)
+        .where(
+            and_(
+                SystemAnnouncements.is_active == True,
+                or_(
+                    SystemAnnouncements.expires_date.is_(None),
+                    SystemAnnouncements.expires_date > datetime.now()
+                )
+            )
+        )
+        .order_by(SystemAnnouncements.created_date.desc())
+    )
+    return result.scalars().all()
+
+async def deactivate_system_announcement(session: AsyncSession, announcement_id: int):
+    """Deactivate a system announcement."""
+    result = await session.execute(
+        select(SystemAnnouncements).where(SystemAnnouncements.id == announcement_id)
+    )
+    announcement = result.scalar_one_or_none()
+    if announcement:
+        announcement.is_active = False
+        await session.commit()
+        return True
+    return False
+
+async def get_system_announcements_for_admin(session: AsyncSession, admin_email: str = None):
+    """Get all system announcements for admin management."""
+    query = select(SystemAnnouncements).order_by(SystemAnnouncements.created_date.desc())
+    if admin_email:
+        query = query.where(SystemAnnouncements.admin_email == admin_email)
+    
+    result = await session.execute(query)
+    return result.scalars().all()
 
 async def add_course(session: AsyncSession, id: str, name: str, description: str, credits: float, professor_email: str, department_id: str = None):
     new_course = Courses(

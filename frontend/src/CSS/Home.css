@@ -20,6 +20,7 @@
   background-color: var(--secondary-color);
   font-family: var(--font-family);
   color: var(--text-color);
+  padding-top: 130px; /* Space for navigation bar (80px) + notification bar (50px) */
 }
 
 /* Hero Section */
