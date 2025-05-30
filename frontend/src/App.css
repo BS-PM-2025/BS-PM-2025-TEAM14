@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+/* Responsive adjustments for notification bar */
+@media (max-width: 768px) {
+  .App {
+    padding-top: 45px;
+  }
+  
+  body {
+    padding-top: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .App {
+    padding-top: 40px;
+  }
+  
+  body {
+    padding-top: 40px;
+  }
+}
