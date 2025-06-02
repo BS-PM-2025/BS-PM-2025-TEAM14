@@ -82,6 +82,7 @@ const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
           {user?.role === "admin" && (
             <>
               {navItem("/admin/request-routing", "Request Routing")}
+              {navItem("/admin/request-templates", "Request Templates")}
               {navItem("/users", "Manage Users")}
             </>
           )}

@@ -99,7 +99,14 @@
 
 .ticker-text {
     white-space: nowrap;
-    animation: continuousScroll 180s linear infinite;
+    /* Speed options: 
+       - 15s = Very fast (for short news)
+       - 30s = Fast (current setting)
+       - 45s = Medium fast
+       - 60s = Medium
+       - 90s = Slow
+    */
+    animation: continuousScroll 45s linear infinite;
     font-size: 0.9rem;
     font-weight: 400;
     will-change: transform;
