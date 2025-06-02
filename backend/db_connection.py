@@ -1,7 +1,7 @@
 import asyncio
 import os
 from sqlalchemy import Column, Integer, String, JSON, Date, ForeignKey, create_engine, Table, Float, Text, DateTime, Boolean
-from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
+from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from backend.config import DATABASE_URL
 from datetime import datetime
@@ -114,6 +114,44 @@ class RequestRoutingRules(Base):
     type = Column(String(100), primary_key=True, index=True)
     destination = Column(String(100), nullable=False) 
 
+# Request Templates table - for admin-defined request types
+class RequestTemplates(Base):
+    __tablename__ = "request_templates"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(100), unique=True, nullable=False)  # e.g., "Military Service Request"
+    description = Column(Text, nullable=True)  # Description for admins
+    is_active = Column(Boolean, default=True)
+    created_by = Column(String(100), ForeignKey('users.email'), nullable=False)
+    created_date = Column(DateTime, default=datetime.now)
+    updated_date = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships
+    creator = relationship("Users", foreign_keys=[created_by])
+    fields = relationship("RequestTemplateFields", back_populates="template", cascade="all, delete-orphan")
+    routing_rule = relationship("RequestRoutingRules", foreign_keys="RequestTemplates.name", primaryjoin="RequestTemplates.name == RequestRoutingRules.type", uselist=False)
+
+# Request Template Fields table - defines the form fields for each template
+class RequestTemplateFields(Base):
+    __tablename__ = "request_template_fields"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    template_id = Column(Integer, ForeignKey('request_templates.id'), nullable=False)
+    field_name = Column(String(100), nullable=False)  # e.g., "military_service_type"
+    field_label = Column(String(200), nullable=False)  # e.g., "Type of Military Service"
+    field_type = Column(String(50), nullable=False)  # text, textarea, select, file, date, number
+    field_options = Column(JSON, nullable=True)  # For select fields: {"options": ["option1", "option2"]}
+    is_required = Column(Boolean, default=False)
+    field_order = Column(Integer, default=0)  # For ordering fields in the form
+    validation_rules = Column(JSON, nullable=True)  # {"min_length": 10, "max_length": 500}
+    placeholder = Column(String(200), nullable=True)  # Placeholder text
+    help_text = Column(Text, nullable=True)  # Help text for the field
+    
+    # Relationships
+    template = relationship("RequestTemplates", back_populates="fields")
+
+    # Unique constraint to prevent duplicate field names within the same template
+    __table_args__ = (
+        {"extend_existing": True}
+    )
 
 # Student-Courses table
 class StudentCourses(Base):
@@ -525,6 +563,131 @@ engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
 # Create the asynchronous session maker
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+# Request Template Management Functions
+
+async def create_request_template(session: AsyncSession, name: str, description: str, created_by: str, fields: list):
+    """Create a new request template with its fields."""
+    template = RequestTemplates(
+        name=name,
+        description=description,
+        created_by=created_by
+    )
+    session.add(template)
+    await session.flush()  # Get the template ID
+    
+    # Add fields
+    for field_data in fields:
+        field = RequestTemplateFields(
+            template_id=template.id,
+            field_name=field_data['field_name'],
+            field_label=field_data['field_label'],
+            field_type=field_data['field_type'],
+            field_options=field_data.get('field_options'),
+            is_required=field_data.get('is_required', False),
+            field_order=field_data.get('field_order', 0),
+            validation_rules=field_data.get('validation_rules'),
+            placeholder=field_data.get('placeholder'),
+            help_text=field_data.get('help_text')
+        )
+        session.add(field)
+    
+    await session.commit()
+    await session.refresh(template)
+    return template
+
+async def get_request_templates(session: AsyncSession, active_only: bool = True):
+    """Get all request templates with their fields."""
+    query = select(RequestTemplates).options(
+        selectinload(RequestTemplates.fields)
+    )
+    if active_only:
+        query = query.where(RequestTemplates.is_active == True)
+    
+    result = await session.execute(query.order_by(RequestTemplates.created_date.desc()))
+    return result.scalars().all()
+
+async def get_request_template_by_id(session: AsyncSession, template_id: int):
+    """Get a specific request template with its fields."""
+    query = select(RequestTemplates).options(
+        selectinload(RequestTemplates.fields)
+    ).where(RequestTemplates.id == template_id)
+    
+    result = await session.execute(query)
+    return result.scalar_one_or_none()
+
+async def get_request_template_by_name(session: AsyncSession, name: str):
+    """Get a specific request template by name with its fields."""
+    query = select(RequestTemplates).options(
+        selectinload(RequestTemplates.fields)
+    ).where(RequestTemplates.name == name)
+    
+    result = await session.execute(query)
+    return result.scalar_one_or_none()
+
+async def update_request_template(session: AsyncSession, template_id: int, name: str = None, description: str = None, fields: list = None):
+    """Update a request template and optionally its fields."""
+    template = await get_request_template_by_id(session, template_id)
+    if not template:
+        return None
+    
+    if name:
+        template.name = name
+    if description is not None:
+        template.description = description
+    
+    template.updated_date = datetime.now()
+    
+    # Update fields if provided
+    if fields is not None:
+        # Delete existing fields
+        await session.execute(
+            select(RequestTemplateFields).where(RequestTemplateFields.template_id == template_id)
+        )
+        existing_fields = await session.execute(
+            select(RequestTemplateFields).where(RequestTemplateFields.template_id == template_id)
+        )
+        for field in existing_fields.scalars():
+            await session.delete(field)
+        
+        # Add new fields
+        for field_data in fields:
+            field = RequestTemplateFields(
+                template_id=template.id,
+                field_name=field_data['field_name'],
+                field_label=field_data['field_label'],
+                field_type=field_data['field_type'],
+                field_options=field_data.get('field_options'),
+                is_required=field_data.get('is_required', False),
+                field_order=field_data.get('field_order', 0),
+                validation_rules=field_data.get('validation_rules'),
+                placeholder=field_data.get('placeholder'),
+                help_text=field_data.get('help_text')
+            )
+            session.add(field)
+    
+    await session.commit()
+    await session.refresh(template)
+    return template
+
+async def delete_request_template(session: AsyncSession, template_id: int):
+    """Soft delete a request template by setting is_active to False."""
+    template = await get_request_template_by_id(session, template_id)
+    if not template:
+        return False
+    
+    template.is_active = False
+    await session.commit()
+    return True
+
+async def get_active_request_template_names(session: AsyncSession):
+    """Get list of active request template names for use in forms."""
+    result = await session.execute(
+        select(RequestTemplates.name)
+        .where(RequestTemplates.is_active == True)
+        .order_by(RequestTemplates.name)
+    )
+    return [name for name in result.scalars()]
 
 async def init_db():
     # First create the database if it doesn't exist

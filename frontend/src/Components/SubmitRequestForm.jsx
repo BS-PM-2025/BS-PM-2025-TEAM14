@@ -4,6 +4,7 @@ import "../CSS/SubmitRequestForm.css";
 import { useNavigate } from "react-router-dom";
 import GradeAppealSelection from "./GradeAppealSelection";
 import StudentsCourses from "./StudentsCourses";
+import DynamicRequestForm from "./RequestTemplates/DynamicRequestForm";
 import { getToken, getUserFromToken } from "../utils/auth";
 
 const RequestForm = () => {
@@ -19,6 +20,9 @@ const RequestForm = () => {
   const [user, setUser] = useState(null);
   const [professorUnavailable, setProfessorUnavailable] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [requestTypes, setRequestTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+  const [dynamicFormData, setDynamicFormData] = useState({});
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -51,13 +55,29 @@ const RequestForm = () => {
     };
   }, [navigate]);
 
-  const requestTypes = [
-    "General Request",
-    "Grade Appeal Request",
-    "Military Service Request",
-    "Schedule Change Request",
-    "Exam Accommodations Request",
-  ];
+  useEffect(() => {
+    fetchRequestTypes();
+  }, []);
+
+  const fetchRequestTypes = async () => {
+    try {
+      setLoadingTypes(true);
+      const response = await axios.get("http://localhost:8000/api/request_template_names");
+      setRequestTypes(response.data);
+    } catch (error) {
+      console.error("Error fetching request types:", error);
+      // Fallback to hardcoded types if API fails
+      setRequestTypes([
+        "General Request",
+        "Grade Appeal Request",
+        "Military Service Request",
+        "Schedule Change Request",
+        "Exam Accommodations Request",
+      ]);
+    } finally {
+      setLoadingTypes(false);
+    }
+  };
 
   const checkProfessorAvailability = async (courseId) => {
     try {
@@ -145,6 +165,10 @@ const RequestForm = () => {
     );
   };
 
+  const handleDynamicFormDataChange = (formData) => {
+    setDynamicFormData(formData);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -163,15 +187,44 @@ const RequestForm = () => {
     )
       errors.files = "File attachment is required for this type of request.";
 
+    // Validate dynamic form fields
+    if (dynamicFormData && Object.keys(dynamicFormData).length > 0) {
+      // Here we would validate dynamic form fields based on their rules
+      // For now, we'll check if required fields are filled
+      for (const [fieldName, value] of Object.entries(dynamicFormData)) {
+        if (Array.isArray(value) && value.length === 0) {
+          // This might be an empty file array or other empty required field
+          // We'll let the backend handle detailed validation
+          continue;
+        }
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          // This will be caught by backend validation
+          continue;
+        }
+      }
+    }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
     }
 
     try {
+      // Collect all files (main form + dynamic form files)
+      const allFiles = [...files];
+      
+      // Add files from dynamic form
+      if (dynamicFormData) {
+        Object.values(dynamicFormData).forEach(value => {
+          if (Array.isArray(value) && value.length > 0 && value[0] instanceof File) {
+            allFiles.push(...value);
+          }
+        });
+      }
+
       // First, upload all files if any exist
       const uploadedFiles = [];
-      if (files.length > 0) {
+      if (allFiles.length > 0) {
         // Determine the file type based on the request title
         let fileType = "general";
         switch (title) {
@@ -191,7 +244,7 @@ const RequestForm = () => {
             fileType = "general";
         }
 
-        for (const file of files) {
+        for (const file of allFiles) {
           const formData = new FormData();
           formData.append("file", file);
           formData.append("fileType", fileType);
@@ -210,15 +263,32 @@ const RequestForm = () => {
         }
       }
 
+      // Prepare base request data
+      let finalDetails = details;
+      
+      // Add dynamic form data to details if available
+      if (dynamicFormData && Object.keys(dynamicFormData).length > 0) {
+        const dynamicFieldsText = Object.entries(dynamicFormData)
+          .filter(([_, value]) => value && !Array.isArray(value)) // Exclude file fields
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n');
+        
+        if (dynamicFieldsText) {
+          finalDetails = `${details}\n\nAdditional Information:\n${dynamicFieldsText}`;
+        }
+      }
+
       // Prepare request data
       const requestData = {
         title,
         student_email: user.user_email,
         details:
           title === "Grade Appeal Request"
-            ? `${gradeInfo}Appeal Details:\n${details}`
-            : details,
+            ? `${gradeInfo}Appeal Details:\n${finalDetails}`
+            : finalDetails,
         files: uploadedFiles.length > 0 ? uploadedFiles : [],
+        // Add dynamic form data as custom fields
+        custom_fields: dynamicFormData || {}
       };
 
       // Add grade appeal specific data if it's a grade appeal
@@ -260,6 +330,7 @@ const RequestForm = () => {
       setSelectedGrade(null);
       setGradeInfo("");
       setSelectedCourse(null);
+      setDynamicFormData({});
     } catch (error) {
       console.error("Request error:", error);
       console.error("Response:", error.response);
@@ -293,6 +364,7 @@ const RequestForm = () => {
               setSelectedGrade(null);
               setGradeInfo("");
               setSelectedCourse(null);
+              setDynamicFormData({});
               if (
                 e.target.value !== "Grade Appeal Request" &&
                 e.target.value !== "Schedule Change Request"
@@ -300,8 +372,11 @@ const RequestForm = () => {
                 setDetails("");
               }
             }}
+            disabled={loadingTypes}
           >
-            <option value="">Select a request type</option>
+            <option value="">
+              {loadingTypes ? "Loading request types..." : "Select a request type"}
+            </option>
             {requestTypes.map((type, index) => (
               <option key={index} value={type}>
                 {type}
@@ -329,6 +404,15 @@ const RequestForm = () => {
               onCourseSelect={handleCourseSelect}
             />
           </div>
+        )}
+
+        {/* Dynamic template fields */}
+        {title && (
+          <DynamicRequestForm
+            selectedTemplate={title}
+            onFormDataChange={handleDynamicFormDataChange}
+            errors={fieldErrors}
+          />
         )}
 
         <div className="form-group">

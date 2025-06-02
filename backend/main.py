@@ -2133,3 +2133,289 @@ Requirements:
             "source": "error_fallback",
             "success": False
         }
+
+# Request Template Management Endpoints
+
+class TemplateFieldRequest(BaseModel):
+    field_name: str
+    field_label: str
+    field_type: str  # text, textarea, select, file, date, number
+    field_options: Optional[dict] = None
+    is_required: bool = False
+    field_order: int = 0
+    validation_rules: Optional[dict] = None
+    placeholder: Optional[str] = None
+    help_text: Optional[str] = None
+
+class RequestTemplateRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+    fields: List[TemplateFieldRequest]
+
+@app.get("/api/request_templates")
+async def get_request_templates(
+    active_only: bool = True,
+    session: AsyncSession = Depends(get_session)
+):
+    """Get all request templates with their fields."""
+    try:
+        from backend.db_connection import get_request_templates
+        templates = await get_request_templates(session, active_only)
+        
+        result = []
+        for template in templates:
+            template_data = {
+                "id": template.id,
+                "name": template.name,
+                "description": template.description,
+                "is_active": template.is_active,
+                "created_by": template.created_by,
+                "created_date": template.created_date.isoformat(),
+                "updated_date": template.updated_date.isoformat(),
+                "fields": []
+            }
+            
+            # Sort fields by field_order
+            sorted_fields = sorted(template.fields, key=lambda f: f.field_order)
+            for field in sorted_fields:
+                field_data = {
+                    "id": field.id,
+                    "field_name": field.field_name,
+                    "field_label": field.field_label,
+                    "field_type": field.field_type,
+                    "field_options": field.field_options,
+                    "is_required": field.is_required,
+                    "field_order": field.field_order,
+                    "validation_rules": field.validation_rules,
+                    "placeholder": field.placeholder,
+                    "help_text": field.help_text
+                }
+                template_data["fields"].append(field_data)
+            
+            result.append(template_data)
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/request_templates/{template_id}")
+async def get_request_template(
+    template_id: int,
+    session: AsyncSession = Depends(get_session)
+):
+    """Get a specific request template by ID."""
+    try:
+        from backend.db_connection import get_request_template_by_id
+        template = await get_request_template_by_id(session, template_id)
+        
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Sort fields by field_order
+        sorted_fields = sorted(template.fields, key=lambda f: f.field_order)
+        
+        return {
+            "id": template.id,
+            "name": template.name,
+            "description": template.description,
+            "is_active": template.is_active,
+            "created_by": template.created_by,
+            "created_date": template.created_date.isoformat(),
+            "updated_date": template.updated_date.isoformat(),
+            "fields": [
+                {
+                    "id": field.id,
+                    "field_name": field.field_name,
+                    "field_label": field.field_label,
+                    "field_type": field.field_type,
+                    "field_options": field.field_options,
+                    "is_required": field.is_required,
+                    "field_order": field.field_order,
+                    "validation_rules": field.validation_rules,
+                    "placeholder": field.placeholder,
+                    "help_text": field.help_text
+                }
+                for field in sorted_fields
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/request_templates")
+async def create_request_template(
+    template_data: RequestTemplateRequest,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token_admin)
+):
+    """Create a new request template."""
+    try:
+        from backend.db_connection import create_request_template, get_request_template_by_name
+        
+        # Check if template name already exists
+        existing = await get_request_template_by_name(session, template_data.name)
+        if existing:
+            raise HTTPException(status_code=400, detail="Template with this name already exists")
+        
+        # Convert TemplateFieldRequest objects to dict
+        fields_data = []
+        for field in template_data.fields:
+            fields_data.append({
+                "field_name": field.field_name,
+                "field_label": field.field_label,
+                "field_type": field.field_type,
+                "field_options": field.field_options,
+                "is_required": field.is_required,
+                "field_order": field.field_order,
+                "validation_rules": field.validation_rules,
+                "placeholder": field.placeholder,
+                "help_text": field.help_text
+            })
+        
+        template = await create_request_template(
+            session=session,
+            name=template_data.name,
+            description=template_data.description,
+            created_by=token_data["user_email"],
+            fields=fields_data
+        )
+        
+        # Also create a routing rule for the new template
+        routing_rule = RequestRoutingRules(type=template_data.name, destination="secretary")
+        session.add(routing_rule)
+        await session.commit()
+        
+        return {"message": "Template created successfully", "template_id": template.id}
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/request_templates/{template_id}")
+async def update_request_template(
+    template_id: int,
+    template_data: RequestTemplateRequest,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token_admin)
+):
+    """Update an existing request template."""
+    try:
+        from backend.db_connection import update_request_template, get_request_template_by_name
+        
+        # Check if new name conflicts with existing template (excluding current one)
+        if template_data.name:
+            existing = await get_request_template_by_name(session, template_data.name)
+            if existing and existing.id != template_id:
+                raise HTTPException(status_code=400, detail="Template with this name already exists")
+        
+        # Convert TemplateFieldRequest objects to dict
+        fields_data = []
+        for field in template_data.fields:
+            fields_data.append({
+                "field_name": field.field_name,
+                "field_label": field.field_label,
+                "field_type": field.field_type,
+                "field_options": field.field_options,
+                "is_required": field.is_required,
+                "field_order": field.field_order,
+                "validation_rules": field.validation_rules,
+                "placeholder": field.placeholder,
+                "help_text": field.help_text
+            })
+        
+        template = await update_request_template(
+            session=session,
+            template_id=template_id,
+            name=template_data.name,
+            description=template_data.description,
+            fields=fields_data
+        )
+        
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        return {"message": "Template updated successfully"}
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/request_templates/{template_id}")
+async def delete_request_template(
+    template_id: int,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token_admin)
+):
+    """Soft delete a request template."""
+    try:
+        from backend.db_connection import delete_request_template
+        
+        success = await delete_request_template(session, template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        return {"message": "Template deleted successfully"}
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/request_template_names")
+async def get_request_template_names(session: AsyncSession = Depends(get_session)):
+    """Get list of active request template names for use in forms."""
+    try:
+        from backend.db_connection import get_active_request_template_names
+        names = await get_active_request_template_names(session)
+        
+        # Also include hardcoded legacy types that still exist
+        legacy_types = [
+            "General Request",
+            "Grade Appeal Request", 
+            "Military Service Request",
+            "Schedule Change Request",
+            "Exam Accommodations Request"
+        ]
+        
+        # Combine and remove duplicates while preserving order
+        all_names = legacy_types + [name for name in names if name not in legacy_types]
+        
+        return all_names
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/request_templates/by_name/{template_name}")
+async def get_request_template_by_name_endpoint(
+    template_name: str,
+    session: AsyncSession = Depends(get_session)
+):
+    """Get a specific request template by name (for form generation)."""
+    try:
+        from backend.db_connection import get_request_template_by_name
+        template = await get_request_template_by_name(session, template_name)
+        
+        if not template:
+            # Return null for legacy templates that don't have custom fields
+            return None
+        
+        # Sort fields by field_order
+        sorted_fields = sorted(template.fields, key=lambda f: f.field_order)
+        
+        return {
+            "id": template.id,
+            "name": template.name,
+            "description": template.description,
+            "fields": [
+                {
+                    "id": field.id,
+                    "field_name": field.field_name,
+                    "field_label": field.field_label,
+                    "field_type": field.field_type,
+                    "field_options": field.field_options,
+                    "is_required": field.is_required,
+                    "field_order": field.field_order,
+                    "validation_rules": field.validation_rules,
+                    "placeholder": field.placeholder,
+                    "help_text": field.help_text
+                }
+                for field in sorted_fields
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
