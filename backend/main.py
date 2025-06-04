@@ -757,6 +757,7 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
     )
 
     flag_modified(request, "timeline")
+    flag_modified(request, "status")
     await session.commit()
     
     end_time = time.time()
