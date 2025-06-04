@@ -29,7 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from pydantic import BaseModel, constr
 from typing import List, Dict, Any
-import email_service
+import backend.email_service as email_service
 try:
     # Works on PyJWT < 2.10
     from jwt.exceptions import InvalidTokenError as PyJWTError
@@ -749,7 +749,13 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
         message=f"Your request '{request.title}' status has been changed from '{old_status}' to '{new_status}'",
         type="status_change"
     )
-    
+
+    await email_service.send_email(
+        to=request.student_email,
+        subject=f"Request {request_id} Status Update",
+        content=f"Your request '{request.title}' status has been changed from '{old_status}' to '{new_status}'"
+    )
+
     flag_modified(request, "timeline")
     await session.commit()
     
@@ -1123,6 +1129,13 @@ async def create_general_request(
         status="pending",
         created_date=datetime.now().date(),
         timeline=timeline
+    )
+
+    # send confirmation email to student
+    await email_service.send_email(
+        to=student_email,
+        subject=f"A new {title} request has been submitted successfully",
+        content=f"Hello {student_email}, \nYour {title} request has been submitted successfully. \nRequest ID: {new_request.id}"
     )
 
     end_time = time.time()
