@@ -29,7 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from pydantic import BaseModel, constr
 from typing import List, Dict, Any
-
+import email_service
 try:
     # Works on PyJWT < 2.10
     from jwt.exceptions import InvalidTokenError as PyJWTError
@@ -1055,6 +1055,7 @@ async def create_general_request(
             raise HTTPException(status_code=400, detail="Invalid grade appeal data")
         course_id = grade_appeal.get('course_id')
         course_component = grade_appeal.get('grade_component')
+
     elif title == "Schedule Change Request" and schedule_change:
         if (
                 "course_id" not in schedule_change or
@@ -1071,6 +1072,11 @@ async def create_general_request(
         course_id = None
         course_component = None
 
+    student = await session.execute(select(Students).where(Students.email == student_email))
+    student = student.scalar_one_or_none()
+    secretary_email = None
+    professor_email = None
+
     # Check routing rules for the request type
     result = await session.execute(
         select(RequestRoutingRules).where(RequestRoutingRules.type == title)
@@ -1080,6 +1086,31 @@ async def create_general_request(
     # If there's a routing rule and it specifies secretary, set course_id to None
     if routing_rule and routing_rule.destination == "secretary":
         course_id = None
+        secretary = await session.execute(select(Secretaries).where(Secretaries.department_id == student.department_id))
+        secretary_email = (secretary.scalar_one_or_none()).email
+
+    if routing_rule and routing_rule.destination == "professor":
+        professor = await session.execute(select(StudentCourses).where(and_(
+            StudentCourses.student_email == student_email, StudentCourses.course_id == course_id)))
+        professor_email =(professor.scalar_one_or_none()).professor_email
+
+
+    # send email notification for the faculty member who will handle the request
+    if professor_email:
+        email_content = f"Hello {professor_email}, \nA new {title} request has been submitted by {student_email} at {datetime.now().date()}."
+        await email_service.send_email(
+            to=professor_email,
+            subject = f"A new {title} request has been submitted",
+            content = email_content
+        )
+
+    if secretary_email:
+        email_content = f"Hello {secretary_email}, \nA new {title} request has been submitted by {student_email} at {datetime.now().date()}."
+        await email_service.send_email(
+            to=secretary_email,
+            subject = f"A new {title} request has been submitted",
+            content = email_content
+        )
 
     new_request = await add_request(
         session=session,
