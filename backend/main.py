@@ -633,7 +633,11 @@ async def download_file(userId: str, file_path: str):
 
 
 @app.get("/requests/{user_email}")
-async def get_requests(user_email: str, session: AsyncSession = Depends(get_session)):
+async def get_requests(
+    user_email: str, 
+    student_email: Optional[str] = None,  # New parameter for filtering by student
+    session: AsyncSession = Depends(get_session)
+):
     start_time = time.time()
     try:
         # Fetch the user role from the database based on the email
@@ -655,11 +659,18 @@ async def get_requests(user_email: str, session: AsyncSession = Depends(get_sess
                 raise HTTPException(status_code=404, detail="Secretary not found")
             department = secretary.department_id
             
-            relevant_requests_result = await session.execute(
+            # Base query for department requests
+            query = (
                 select(Requests)
                 .join(Students, Requests.student_email == Students.email)
                 .where(Students.department_id == department)
             )
+            
+            # Add student email filter if provided
+            if student_email:
+                query = query.where(Requests.student_email == student_email)
+            
+            relevant_requests_result = await session.execute(query)
             relevant_requests = relevant_requests_result.scalars().all()
             end_time = time.time()
             print(f"get_requests run-time is {end_time - start_time:.3f} sec")
@@ -2575,4 +2586,38 @@ async def delete_comment_template(
     await session.delete(template)
     await session.commit()
     return {"message": "Template deleted successfully"}
+
+@app.get("/secretary/department-students/{secretary_email}")
+async def get_department_students(
+    secretary_email: str, 
+    session: AsyncSession = Depends(get_session)
+):
+    """Get all students in the secretary's department for filtering purposes"""
+    try:
+        # Get secretary's department
+        secretary_result = await session.execute(
+            select(Secretaries).where(Secretaries.email == secretary_email)
+        )
+        secretary = secretary_result.scalar_one_or_none()
+        if not secretary:
+            raise HTTPException(status_code=404, detail="Secretary not found")
+        
+        # Get all students in the same department
+        students_result = await session.execute(
+            select(Students.email, Users.first_name, Users.last_name)
+            .join(Users, Students.email == Users.email)
+            .where(Students.department_id == secretary.department_id)
+            .order_by(Users.first_name, Users.last_name)
+        )
+        students = students_result.all()
+        
+        return [
+            {
+                "email": student.email,
+                "name": f"{student.first_name} {student.last_name}"
+            }
+            for student in students
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching department students: {str(e)}")
 

@@ -45,6 +45,11 @@ function ProfessorRequestsPanel() {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ title: "", content: "" });
 
+  // New state variables for filtering
+  const [studentFilter, setStudentFilter] = useState("");
+  const [departmentStudents, setDepartmentStudents] = useState([]);
+  const [hideCompleted, setHideCompleted] = useState(false);
+
   const handleOpenDialog = (requestId, newStatus) => {
     setDialogData({ requestId, newStatus });
     setOpenDialog(true);
@@ -98,6 +103,10 @@ function ProfessorRequestsPanel() {
       apiUrl = `http://localhost:8000/requests/professor/${user?.user_email}`;
     } else if (user.role === "secretary") {
       apiUrl = `http://localhost:8000/requests/${user?.user_email}`;
+      // Add student filter if selected
+      if (studentFilter) {
+        apiUrl += `?student_email=${encodeURIComponent(studentFilter)}`;
+      }
     } else {
       return navigate("/home");
     }
@@ -105,10 +114,22 @@ function ProfessorRequestsPanel() {
     try {
       const response = await axios.get(apiUrl);
       setRequests(response.data);
+
+      // If user is secretary, also fetch department students for filter
+      if (user.role === "secretary") {
+        try {
+          const studentsResponse = await axios.get(
+            `http://localhost:8000/secretary/department-students/${user?.user_email}`
+          );
+          setDepartmentStudents(studentsResponse.data);
+        } catch (err) {
+          console.error("Error fetching department students:", err);
+        }
+      }
     } catch (err) {
       console.error("Error fetching requests:", err);
     }
-  }, [navigate]);
+  }, [navigate, studentFilter]);
 
   const handleResponseSubmit = async (e) => {
     e.preventDefault();
@@ -142,9 +163,12 @@ function ProfessorRequestsPanel() {
   const loadTemplates = async () => {
     try {
       const token = getToken();
-      const response = await axios.get("http://localhost:8000/comment_templates", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(
+        "http://localhost:8000/comment_templates",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setTemplates(response.data);
     } catch (error) {
       console.error("Error loading templates:", error);
@@ -155,7 +179,7 @@ function ProfessorRequestsPanel() {
     try {
       const token = getToken();
       await axios.post("http://localhost:8000/comment_templates", newTemplate, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setShowTemplateDialog(false);
       setNewTemplate({ title: "", content: "" });
@@ -168,9 +192,12 @@ function ProfessorRequestsPanel() {
   const handleDeleteTemplate = async (templateId) => {
     try {
       const token = getToken();
-      await axios.delete(`http://localhost:8000/comment_templates/${templateId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.delete(
+        `http://localhost:8000/comment_templates/${templateId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       loadTemplates();
     } catch (error) {
       console.error("Error deleting template:", error);
@@ -188,7 +215,17 @@ function ProfessorRequestsPanel() {
   }, [user]);
 
   useEffect(() => {
-    const sorted = [...requests].sort((a, b) => {
+    let filteredRequests = [...requests];
+
+    // Filter out completed requests if toggle is enabled
+    if (hideCompleted) {
+      filteredRequests = filteredRequests.filter(
+        (req) => !["approved", "responded", "rejected"].includes(req.status)
+      );
+    }
+
+    // Sort the filtered requests
+    const sorted = filteredRequests.sort((a, b) => {
       switch (sortBy) {
         case "created_desc":
           return new Date(b.created_date) - new Date(a.created_date);
@@ -205,7 +242,7 @@ function ProfessorRequestsPanel() {
       }
     });
     setSortedRequests(sorted);
-  }, [sortBy, requests]);
+  }, [sortBy, requests, hideCompleted]);
 
   const handleSortChange = (e) => setSortBy(e.target.value);
 
@@ -213,13 +250,55 @@ function ProfessorRequestsPanel() {
     setSortBy("created_desc");
   };
 
+  const clearFilters = () => {
+    setStudentFilter("");
+    setHideCompleted(false);
+    setSortBy("created_desc");
+  };
+
   return (
-      <div className="container-fluid mt-4">
+    <div className="container-fluid mt-4">
       <h1 className="text-center mb-4">
-        <strong>Pending Requests</strong>
+        <strong>
+          {hideCompleted ? "Active Requests" : "Pending Requests"}
+          {studentFilter && departmentStudents.length > 0 && (
+            <span
+              className="text-muted"
+              style={{ fontSize: "0.7em", display: "block" }}
+            >
+              Filtered by:{" "}
+              {departmentStudents.find((s) => s.email === studentFilter)?.name}
+            </span>
+          )}
+        </strong>
       </h1>
 
       <div className="d-flex justify-content-end mb-3">
+        {/* Student Filter for Secretaries */}
+        {user?.role === "secretary" && (
+          <FormControl
+            variant="outlined"
+            className="me-2"
+            sx={{ minWidth: 200 }}
+          >
+            <InputLabel id="student-filter-label">Filter by Student</InputLabel>
+            <Select
+              labelId="student-filter-label"
+              value={studentFilter}
+              onChange={(e) => setStudentFilter(e.target.value)}
+              label="Filter by Student"
+              size="small"
+            >
+              <MenuItem value="">All Students</MenuItem>
+              {departmentStudents.map((student) => (
+                <MenuItem key={student.email} value={student.email}>
+                  {student.name} ({student.email})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
         <FormControl
           variant="outlined"
           className="me-2 sort-select"
@@ -242,11 +321,28 @@ function ProfessorRequestsPanel() {
             <MenuItem value="status">Status</MenuItem>
           </Select>
         </FormControl>
+
+        {/* Hide Completed Toggle */}
+        <Button
+          variant={hideCompleted ? "contained" : "outlined"}
+          color={hideCompleted ? "primary" : "secondary"}
+          className="me-2"
+          onClick={() => setHideCompleted(!hideCompleted)}
+          size="large"
+          sx={{
+            minWidth: 160,
+            textTransform: "none",
+            fontSize: "16px",
+          }}
+        >
+          {hideCompleted ? "Show All" : "Hide Completed"}
+        </Button>
+
         <Button
           variant="outlined"
           color="secondary"
           className="clear-sort-button"
-          onClick={clearSort}
+          onClick={studentFilter || hideCompleted ? clearFilters : clearSort}
           size="large"
           sx={{
             minWidth: 120,
@@ -256,7 +352,7 @@ function ProfessorRequestsPanel() {
             fontSize: "20px",
           }}
         >
-          Clear Sort
+          {studentFilter || hideCompleted ? "Clear All" : "Clear Sort"}
         </Button>
       </div>
 
@@ -426,19 +522,34 @@ function ProfessorRequestsPanel() {
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs>
                             <FormControl fullWidth>
-                              <InputLabel id="template-select-label">Select Template</InputLabel>
+                              <InputLabel id="template-select-label">
+                                Select Template
+                              </InputLabel>
                               <Select
                                 labelId="template-select-label"
                                 label="Select Template"
                                 value=""
                                 onChange={(e) => {
-                                  const template = templates.find(t => t.id === e.target.value);
-                                  if (template) setResponseText(template.content);
+                                  const template = templates.find(
+                                    (t) => t.id === e.target.value
+                                  );
+                                  if (template)
+                                    setResponseText(template.content);
                                 }}
                               >
                                 {templates.map((template) => (
-                                  <MenuItem key={template.id} value={template.id}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                  <MenuItem
+                                    key={template.id}
+                                    value={template.id}
+                                  >
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        width: "100%",
+                                      }}
+                                    >
                                       <span>{template.title}</span>
                                       <Button
                                         size="small"
@@ -446,7 +557,11 @@ function ProfessorRequestsPanel() {
                                         color="error"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (window.confirm('Are you sure you want to delete this template?')) {
+                                          if (
+                                            window.confirm(
+                                              "Are you sure you want to delete this template?"
+                                            )
+                                          ) {
                                             handleDeleteTemplate(template.id);
                                           }
                                         }}
@@ -464,7 +579,7 @@ function ProfessorRequestsPanel() {
                             <Button
                               variant="contained"
                               onClick={() => setShowTemplateDialog(true)}
-                              sx={{ whiteSpace: 'nowrap' }}
+                              sx={{ whiteSpace: "nowrap" }}
                             >
                               Create New Template
                             </Button>
@@ -480,7 +595,9 @@ function ProfessorRequestsPanel() {
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
                         required
-                        style={{ direction: isRTL(responseText) ? 'rtl' : 'ltr' }}
+                        style={{
+                          direction: isRTL(responseText) ? "rtl" : "ltr",
+                        }}
                       ></textarea>
                     </div>
                     <div className="mb-3 file-upload-section">
@@ -613,7 +730,10 @@ function ProfessorRequestsPanel() {
                   </Button>
                 </DialogActions>
               </Dialog>
-              <Dialog open={showTemplateDialog} onClose={() => setShowTemplateDialog(false)}>
+              <Dialog
+                open={showTemplateDialog}
+                onClose={() => setShowTemplateDialog(false)}
+              >
                 <DialogTitle>Create New Comment Template</DialogTitle>
                 <DialogContent>
                   <TextField
@@ -622,8 +742,14 @@ function ProfessorRequestsPanel() {
                     label="Template Title"
                     fullWidth
                     value={newTemplate.title}
-                    onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
-                    inputProps={{ style: { direction: isRTL(newTemplate.title) ? 'rtl' : 'ltr' } }}
+                    onChange={(e) =>
+                      setNewTemplate({ ...newTemplate, title: e.target.value })
+                    }
+                    inputProps={{
+                      style: {
+                        direction: isRTL(newTemplate.title) ? "rtl" : "ltr",
+                      },
+                    }}
                   />
                   <TextField
                     margin="dense"
@@ -632,13 +758,26 @@ function ProfessorRequestsPanel() {
                     multiline
                     rows={4}
                     value={newTemplate.content}
-                    onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
-                    inputProps={{ style: { direction: isRTL(newTemplate.content) ? 'rtl' : 'ltr' } }}
+                    onChange={(e) =>
+                      setNewTemplate({
+                        ...newTemplate,
+                        content: e.target.value,
+                      })
+                    }
+                    inputProps={{
+                      style: {
+                        direction: isRTL(newTemplate.content) ? "rtl" : "ltr",
+                      },
+                    }}
                   />
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
-                  <Button onClick={handleSaveTemplate} color="primary">Save</Button>
+                  <Button onClick={() => setShowTemplateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveTemplate} color="primary">
+                    Save
+                  </Button>
                 </DialogActions>
               </Dialog>
             </div>
