@@ -22,6 +22,8 @@ import TransferRequests from "./TransferRequests";
 import ProfessorRequestsPanel from "./ProfessorRequestsPanel";
 import AdminRequestRoute from "./AdminRequestRoute";
 import AdminTemplateManager from "./RequestTemplates/AdminTemplateManager";
+import DeadlineManagement from "./DeadlineManagement";
+import Reports from "./Reports";
 
 function AppRoutes({ darkMode, setDarkMode }) {
   const { user } = useUser();
@@ -41,6 +43,7 @@ function AppRoutes({ darkMode, setDarkMode }) {
           path="/Student's Requests"
           element={<ProfessorRequestsPanel />}
         />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/login" element={<Login />} />
         <Route
           path="/upload"
@@ -71,7 +74,14 @@ function AppRoutes({ darkMode, setDarkMode }) {
         />
         <Route path="/transfer-requests" element={<TransferRequests />} />
         <Route path="/admin/request-routing" element={<AdminRequestRoute />} />
-        <Route path="/admin/request-templates" element={<AdminTemplateManager />} />
+        <Route
+          path="/admin/request-templates"
+          element={<AdminTemplateManager />}
+        />
+        <Route
+          path="/admin/deadline-management"
+          element={<DeadlineManagement />}
+        />
       </Routes>
     </Router>
   );

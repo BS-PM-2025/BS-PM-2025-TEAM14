@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "../CSS/SubmitRequestForm.css";
 import { useNavigate } from "react-router-dom";
@@ -241,9 +241,11 @@ const TransferRequests = () => {
   return (
     <div className="transfer-requests-container">
       <h1>
-        <strong>{user?.role === "admin"
-          ? "Transfer All Requests"
-            : "Department Transfer Requests"}</strong>
+        <strong>
+          {user?.role === "admin"
+            ? "Transfer All Requests"
+            : "Department Transfer Requests"}
+        </strong>
       </h1>
 
       {/* Filters Section */}
@@ -360,7 +362,9 @@ const TransferRequests = () => {
             return (
               <div key={request.id} className="request-card">
                 <div className="request-header">
-                  <h3><strong>{request.title}</strong></h3>
+                  <h3>
+                    <strong>{request.title}</strong>
+                  </h3>
                   <span
                     // className={`status-badge ${request.status?.toLowerCase()}`}
                     className={`status-badge ${getStatusClass(request.status)}`}
@@ -393,7 +397,9 @@ const TransferRequests = () => {
                   <div className="detail-row">
                     <span className="label">Date:</span>
                     <span className="value">
-                      {new Date(request.created_date).toLocaleDateString("he-IL")}
+                      {new Date(request.created_date).toLocaleDateString(
+                        "he-IL"
+                      )}
                     </span>
                   </div>
                 </div>
@@ -405,9 +411,10 @@ const TransferRequests = () => {
                     <h4>Attached Files:</h4>
                     <ul>
                       {request.files.map((file, index) => {
-                        const filePath = `Documents/${request.student_email}/${type}/${file}`;
-                        const encodedPath = encodeURIComponent(filePath);
-                        const downloadUrl = `http://localhost:8000/downloadFile/${request.student_email}/${encodedPath}`;
+                        // Just pass the filename - the backend will handle path construction
+                        const downloadUrl = `http://localhost:8000/downloadFile/${encodeURIComponent(
+                          request.student_email
+                        )}/${encodeURIComponent(file)}`;
 
                         return (
                           <li key={index}>
@@ -548,6 +555,5 @@ function getStatusText(status) {
       return status;
   }
 }
-
 
 export default TransferRequests;

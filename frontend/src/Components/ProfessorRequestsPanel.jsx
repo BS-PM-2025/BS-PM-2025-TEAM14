@@ -45,6 +45,11 @@ function ProfessorRequestsPanel() {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ title: "", content: "" });
 
+  // New state variables for filtering
+  const [studentFilter, setStudentFilter] = useState("");
+  const [departmentStudents, setDepartmentStudents] = useState([]);
+  const [hideCompleted, setHideCompleted] = useState(false);
+
   const handleOpenDialog = (requestId, newStatus) => {
     setDialogData({ requestId, newStatus });
     setOpenDialog(true);
@@ -98,6 +103,10 @@ function ProfessorRequestsPanel() {
       apiUrl = `http://localhost:8000/requests/professor/${user?.user_email}`;
     } else if (user.role === "secretary") {
       apiUrl = `http://localhost:8000/requests/${user?.user_email}`;
+      // Add student filter if selected
+      if (studentFilter) {
+        apiUrl += `?student_email=${encodeURIComponent(studentFilter)}`;
+      }
     } else {
       return navigate("/home");
     }
@@ -105,10 +114,22 @@ function ProfessorRequestsPanel() {
     try {
       const response = await axios.get(apiUrl);
       setRequests(response.data);
+
+      // If user is secretary, also fetch department students for filter
+      if (user.role === "secretary") {
+        try {
+          const studentsResponse = await axios.get(
+            `http://localhost:8000/secretary/department-students/${user?.user_email}`
+          );
+          setDepartmentStudents(studentsResponse.data);
+        } catch (err) {
+          console.error("Error fetching department students:", err);
+        }
+      }
     } catch (err) {
       console.error("Error fetching requests:", err);
     }
-  }, [navigate]);
+  }, [navigate, studentFilter]);
 
   const handleResponseSubmit = async (e) => {
     e.preventDefault();
@@ -142,9 +163,12 @@ function ProfessorRequestsPanel() {
   const loadTemplates = async () => {
     try {
       const token = getToken();
-      const response = await axios.get("http://localhost:8000/comment_templates", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(
+        "http://localhost:8000/comment_templates",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setTemplates(response.data);
     } catch (error) {
       console.error("Error loading templates:", error);
@@ -155,7 +179,7 @@ function ProfessorRequestsPanel() {
     try {
       const token = getToken();
       await axios.post("http://localhost:8000/comment_templates", newTemplate, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setShowTemplateDialog(false);
       setNewTemplate({ title: "", content: "" });
@@ -168,9 +192,12 @@ function ProfessorRequestsPanel() {
   const handleDeleteTemplate = async (templateId) => {
     try {
       const token = getToken();
-      await axios.delete(`http://localhost:8000/comment_templates/${templateId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.delete(
+        `http://localhost:8000/comment_templates/${templateId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       loadTemplates();
     } catch (error) {
       console.error("Error deleting template:", error);
@@ -188,7 +215,18 @@ function ProfessorRequestsPanel() {
   }, [user]);
 
   useEffect(() => {
-    const sorted = [...requests].sort((a, b) => {
+    let filteredRequests = [...requests];
+
+    // Filter out completed requests if toggle is enabled
+    if (hideCompleted) {
+      filteredRequests = filteredRequests.filter(
+        (req) =>
+          !["approved", "responded", "rejected", "expired"].includes(req.status)
+      );
+    }
+
+    // Sort the filtered requests
+    const sorted = filteredRequests.sort((a, b) => {
       switch (sortBy) {
         case "created_desc":
           return new Date(b.created_date) - new Date(a.created_date);
@@ -205,7 +243,7 @@ function ProfessorRequestsPanel() {
       }
     });
     setSortedRequests(sorted);
-  }, [sortBy, requests]);
+  }, [sortBy, requests, hideCompleted]);
 
   const handleSortChange = (e) => setSortBy(e.target.value);
 
@@ -213,13 +251,55 @@ function ProfessorRequestsPanel() {
     setSortBy("created_desc");
   };
 
+  const clearFilters = () => {
+    setStudentFilter("");
+    setHideCompleted(false);
+    setSortBy("created_desc");
+  };
+
   return (
-      <div className="container-fluid mt-4">
+    <div className="container-fluid mt-4">
       <h1 className="text-center mb-4">
-        <strong>Pending Requests</strong>
+        <strong>
+          {hideCompleted ? "Active Requests" : "Pending Requests"}
+          {studentFilter && departmentStudents.length > 0 && (
+            <span
+              className="text-muted"
+              style={{ fontSize: "0.7em", display: "block" }}
+            >
+              Filtered by:{" "}
+              {departmentStudents.find((s) => s.email === studentFilter)?.name}
+            </span>
+          )}
+        </strong>
       </h1>
 
       <div className="d-flex justify-content-end mb-3">
+        {/* Student Filter for Secretaries */}
+        {user?.role === "secretary" && (
+          <FormControl
+            variant="outlined"
+            className="me-2"
+            sx={{ minWidth: 200 }}
+          >
+            <InputLabel id="student-filter-label">Filter by Student</InputLabel>
+            <Select
+              labelId="student-filter-label"
+              value={studentFilter}
+              onChange={(e) => setStudentFilter(e.target.value)}
+              label="Filter by Student"
+              size="small"
+            >
+              <MenuItem value="">All Students</MenuItem>
+              {departmentStudents.map((student) => (
+                <MenuItem key={student.email} value={student.email}>
+                  {student.name} ({student.email})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
         <FormControl
           variant="outlined"
           className="me-2 sort-select"
@@ -242,11 +322,28 @@ function ProfessorRequestsPanel() {
             <MenuItem value="status">Status</MenuItem>
           </Select>
         </FormControl>
+
+        {/* Hide Completed Toggle */}
+        <Button
+          variant={hideCompleted ? "contained" : "outlined"}
+          color={hideCompleted ? "primary" : "secondary"}
+          className="me-2"
+          onClick={() => setHideCompleted(!hideCompleted)}
+          size="large"
+          sx={{
+            minWidth: 160,
+            textTransform: "none",
+            fontSize: "16px",
+          }}
+        >
+          {hideCompleted ? "Show All" : "Hide Completed"}
+        </Button>
+
         <Button
           variant="outlined"
           color="secondary"
           className="clear-sort-button"
-          onClick={clearSort}
+          onClick={studentFilter || hideCompleted ? clearFilters : clearSort}
           size="large"
           sx={{
             minWidth: 120,
@@ -256,7 +353,7 @@ function ProfessorRequestsPanel() {
             fontSize: "20px",
           }}
         >
-          Clear Sort
+          {studentFilter || hideCompleted ? "Clear All" : "Clear Sort"}
         </Button>
       </div>
 
@@ -283,6 +380,21 @@ function ProfessorRequestsPanel() {
                 <p className="card-text">
                   <strong>From :</strong> {req.student_email}
                 </p>
+                {req.deadline_date && (
+                  <p
+                    className="card-text"
+                    style={{
+                      color: getDeadlineDisplayColor(req),
+                      fontWeight: shouldShowDeadlineWarning(req)
+                        ? "bold"
+                        : "normal",
+                    }}
+                  >
+                    <strong>Deadline:</strong>{" "}
+                    {new Date(req.deadline_date).toLocaleDateString()}
+                    {shouldShowDeadlineWarning(req) && " ⚠️"}
+                  </p>
+                )}
                 <p className={`badge ${getStatusClass(req.status)}`}>
                   {getStatusText(req.status)}
                 </p>
@@ -322,6 +434,25 @@ function ProfessorRequestsPanel() {
                   <p>
                     <strong>Date:</strong> {selectedRequest.created_date}
                   </p>
+                  {selectedRequest.deadline_date && (
+                    <p>
+                      <strong>Deadline:</strong>{" "}
+                      <span
+                        style={{
+                          color: getDeadlineDisplayColor(selectedRequest),
+                          fontWeight: shouldShowDeadlineWarning(selectedRequest)
+                            ? "bold"
+                            : "normal",
+                        }}
+                      >
+                        {new Date(
+                          selectedRequest.deadline_date
+                        ).toLocaleDateString()}
+                        {shouldShowDeadlineWarning(selectedRequest) &&
+                          " ⚠️ Approaching deadline!"}
+                      </span>
+                    </p>
+                  )}
                   <p>
                     <strong>Status:</strong>{" "}
                     <span
@@ -376,9 +507,9 @@ function ProfessorRequestsPanel() {
                         </span>
                         <a
                           className="btn btn-sm btn-outline-primary"
-                          href={`http://localhost:8000/downloadFile/${
+                          href={`http://localhost:8000/downloadFile/${encodeURIComponent(
                             selectedRequest.student_email
-                          }/${encodeURIComponent(doc)}`}
+                          )}/${encodeURIComponent(doc)}`}
                           download
                         >
                           Download
@@ -416,173 +547,211 @@ function ProfessorRequestsPanel() {
                 </p>
               </div>
               {/* Reply and Status Controls */}
-              {(user?.role === "professor" || user?.role === "secretary") && (
-                <>
-                  <hr />
-                  <h5 className="mt-3">Reply :</h5>
-                  <form onSubmit={handleResponseSubmit} method="POST">
-                    {user?.role === "professor" && (
-                      <div className="mb-3">
-                        <Grid container spacing={2} alignItems="center">
-                          <Grid item xs>
-                            <FormControl fullWidth>
-                              <InputLabel id="template-select-label">Select Template</InputLabel>
-                              <Select
-                                labelId="template-select-label"
-                                label="Select Template"
-                                value=""
-                                onChange={(e) => {
-                                  const template = templates.find(t => t.id === e.target.value);
-                                  if (template) setResponseText(template.content);
-                                }}
-                              >
-                                {templates.map((template) => (
-                                  <MenuItem key={template.id} value={template.id}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                      <span>{template.title}</span>
-                                      <Button
-                                        size="small"
-                                        variant="text"
-                                        color="error"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (window.confirm('Are you sure you want to delete this template?')) {
-                                            handleDeleteTemplate(template.id);
-                                          }
-                                        }}
-                                        sx={{ ml: 2 }}
-                                      >
-                                        Delete
-                                      </Button>
-                                    </Box>
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid item>
-                            <Button
-                              variant="contained"
-                              onClick={() => setShowTemplateDialog(true)}
-                              sx={{ whiteSpace: 'nowrap' }}
-                            >
-                              Create New Template
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      </div>
-                    )}
-                    <div className="mb-3">
-                      <textarea
-                        className="form-control"
-                        rows="4"
-                        placeholder="submit your reply here..."
-                        value={responseText}
-                        onChange={(e) => setResponseText(e.target.value)}
-                        required
-                        style={{ direction: isRTL(responseText) ? 'rtl' : 'ltr' }}
-                      ></textarea>
-                    </div>
-                    <div className="mb-3 file-upload-section">
-                      <label className="form-label mb-1">
-                        Attach Documents (Optional):
-                      </label>
-                      <button
-                        type="button"
-                        className="custom-file-btn btn btn-secondary mb-2"
-                        onClick={() =>
-                          document.getElementById("response-files").click()
-                        }
-                        style={{ display: "block" }}
-                      >
-                        Choose Files
-                      </button>
-                      <input
-                        type="file"
-                        id="response-files"
-                        multiple
-                        style={{ display: "none" }}
-                        onChange={(e) => setResponseFiles([...e.target.files])}
-                      />
-                      {responseFiles.length > 0 && (
-                        <div className="selected-files mt-2">
-                          <ul style={{ paddingLeft: 0, marginBottom: 0 }}>
-                            {Array.from(responseFiles).map((file, idx) => (
-                              <li
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  maxWidth: "250px",
-                                  listStyle: "none",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                    maxWidth: "180px",
-                                  }}
-                                  title={file.name}
-                                >
-                                  {file.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  className="remove-file-btn btn btn-sm btn-outline-danger ms-2"
-                                  onClick={() =>
-                                    setResponseFiles((prev) =>
-                                      Array.from(prev).filter(
-                                        (_, i) => i !== idx
-                                      )
-                                    )
-                                  }
-                                  aria-label="Remove file"
-                                >
-                                  ×
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                    <button className="btn btn-primary mt-2" type="submit">
-                      Submit
-                    </button>
-                  </form>
-                </>
-              )}
-              {(user?.role === "secretary" || user?.role === "professor") && (
-                <div className="mt-3">
-                  <FormControl
-                    variant="outlined"
-                    className="me-2"
-                    sx={{ minWidth: 200 }}
-                  >
-                    <InputLabel id="status-label">Update Status</InputLabel>
-                    <Select
-                      labelId="status-label"
-                      value={selectedRequest.status}
-                      onChange={(e) =>
-                        handleOpenDialog(selectedRequest.id, e.target.value)
-                      }
-                      label="Change Request Status"
-                    >
-                      <MenuItem value="pending">Pending</MenuItem>
-                      <MenuItem value="in process">In Process</MenuItem>
-                      <MenuItem value="require editing">
-                        Editing Required
-                      </MenuItem>
-                      <MenuItem value="approved">Approve</MenuItem>
-                      <MenuItem value="rejected">Reject</MenuItem>
-                    </Select>
-                  </FormControl>
+              {selectedRequest.status === "expired" && (
+                <div
+                  className="alert alert-warning mt-3"
+                  style={{
+                    backgroundColor: "#f8d7da",
+                    borderColor: "#f5c6cb",
+                    color: "#721c24",
+                  }}
+                >
+                  <strong>⏰ Request Expired:</strong> This request has passed
+                  its deadline and cannot be processed further.
                 </div>
               )}
+              {(user?.role === "professor" || user?.role === "secretary") &&
+                selectedRequest.status !== "expired" && (
+                  <>
+                    <hr />
+                    <h5 className="mt-3">Reply :</h5>
+                    <form onSubmit={handleResponseSubmit} method="POST">
+                      {user?.role === "professor" && (
+                        <div className="mb-3">
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item xs>
+                              <FormControl fullWidth>
+                                <InputLabel id="template-select-label">
+                                  Select Template
+                                </InputLabel>
+                                <Select
+                                  labelId="template-select-label"
+                                  label="Select Template"
+                                  value=""
+                                  onChange={(e) => {
+                                    const template = templates.find(
+                                      (t) => t.id === e.target.value
+                                    );
+                                    if (template)
+                                      setResponseText(template.content);
+                                  }}
+                                >
+                                  {templates.map((template) => (
+                                    <MenuItem
+                                      key={template.id}
+                                      value={template.id}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          justifyContent: "space-between",
+                                          alignItems: "center",
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <span>{template.title}</span>
+                                        <Button
+                                          size="small"
+                                          variant="text"
+                                          color="error"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (
+                                              window.confirm(
+                                                "Are you sure you want to delete this template?"
+                                              )
+                                            ) {
+                                              handleDeleteTemplate(template.id);
+                                            }
+                                          }}
+                                          sx={{ ml: 2 }}
+                                        >
+                                          Delete
+                                        </Button>
+                                      </Box>
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid item>
+                              <Button
+                                variant="contained"
+                                onClick={() => setShowTemplateDialog(true)}
+                                sx={{ whiteSpace: "nowrap" }}
+                              >
+                                Create New Template
+                              </Button>
+                            </Grid>
+                          </Grid>
+                        </div>
+                      )}
+                      <div className="mb-3">
+                        <textarea
+                          className="form-control"
+                          rows="4"
+                          placeholder="submit your reply here..."
+                          value={responseText}
+                          onChange={(e) => setResponseText(e.target.value)}
+                          required
+                          style={{
+                            direction: isRTL(responseText) ? "rtl" : "ltr",
+                          }}
+                        ></textarea>
+                      </div>
+                      <div className="mb-3 file-upload-section">
+                        <label className="form-label mb-1">
+                          Attach Documents (Optional):
+                        </label>
+                        <button
+                          type="button"
+                          className="custom-file-btn btn btn-secondary mb-2"
+                          onClick={() =>
+                            document.getElementById("response-files").click()
+                          }
+                          style={{ display: "block" }}
+                        >
+                          Choose Files
+                        </button>
+                        <input
+                          type="file"
+                          id="response-files"
+                          multiple
+                          style={{ display: "none" }}
+                          onChange={(e) =>
+                            setResponseFiles([...e.target.files])
+                          }
+                        />
+                        {responseFiles.length > 0 && (
+                          <div className="selected-files mt-2">
+                            <ul style={{ paddingLeft: 0, marginBottom: 0 }}>
+                              {Array.from(responseFiles).map((file, idx) => (
+                                <li
+                                  key={idx}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    maxWidth: "250px",
+                                    listStyle: "none",
+                                    marginBottom: "4px",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      maxWidth: "180px",
+                                    }}
+                                    title={file.name}
+                                  >
+                                    {file.name}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="remove-file-btn btn btn-sm btn-outline-danger ms-2"
+                                    onClick={() =>
+                                      setResponseFiles((prev) =>
+                                        Array.from(prev).filter(
+                                          (_, i) => i !== idx
+                                        )
+                                      )
+                                    }
+                                    aria-label="Remove file"
+                                  >
+                                    ×
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-primary mt-2" type="submit">
+                        Submit
+                      </button>
+                    </form>
+                  </>
+                )}
+              {(user?.role === "secretary" || user?.role === "professor") &&
+                selectedRequest.status !== "expired" && (
+                  <div className="mt-3">
+                    <FormControl
+                      variant="outlined"
+                      className="me-2"
+                      sx={{ minWidth: 200 }}
+                    >
+                      <InputLabel id="status-label">Update Status</InputLabel>
+                      <Select
+                        labelId="status-label"
+                        value={selectedRequest.status}
+                        onChange={(e) =>
+                          handleOpenDialog(selectedRequest.id, e.target.value)
+                        }
+                        label="Change Request Status"
+                      >
+                        <MenuItem value="pending">Pending</MenuItem>
+                        <MenuItem value="in process">In Process</MenuItem>
+                        <MenuItem value="require editing">
+                          Editing Required
+                        </MenuItem>
+                        <MenuItem value="approved">Approve</MenuItem>
+                        <MenuItem value="rejected">Reject</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                )}
               <Dialog
                 open={openDialog}
                 onClose={handleCloseDialog}
@@ -613,7 +782,10 @@ function ProfessorRequestsPanel() {
                   </Button>
                 </DialogActions>
               </Dialog>
-              <Dialog open={showTemplateDialog} onClose={() => setShowTemplateDialog(false)}>
+              <Dialog
+                open={showTemplateDialog}
+                onClose={() => setShowTemplateDialog(false)}
+              >
                 <DialogTitle>Create New Comment Template</DialogTitle>
                 <DialogContent>
                   <TextField
@@ -622,8 +794,14 @@ function ProfessorRequestsPanel() {
                     label="Template Title"
                     fullWidth
                     value={newTemplate.title}
-                    onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
-                    inputProps={{ style: { direction: isRTL(newTemplate.title) ? 'rtl' : 'ltr' } }}
+                    onChange={(e) =>
+                      setNewTemplate({ ...newTemplate, title: e.target.value })
+                    }
+                    inputProps={{
+                      style: {
+                        direction: isRTL(newTemplate.title) ? "rtl" : "ltr",
+                      },
+                    }}
                   />
                   <TextField
                     margin="dense"
@@ -632,13 +810,26 @@ function ProfessorRequestsPanel() {
                     multiline
                     rows={4}
                     value={newTemplate.content}
-                    onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
-                    inputProps={{ style: { direction: isRTL(newTemplate.content) ? 'rtl' : 'ltr' } }}
+                    onChange={(e) =>
+                      setNewTemplate({
+                        ...newTemplate,
+                        content: e.target.value,
+                      })
+                    }
+                    inputProps={{
+                      style: {
+                        direction: isRTL(newTemplate.content) ? "rtl" : "ltr",
+                      },
+                    }}
                   />
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
-                  <Button onClick={handleSaveTemplate} color="primary">Save</Button>
+                  <Button onClick={() => setShowTemplateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveTemplate} color="primary">
+                    Save
+                  </Button>
                 </DialogActions>
               </Dialog>
             </div>
@@ -647,6 +838,37 @@ function ProfessorRequestsPanel() {
       )}
     </div>
   );
+}
+
+function isDeadlineApproaching(deadlineDate) {
+  if (!deadlineDate) return false;
+  const deadline = new Date(deadlineDate);
+  const today = new Date();
+  const timeDiff = deadline.getTime() - today.getTime();
+  const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  return daysDiff <= 3 && daysDiff >= 0; // Within 3 days
+}
+
+function shouldShowDeadlineWarning(request) {
+  // Only show warnings for active requests that can still be acted upon
+  const activeStatuses = [
+    "pending",
+    "in process",
+    "require editing",
+    "not read",
+  ];
+  return (
+    activeStatuses.includes(request.status) &&
+    isDeadlineApproaching(request.deadline_date)
+  );
+}
+
+function getDeadlineDisplayColor(request) {
+  // Only use warning color for active requests
+  if (shouldShowDeadlineWarning(request)) {
+    return "#f39c12"; // Warning orange
+  }
+  return "#6c757d"; // Normal gray
 }
 
 function getStatusClass(status) {
@@ -665,6 +887,8 @@ function getStatusClass(status) {
       return "bg-secondary text-white";
     case "responded":
       return "bg-secondary text-white";
+    case "expired":
+      return "bg-dark text-white";
     default:
       return "bg-light text-dark";
   }
@@ -686,6 +910,8 @@ function getStatusText(status) {
       return "Not Read";
     case "responded":
       return "Responded";
+    case "expired":
+      return "Expired";
     default:
       return status;
   }

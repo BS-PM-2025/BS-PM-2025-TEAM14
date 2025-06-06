@@ -12,11 +12,11 @@ import {
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 import { useUser } from "./UserContext";
 import NotificationBell from "./NotificationBell";
-import Logout from "./Logout"
-import "../CSS/Navigation.css"
+import Logout from "./Logout";
+import "../CSS/Navigation.css";
 
 const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
-    const { user } = useUser();
+  const { user } = useUser();
   const theme = useTheme(); // זה מחזיר את כל האובייקט של ה-theme
 
   const navItem = (to, label) => (
@@ -26,10 +26,10 @@ const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
       to={to}
       aria-label={label}
       sx={{
-          color: theme.palette.mode === "dark" ? "#fff" : "#fff",
-          textTransform: "none",
-          fontSize: 16,
-          fontWeight: "bold",
+        color: theme.palette.mode === "dark" ? "#fff" : "#fff",
+        textTransform: "none",
+        fontSize: 16,
+        fontWeight: "bold",
       }}
     >
       {label}
@@ -61,6 +61,7 @@ const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
               {navItem("/Student's Requests", "Student's Requests")}
               {navItem("/grades", "Grades")}
               {navItem("/manage-availability", "Manage Availability")}
+              {navItem("/reports", "Reports")}
             </>
           )}
 
@@ -83,19 +84,18 @@ const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
             <>
               {navItem("/admin/request-routing", "Request Routing")}
               {navItem("/admin/request-templates", "Request Templates")}
+              {navItem("/admin/deadline-management", "Deadline Management")}
               {navItem("/users", "Manage Users")}
             </>
           )}
         </Box>
 
-          {user && (
-              <Logout />
-          )}
+        {user && <Logout />}
 
         <NotificationBell />
 
         <Tooltip
-            title={theme.palette.mode === "dark" ? "Bright Mode" : "Dark Mode"}
+          title={theme.palette.mode === "dark" ? "Bright Mode" : "Dark Mode"}
         >
           <IconButton
             sx={{ color: "white" }}
