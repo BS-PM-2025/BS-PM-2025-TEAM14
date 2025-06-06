@@ -9,10 +9,10 @@ from fastapi import FastAPI, UploadFile, File, Form, Response, Depends, HTTPExce
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from sqlalchemy import select, literal, literal_column, ColumnElement, delete, and_, update
+from sqlalchemy import select, literal, literal_column, ColumnElement, delete, and_, update, func, desc, asc
 import json
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.requests import Request
 from starlette.responses import FileResponse
@@ -688,6 +688,12 @@ async def get_requests(
             print(f"get_requests run-time is {end_time - start_time:.3f} sec")
             raise HTTPException(status_code=404, detail="User not found")
 
+        # Fetch ALL deadline configurations once to avoid N+1 queries
+        deadline_configs_result = await session.execute(
+            select(RequestDeadlineConfig).where(RequestDeadlineConfig.is_active == True)
+        )
+        deadline_configs = {config.request_type: config for config in deadline_configs_result.scalars().all()}
+
         # If the user is a secretary, return all relevant requests
         if user.role == "secretary":
             secretary_result = await session.execute(select(Secretaries).where(Secretaries.email == user_email))
@@ -711,6 +717,37 @@ async def get_requests(
             
             relevant_requests_result = await session.execute(query)
             relevant_requests = relevant_requests_result.scalars().all()
+            
+            # Process requests - update status if expired and pending
+            processed_requests = []
+            for req in relevant_requests:
+                deadline_config = deadline_configs.get(req.title)  # Use cached config
+                if deadline_config and is_request_expired(req, deadline_config) and req.status == "pending":
+                    # Update status to expired
+                    old_status = req.status
+                    req.status = "expired"
+                    
+                    # Update timeline
+                    if not req.timeline:
+                        req.timeline = {}
+                    if "status_changes" not in req.timeline:
+                        req.timeline["status_changes"] = []
+                    
+                    req.timeline["status_changes"].append({
+                        "from": old_status,
+                        "to": "expired",
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "reason": "deadline_passed"
+                    })
+                    
+                    # Mark timeline as modified for SQLAlchemy
+                    flag_modified(req, "timeline")
+                    
+                processed_requests.append(req)
+            
+            # Commit all status updates
+            await session.commit()
+            
             end_time = time.time()
             print(f"get_requests run-time is {end_time - start_time:.3f} sec")
             return [
@@ -723,8 +760,10 @@ async def get_requests(
                     "status": req.status,
                     "created_date": str(req.created_date),
                     "timeline": req.timeline,
+                    "deadline_date": get_request_deadline_date(req, deadline_configs.get(req.title)).isoformat() if get_request_deadline_date(req, deadline_configs.get(req.title)) else None,
+                    "is_expired": is_request_expired(req, deadline_configs.get(req.title))
                 }
-                for req in relevant_requests
+                for req in processed_requests
             ]
 
         else:
@@ -732,8 +771,38 @@ async def get_requests(
             result = await session.execute(
                 select(Requests).filter(Requests.student_email == user_email)
             )
+            requests = result.scalars().all()
+            
+            # Process requests - update status if expired and pending
+            processed_requests = []
+            for req in requests:
+                deadline_config = deadline_configs.get(req.title)  # Use cached config
+                if deadline_config and is_request_expired(req, deadline_config) and req.status == "pending":
+                    # Update status to expired
+                    old_status = req.status
+                    req.status = "expired"
+                    
+                    # Update timeline
+                    if not req.timeline:
+                        req.timeline = {}
+                    if "status_changes" not in req.timeline:
+                        req.timeline["status_changes"] = []
+                    
+                    req.timeline["status_changes"].append({
+                        "from": old_status,
+                        "to": "expired",
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "reason": "deadline_passed"
+                    })
+                    
+                    # Mark timeline as modified for SQLAlchemy
+                    flag_modified(req, "timeline")
+                    
+                processed_requests.append(req)
+            
+            # Commit all status updates
+            await session.commit()
 
-        requests = result.scalars().all()
         end_time = time.time()
         print(f"get_requests run-time is {end_time - start_time:.3f} sec")
         return [
@@ -746,8 +815,10 @@ async def get_requests(
                 "status": req.status,
                 "created_date": str(req.created_date),
                 "timeline": req.timeline,
+                "deadline_date": get_request_deadline_date(req, deadline_configs.get(req.title)).isoformat() if get_request_deadline_date(req, deadline_configs.get(req.title)) else None,
+                "is_expired": is_request_expired(req, deadline_configs.get(req.title))
             }
-            for req in requests
+            for req in processed_requests
         ]
     except Exception as e:
         end_time = time.time()
@@ -768,24 +839,34 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
     
     # Get the request
     result = await session.execute(select(Requests).where(Requests.id == request_id))
-    request = result.scalar_one_or_none()
+    request_obj = result.scalar_one_or_none()
     
-    if not request:
+    if not request_obj:
         end_time = time.time()
         print(f"update_status run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=404, detail="Request not found")
     
+    # Check if request is expired
+    deadline_config = await get_deadline_config(session, request_obj.title)
+    if is_request_expired(request_obj, deadline_config):
+        end_time = time.time()
+        print(f"update_status run-time is {end_time - start_time:.3f} sec")
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot update status of an expired request. The deadline for this request type has passed."
+        )
+    
     # Update status
-    old_status = request.status
-    request.status = new_status
+    old_status = request_obj.status
+    request_obj.status = new_status
     
     # Update timeline
-    if not request.timeline:
-        request.timeline = {}
-    if "status_changes" not in request.timeline:
-        request.timeline["status_changes"] = []
+    if not request_obj.timeline:
+        request_obj.timeline = {}
+    if "status_changes" not in request_obj.timeline:
+        request_obj.timeline["status_changes"] = []
     
-    request.timeline["status_changes"].append({
+    request_obj.timeline["status_changes"].append({
         "from": old_status,
         "to": new_status,
         "timestamp": datetime.utcnow().isoformat()
@@ -794,20 +875,20 @@ async def update_status(request: Request, session: AsyncSession = Depends(get_se
     # Create notification for the student
     await create_notification(
         session=session,
-        user_email=request.student_email,
+        user_email=request_obj.student_email,
         request_id=request_id,
-        message=f"Your request '{request.title}' status has been changed from '{old_status}' to '{new_status}'",
+        message=f"Your request '{request_obj.title}' status has been changed from '{old_status}' to '{new_status}'",
         type="status_change"
     )
 
     await email_service.send_email(
-        to=request.student_email,
+        to=request_obj.student_email,
         subject=f"Request {request_id} Status Update",
-        content=f"Your request '{request.title}' status has been changed from '{old_status}' to '{new_status}'"
+        content=f"Your request '{request_obj.title}' status has been changed from '{old_status}' to '{new_status}'"
     )
 
-    flag_modified(request, "timeline")
-    flag_modified(request, "status")
+    flag_modified(request_obj, "timeline")
+    flag_modified(request_obj, "status")
     await session.commit()
     
     end_time = time.time()
@@ -827,12 +908,48 @@ async def get_professor_requests(professor_email: str, session: AsyncSession = D
             print(f"get_professor_requests run-time is {end_time - start_time:.3f} sec")
             return []
 
+        # Fetch ALL deadline configurations once to avoid N+1 queries
+        deadline_configs_result = await session.execute(
+            select(RequestDeadlineConfig).where(RequestDeadlineConfig.is_active == True)
+        )
+        deadline_configs = {config.request_type: config for config in deadline_configs_result.scalars().all()}
+
         result = await session.execute(
             select(Requests).where(
                 Requests.course_id.in_(course_ids)
             )
         )
         requests = result.scalars().all()
+        
+        # Process requests - update status if expired and pending
+        processed_requests = []
+        for req in requests:
+            deadline_config = deadline_configs.get(req.title)  # Use cached config
+            if deadline_config and is_request_expired(req, deadline_config) and req.status == "pending":
+                # Update status to expired
+                old_status = req.status
+                req.status = "expired"
+                
+                # Update timeline
+                if not req.timeline:
+                    req.timeline = {}
+                if "status_changes" not in req.timeline:
+                    req.timeline["status_changes"] = []
+                
+                req.timeline["status_changes"].append({
+                    "from": old_status,
+                    "to": "expired",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "reason": "deadline_passed"
+                })
+                
+                # Mark timeline as modified for SQLAlchemy
+                flag_modified(req, "timeline")
+                
+            processed_requests.append(req)
+        
+        # Commit all status updates
+        await session.commit()
 
         end_time = time.time()
         print(f"get_professor_requests run-time is {end_time - start_time:.3f} sec")
@@ -848,8 +965,10 @@ async def get_professor_requests(professor_email: str, session: AsyncSession = D
                 "timeline": req.timeline,
                 "course_id": req.course_id,
                 "course_component": req.course_component,
+                "deadline_date": get_request_deadline_date(req, deadline_configs.get(req.title)).isoformat() if get_request_deadline_date(req, deadline_configs.get(req.title)) else None,
+                "is_expired": is_request_expired(req, deadline_configs.get(req.title))
             }
-            for req in requests
+            for req in processed_requests
         ]
 
     except Exception as e:
@@ -1755,6 +1874,14 @@ async def submit_response(
     if not request_obj:
         raise HTTPException(status_code=404, detail="Request not found")
     
+    # Check if request is expired
+    deadline_config = await get_deadline_config(session, request_obj.title)
+    if is_request_expired(request_obj, deadline_config):
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot respond to an expired request. The deadline for this request type has passed."
+        )
+    
     # Handle file uploads
     file_metadata = []
     if files:
@@ -2496,7 +2623,7 @@ async def delete_request_template(
 
 @app.get("/api/request_template_names")
 async def get_request_template_names(session: AsyncSession = Depends(get_session)):
-    """Get list of active request template names for use in forms."""
+    """Get list of all active request template names for dropdowns."""
     try:
         from backend.db_connection import get_active_request_template_names
         names = await get_active_request_template_names(session)
@@ -2934,4 +3061,133 @@ async def get_professor_reports(
     except Exception as e:
         print(f"Error in get_professor_reports: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching report data: {str(e)}")
+
+
+class DeadlineConfigRequest(BaseModel):
+    request_type: str
+    deadline_days: int
+
+@app.get("/api/deadline_configs")
+async def get_deadline_configs(
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token_admin)
+):
+    """Get all deadline configurations for admin panel."""
+    try:
+        from backend.db_connection import get_all_deadline_configs
+        configs = await get_all_deadline_configs(session, active_only=True)
+        
+        return [
+            {
+                "id": config.id,
+                "request_type": config.request_type,
+                "deadline_days": config.deadline_days,
+                "is_active": config.is_active,
+                "created_by": config.created_by,
+                "created_date": config.created_date.isoformat(),
+                "updated_date": config.updated_date.isoformat()
+            }
+            for config in configs
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/deadline_configs")
+async def create_or_update_deadline_config(
+    config_data: DeadlineConfigRequest,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token_admin)
+):
+    """Create or update deadline configuration for a request type."""
+    try:
+        from backend.db_connection import create_or_update_deadline_config
+        
+        if config_data.deadline_days <= 0:
+            raise HTTPException(status_code=400, detail="Deadline days must be positive")
+        
+        config = await create_or_update_deadline_config(
+            session=session,
+            request_type=config_data.request_type,
+            deadline_days=config_data.deadline_days,
+            created_by=token_data["user_email"]
+        )
+        
+        return {
+            "message": "Deadline configuration saved successfully",
+            "config": {
+                "id": config.id,
+                "request_type": config.request_type,
+                "deadline_days": config.deadline_days,
+                "created_by": config.created_by,
+                "created_date": config.created_date.isoformat(),
+                "updated_date": config.updated_date.isoformat()
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/deadline_configs/{request_type}")
+async def delete_deadline_config(
+    request_type: str,
+    session: AsyncSession = Depends(get_session),
+    token_data: dict = Depends(verify_token_admin)
+):
+    """Delete deadline configuration for a request type."""
+    try:
+        from backend.db_connection import delete_deadline_config
+        
+        success = await delete_deadline_config(session, request_type)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Deadline configuration not found")
+        
+        return {"message": "Deadline configuration deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/request_template_by_name/{template_name}")
+async def get_request_template_by_name(
+    template_name: str,
+    session: AsyncSession = Depends(get_session)
+):
+    """Get a specific request template by name."""
+    try:
+        from backend.db_connection import get_request_template_by_name
+        template = await get_request_template_by_name(session, template_name)
+        
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Sort fields by field_order
+        sorted_fields = sorted(template.fields, key=lambda f: f.field_order)
+        
+        return {
+            "id": template.id,
+            "name": template.name,
+            "description": template.description,
+            "is_active": template.is_active,
+            "created_by": template.created_by,
+            "created_date": template.created_date.isoformat(),
+            "updated_date": template.updated_date.isoformat(),
+            "fields": [
+                {
+                    "id": field.id,
+                    "field_name": field.field_name,
+                    "field_label": field.field_label,
+                    "field_type": field.field_type,
+                    "field_options": field.field_options,
+                    "is_required": field.is_required,
+                    "field_order": field.field_order,
+                    "validation_rules": field.validation_rules,
+                    "placeholder": field.placeholder,
+                    "help_text": field.help_text
+                }
+                for field in sorted_fields
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Import deadline checking functions
+from backend.db_connection import get_deadline_config, is_request_expired, get_request_deadline_date
 

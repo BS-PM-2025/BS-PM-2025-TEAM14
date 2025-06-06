@@ -283,6 +283,7 @@ const Reports = () => {
                     <MenuItem value="approved">Approved</MenuItem>
                     <MenuItem value="denied">Denied</MenuItem>
                     <MenuItem value="in_progress">In Progress</MenuItem>
+                    <MenuItem value="expired">Expired</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>

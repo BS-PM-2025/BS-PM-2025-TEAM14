@@ -220,7 +220,8 @@ function ProfessorRequestsPanel() {
     // Filter out completed requests if toggle is enabled
     if (hideCompleted) {
       filteredRequests = filteredRequests.filter(
-        (req) => !["approved", "responded", "rejected"].includes(req.status)
+        (req) =>
+          !["approved", "responded", "rejected", "expired"].includes(req.status)
       );
     }
 
@@ -379,6 +380,21 @@ function ProfessorRequestsPanel() {
                 <p className="card-text">
                   <strong>From :</strong> {req.student_email}
                 </p>
+                {req.deadline_date && (
+                  <p
+                    className="card-text"
+                    style={{
+                      color: getDeadlineDisplayColor(req),
+                      fontWeight: shouldShowDeadlineWarning(req)
+                        ? "bold"
+                        : "normal",
+                    }}
+                  >
+                    <strong>Deadline:</strong>{" "}
+                    {new Date(req.deadline_date).toLocaleDateString()}
+                    {shouldShowDeadlineWarning(req) && " ⚠️"}
+                  </p>
+                )}
                 <p className={`badge ${getStatusClass(req.status)}`}>
                   {getStatusText(req.status)}
                 </p>
@@ -418,6 +434,25 @@ function ProfessorRequestsPanel() {
                   <p>
                     <strong>Date:</strong> {selectedRequest.created_date}
                   </p>
+                  {selectedRequest.deadline_date && (
+                    <p>
+                      <strong>Deadline:</strong>{" "}
+                      <span
+                        style={{
+                          color: getDeadlineDisplayColor(selectedRequest),
+                          fontWeight: shouldShowDeadlineWarning(selectedRequest)
+                            ? "bold"
+                            : "normal",
+                        }}
+                      >
+                        {new Date(
+                          selectedRequest.deadline_date
+                        ).toLocaleDateString()}
+                        {shouldShowDeadlineWarning(selectedRequest) &&
+                          " ⚠️ Approaching deadline!"}
+                      </span>
+                    </p>
+                  )}
                   <p>
                     <strong>Status:</strong>{" "}
                     <span
@@ -512,194 +547,211 @@ function ProfessorRequestsPanel() {
                 </p>
               </div>
               {/* Reply and Status Controls */}
-              {(user?.role === "professor" || user?.role === "secretary") && (
-                <>
-                  <hr />
-                  <h5 className="mt-3">Reply :</h5>
-                  <form onSubmit={handleResponseSubmit} method="POST">
-                    {user?.role === "professor" && (
-                      <div className="mb-3">
-                        <Grid container spacing={2} alignItems="center">
-                          <Grid item xs>
-                            <FormControl fullWidth>
-                              <InputLabel id="template-select-label">
-                                Select Template
-                              </InputLabel>
-                              <Select
-                                labelId="template-select-label"
-                                label="Select Template"
-                                value=""
-                                onChange={(e) => {
-                                  const template = templates.find(
-                                    (t) => t.id === e.target.value
-                                  );
-                                  if (template)
-                                    setResponseText(template.content);
-                                }}
-                              >
-                                {templates.map((template) => (
-                                  <MenuItem
-                                    key={template.id}
-                                    value={template.id}
-                                  >
-                                    <Box
-                                      sx={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        width: "100%",
-                                      }}
-                                    >
-                                      <span>{template.title}</span>
-                                      <Button
-                                        size="small"
-                                        variant="text"
-                                        color="error"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (
-                                            window.confirm(
-                                              "Are you sure you want to delete this template?"
-                                            )
-                                          ) {
-                                            handleDeleteTemplate(template.id);
-                                          }
-                                        }}
-                                        sx={{ ml: 2 }}
-                                      >
-                                        Delete
-                                      </Button>
-                                    </Box>
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid item>
-                            <Button
-                              variant="contained"
-                              onClick={() => setShowTemplateDialog(true)}
-                              sx={{ whiteSpace: "nowrap" }}
-                            >
-                              Create New Template
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      </div>
-                    )}
-                    <div className="mb-3">
-                      <textarea
-                        className="form-control"
-                        rows="4"
-                        placeholder="submit your reply here..."
-                        value={responseText}
-                        onChange={(e) => setResponseText(e.target.value)}
-                        required
-                        style={{
-                          direction: isRTL(responseText) ? "rtl" : "ltr",
-                        }}
-                      ></textarea>
-                    </div>
-                    <div className="mb-3 file-upload-section">
-                      <label className="form-label mb-1">
-                        Attach Documents (Optional):
-                      </label>
-                      <button
-                        type="button"
-                        className="custom-file-btn btn btn-secondary mb-2"
-                        onClick={() =>
-                          document.getElementById("response-files").click()
-                        }
-                        style={{ display: "block" }}
-                      >
-                        Choose Files
-                      </button>
-                      <input
-                        type="file"
-                        id="response-files"
-                        multiple
-                        style={{ display: "none" }}
-                        onChange={(e) => setResponseFiles([...e.target.files])}
-                      />
-                      {responseFiles.length > 0 && (
-                        <div className="selected-files mt-2">
-                          <ul style={{ paddingLeft: 0, marginBottom: 0 }}>
-                            {Array.from(responseFiles).map((file, idx) => (
-                              <li
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  maxWidth: "250px",
-                                  listStyle: "none",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                    maxWidth: "180px",
-                                  }}
-                                  title={file.name}
-                                >
-                                  {file.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  className="remove-file-btn btn btn-sm btn-outline-danger ms-2"
-                                  onClick={() =>
-                                    setResponseFiles((prev) =>
-                                      Array.from(prev).filter(
-                                        (_, i) => i !== idx
-                                      )
-                                    )
-                                  }
-                                  aria-label="Remove file"
-                                >
-                                  ×
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                    <button className="btn btn-primary mt-2" type="submit">
-                      Submit
-                    </button>
-                  </form>
-                </>
-              )}
-              {(user?.role === "secretary" || user?.role === "professor") && (
-                <div className="mt-3">
-                  <FormControl
-                    variant="outlined"
-                    className="me-2"
-                    sx={{ minWidth: 200 }}
-                  >
-                    <InputLabel id="status-label">Update Status</InputLabel>
-                    <Select
-                      labelId="status-label"
-                      value={selectedRequest.status}
-                      onChange={(e) =>
-                        handleOpenDialog(selectedRequest.id, e.target.value)
-                      }
-                      label="Change Request Status"
-                    >
-                      <MenuItem value="pending">Pending</MenuItem>
-                      <MenuItem value="in process">In Process</MenuItem>
-                      <MenuItem value="require editing">
-                        Editing Required
-                      </MenuItem>
-                      <MenuItem value="approved">Approve</MenuItem>
-                      <MenuItem value="rejected">Reject</MenuItem>
-                    </Select>
-                  </FormControl>
+              {selectedRequest.status === "expired" && (
+                <div
+                  className="alert alert-warning mt-3"
+                  style={{
+                    backgroundColor: "#f8d7da",
+                    borderColor: "#f5c6cb",
+                    color: "#721c24",
+                  }}
+                >
+                  <strong>⏰ Request Expired:</strong> This request has passed
+                  its deadline and cannot be processed further.
                 </div>
               )}
+              {(user?.role === "professor" || user?.role === "secretary") &&
+                selectedRequest.status !== "expired" && (
+                  <>
+                    <hr />
+                    <h5 className="mt-3">Reply :</h5>
+                    <form onSubmit={handleResponseSubmit} method="POST">
+                      {user?.role === "professor" && (
+                        <div className="mb-3">
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item xs>
+                              <FormControl fullWidth>
+                                <InputLabel id="template-select-label">
+                                  Select Template
+                                </InputLabel>
+                                <Select
+                                  labelId="template-select-label"
+                                  label="Select Template"
+                                  value=""
+                                  onChange={(e) => {
+                                    const template = templates.find(
+                                      (t) => t.id === e.target.value
+                                    );
+                                    if (template)
+                                      setResponseText(template.content);
+                                  }}
+                                >
+                                  {templates.map((template) => (
+                                    <MenuItem
+                                      key={template.id}
+                                      value={template.id}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          justifyContent: "space-between",
+                                          alignItems: "center",
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <span>{template.title}</span>
+                                        <Button
+                                          size="small"
+                                          variant="text"
+                                          color="error"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (
+                                              window.confirm(
+                                                "Are you sure you want to delete this template?"
+                                              )
+                                            ) {
+                                              handleDeleteTemplate(template.id);
+                                            }
+                                          }}
+                                          sx={{ ml: 2 }}
+                                        >
+                                          Delete
+                                        </Button>
+                                      </Box>
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Grid>
+                            <Grid item>
+                              <Button
+                                variant="contained"
+                                onClick={() => setShowTemplateDialog(true)}
+                                sx={{ whiteSpace: "nowrap" }}
+                              >
+                                Create New Template
+                              </Button>
+                            </Grid>
+                          </Grid>
+                        </div>
+                      )}
+                      <div className="mb-3">
+                        <textarea
+                          className="form-control"
+                          rows="4"
+                          placeholder="submit your reply here..."
+                          value={responseText}
+                          onChange={(e) => setResponseText(e.target.value)}
+                          required
+                          style={{
+                            direction: isRTL(responseText) ? "rtl" : "ltr",
+                          }}
+                        ></textarea>
+                      </div>
+                      <div className="mb-3 file-upload-section">
+                        <label className="form-label mb-1">
+                          Attach Documents (Optional):
+                        </label>
+                        <button
+                          type="button"
+                          className="custom-file-btn btn btn-secondary mb-2"
+                          onClick={() =>
+                            document.getElementById("response-files").click()
+                          }
+                          style={{ display: "block" }}
+                        >
+                          Choose Files
+                        </button>
+                        <input
+                          type="file"
+                          id="response-files"
+                          multiple
+                          style={{ display: "none" }}
+                          onChange={(e) =>
+                            setResponseFiles([...e.target.files])
+                          }
+                        />
+                        {responseFiles.length > 0 && (
+                          <div className="selected-files mt-2">
+                            <ul style={{ paddingLeft: 0, marginBottom: 0 }}>
+                              {Array.from(responseFiles).map((file, idx) => (
+                                <li
+                                  key={idx}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    maxWidth: "250px",
+                                    listStyle: "none",
+                                    marginBottom: "4px",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      maxWidth: "180px",
+                                    }}
+                                    title={file.name}
+                                  >
+                                    {file.name}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="remove-file-btn btn btn-sm btn-outline-danger ms-2"
+                                    onClick={() =>
+                                      setResponseFiles((prev) =>
+                                        Array.from(prev).filter(
+                                          (_, i) => i !== idx
+                                        )
+                                      )
+                                    }
+                                    aria-label="Remove file"
+                                  >
+                                    ×
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-primary mt-2" type="submit">
+                        Submit
+                      </button>
+                    </form>
+                  </>
+                )}
+              {(user?.role === "secretary" || user?.role === "professor") &&
+                selectedRequest.status !== "expired" && (
+                  <div className="mt-3">
+                    <FormControl
+                      variant="outlined"
+                      className="me-2"
+                      sx={{ minWidth: 200 }}
+                    >
+                      <InputLabel id="status-label">Update Status</InputLabel>
+                      <Select
+                        labelId="status-label"
+                        value={selectedRequest.status}
+                        onChange={(e) =>
+                          handleOpenDialog(selectedRequest.id, e.target.value)
+                        }
+                        label="Change Request Status"
+                      >
+                        <MenuItem value="pending">Pending</MenuItem>
+                        <MenuItem value="in process">In Process</MenuItem>
+                        <MenuItem value="require editing">
+                          Editing Required
+                        </MenuItem>
+                        <MenuItem value="approved">Approve</MenuItem>
+                        <MenuItem value="rejected">Reject</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                )}
               <Dialog
                 open={openDialog}
                 onClose={handleCloseDialog}
@@ -788,6 +840,37 @@ function ProfessorRequestsPanel() {
   );
 }
 
+function isDeadlineApproaching(deadlineDate) {
+  if (!deadlineDate) return false;
+  const deadline = new Date(deadlineDate);
+  const today = new Date();
+  const timeDiff = deadline.getTime() - today.getTime();
+  const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  return daysDiff <= 3 && daysDiff >= 0; // Within 3 days
+}
+
+function shouldShowDeadlineWarning(request) {
+  // Only show warnings for active requests that can still be acted upon
+  const activeStatuses = [
+    "pending",
+    "in process",
+    "require editing",
+    "not read",
+  ];
+  return (
+    activeStatuses.includes(request.status) &&
+    isDeadlineApproaching(request.deadline_date)
+  );
+}
+
+function getDeadlineDisplayColor(request) {
+  // Only use warning color for active requests
+  if (shouldShowDeadlineWarning(request)) {
+    return "#f39c12"; // Warning orange
+  }
+  return "#6c757d"; // Normal gray
+}
+
 function getStatusClass(status) {
   switch (status) {
     case "pending":
@@ -804,6 +887,8 @@ function getStatusClass(status) {
       return "bg-secondary text-white";
     case "responded":
       return "bg-secondary text-white";
+    case "expired":
+      return "bg-dark text-white";
     default:
       return "bg-light text-dark";
   }
@@ -825,6 +910,8 @@ function getStatusText(status) {
       return "Not Read";
     case "responded":
       return "Responded";
+    case "expired":
+      return "Expired";
     default:
       return status;
   }

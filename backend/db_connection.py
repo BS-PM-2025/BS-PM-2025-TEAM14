@@ -153,6 +153,20 @@ class RequestTemplateFields(Base):
         {"extend_existing": True}
     )
 
+# Request Deadline Configuration table - for admin-defined deadlines per request type
+class RequestDeadlineConfig(Base):
+    __tablename__ = "request_deadline_config"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    request_type = Column(String(100), unique=True, nullable=False)  # e.g., "General Request"
+    deadline_days = Column(Integer, nullable=False)  # Number of days from creation date
+    is_active = Column(Boolean, default=True)
+    created_by = Column(String(100), ForeignKey('users.email'), nullable=False)
+    created_date = Column(DateTime, default=datetime.now)
+    updated_date = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships
+    creator = relationship("Users", foreign_keys=[created_by])
+
 # Student-Courses table
 class StudentCourses(Base):
     __tablename__ = 'student_courses'
@@ -697,6 +711,83 @@ async def get_active_request_template_names(session: AsyncSession):
         .order_by(RequestTemplates.name)
     )
     return [name for name in result.scalars()]
+
+# Request Deadline Management Functions
+
+async def create_or_update_deadline_config(session: AsyncSession, request_type: str, deadline_days: int, created_by: str):
+    """Create or update deadline configuration for a request type."""
+    # Check if config already exists
+    result = await session.execute(
+        select(RequestDeadlineConfig).where(RequestDeadlineConfig.request_type == request_type)
+    )
+    existing_config = result.scalar_one_or_none()
+    
+    if existing_config:
+        # Update existing
+        existing_config.deadline_days = deadline_days
+        existing_config.updated_date = datetime.now()
+        await session.commit()
+        await session.refresh(existing_config)
+        return existing_config
+    else:
+        # Create new
+        new_config = RequestDeadlineConfig(
+            request_type=request_type,
+            deadline_days=deadline_days,
+            created_by=created_by
+        )
+        session.add(new_config)
+        await session.commit()
+        await session.refresh(new_config)
+        return new_config
+
+async def get_deadline_config(session: AsyncSession, request_type: str):
+    """Get deadline configuration for a specific request type."""
+    result = await session.execute(
+        select(RequestDeadlineConfig)
+        .where(RequestDeadlineConfig.request_type == request_type)
+        .where(RequestDeadlineConfig.is_active == True)
+    )
+    return result.scalar_one_or_none()
+
+async def get_all_deadline_configs(session: AsyncSession, active_only: bool = True):
+    """Get all deadline configurations."""
+    query = select(RequestDeadlineConfig)
+    if active_only:
+        query = query.where(RequestDeadlineConfig.is_active == True)
+    
+    result = await session.execute(query.order_by(RequestDeadlineConfig.request_type))
+    return result.scalars().all()
+
+async def delete_deadline_config(session: AsyncSession, request_type: str):
+    """Soft delete a deadline configuration."""
+    result = await session.execute(
+        select(RequestDeadlineConfig).where(RequestDeadlineConfig.request_type == request_type)
+    )
+    config = result.scalar_one_or_none()
+    
+    if config:
+        config.is_active = False
+        await session.commit()
+        return True
+    return False
+
+def is_request_expired(request, deadline_config):
+    """Helper function to check if a request is expired based on deadline config."""
+    if not deadline_config:
+        return False
+    
+    from datetime import date, timedelta
+    expiration_date = request.created_date + timedelta(days=deadline_config.deadline_days)
+    return date.today() > expiration_date
+
+def get_request_deadline_date(request, deadline_config):
+    """Helper function to get the deadline date for a request."""
+    if not deadline_config:
+        return None
+    
+    from datetime import timedelta
+    return request.created_date + timedelta(days=deadline_config.deadline_days)
 
 async def init_db():
     # First create the database if it doesn't exist

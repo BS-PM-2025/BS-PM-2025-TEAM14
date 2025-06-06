@@ -22,6 +22,7 @@ import TransferRequests from "./TransferRequests";
 import ProfessorRequestsPanel from "./ProfessorRequestsPanel";
 import AdminRequestRoute from "./AdminRequestRoute";
 import AdminTemplateManager from "./RequestTemplates/AdminTemplateManager";
+import DeadlineManagement from "./DeadlineManagement";
 import Reports from "./Reports";
 
 function AppRoutes({ darkMode, setDarkMode }) {
@@ -76,6 +77,10 @@ function AppRoutes({ darkMode, setDarkMode }) {
         <Route
           path="/admin/request-templates"
           element={<AdminTemplateManager />}
+        />
+        <Route
+          path="/admin/deadline-management"
+          element={<DeadlineManagement />}
         />
       </Routes>
     </Router>

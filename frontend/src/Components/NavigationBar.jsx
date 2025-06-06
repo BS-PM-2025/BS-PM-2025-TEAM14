@@ -84,6 +84,7 @@ const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
             <>
               {navItem("/admin/request-routing", "Request Routing")}
               {navItem("/admin/request-templates", "Request Templates")}
+              {navItem("/admin/deadline-management", "Deadline Management")}
               {navItem("/users", "Manage Users")}
             </>
           )}
