@@ -1,0 +1,375 @@
+.reports-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.requests-table th {
+  background-color: #f5f5f5;
+  color: #333;
+  font-weight: 600;
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.requests-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e8e8e8;
+  color: #555;
+  font-size: 14px;
+}
+
+.requests-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.requests-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+  .requests-table {
+    font-size: 12px;
+  }
+
+  .requests-table th,
+  .requests-table td {
+    padding: 8px 6px;
+  }
+
+  /* Hide less important columns on mobile */
+  .requests-table th:nth-child(3),
+  .requests-table td:nth-child(3),
+  .requests-table th:nth-child(8),
+  .requests-table td:nth-child(8) {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Hide details column on tablet */
+  .requests-table th:nth-child(8),
+  .requests-table td:nth-child(8) {
+    display: none;
+  }
+}
+
+/* Chart containers */
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+/* Filter section styling */
+.filter-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Metric cards */
+.metric-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease-in-out;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 8px 0;
+}
+
+.metric-label {
+  color: #666;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Loading and error states */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  flex-direction: column;
+}
+
+.error-container {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Export button styling */
+.export-button {
+  background: linear-gradient(45deg, #2196f3 30%, #21cbf3 90%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 5px 2px rgba(33, 203, 243, 0.3);
+}
+
+.export-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 10px 4px rgba(33, 203, 243, 0.3);
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chart-container,
+.metric-card {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .reports-container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 12px;
+  }
+
+  .filter-section {
+    padding: 16px;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+  }
+}
+
+/* Print styles for PDF export */
+@media print {
+  .reports-container {
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .chart-container {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+
+  .filter-section {
+    display: none;
+  }
+}
+
+/* Status chip colors */
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-approved {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-denied {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-in-progress {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Tooltip customization */
+.custom-tooltip {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Date picker styling */
+.date-picker-container {
+  margin-bottom: 16px;
+}
+
+/* Header styling */
+.reports-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.reports-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.reports-subtitle {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Student request cards */
+.student-request-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: white;
+  transition: box-shadow 0.2s ease;
+}
+
+.student-request-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.student-filter-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  border-left: 4px solid #2196f3;
+}
+
+/* Enhanced chart containers for student data */
+.student-chart-container {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Student activity indicators */
+.student-activity-high {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.student-activity-medium {
+  color: #ffa726;
+  font-weight: 600;
+}
+
+.student-activity-low {
+  color: #66bb6a;
+  font-weight: normal;
+}
+
+/* Request details truncation */
+.request-details-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.request-details-cell:hover {
+  overflow: visible;
+  white-space: normal;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 8px;
+  border-radius: 4px;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Student request status indicators */
+.student-request-urgent {
+  border-left: 4px solid #f44336;
+}
+
+.student-request-normal {
+  border-left: 4px solid #2196f3;
+}
+
+.student-request-completed {
+  border-left: 4px solid #4caf50;
+}
+
+/* Latest requests grid */
+.latest-requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* Animation for student-specific content */
+.student-content-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.student-content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Improved responsive design for student filters */
+@media (max-width: 768px) {
+  .latest-requests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-filter-info {
+    font-size: 0.9rem;
+    padding: 10px 12px;
+  }
+}
