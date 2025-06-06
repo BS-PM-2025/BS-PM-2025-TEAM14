@@ -196,7 +196,16 @@ class Courses(Base):
     student_courses = relationship("StudentCourses", back_populates="course")
     grades = relationship("Grades", back_populates="course")  # הוסף את המאפיין הזה
 
+class CommentTemplate(Base):
+    __tablename__ = "comment_templates"
 
+    id = Column(Integer, primary_key=True, index=True)
+    professor_email = Column(String(100), ForeignKey("professors.email"))
+    title = Column(String(255))
+    content = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    professor = relationship("Professors")
 
 class Responses(Base):
     __tablename__ = 'responses'

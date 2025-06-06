@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -9,17 +9,23 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from "@mui/material";
-import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  TextField,
+  Box,
+  Grid,
 } from "@mui/material";
 import "../CSS/ProfessorRequestsPanel.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
+
+const isRTL = (str) => {
+  const hebrew = /[\u0590-\u05FF]/;
+  return hebrew.test(str);
+};
 
 function ProfessorRequestsPanel() {
   const [requests, setRequests] = useState([]);
@@ -35,6 +41,9 @@ function ProfessorRequestsPanel() {
     requestId: null,
     newStatus: "",
   });
+  const [templates, setTemplates] = useState([]);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [newTemplate, setNewTemplate] = useState({ title: "", content: "" });
 
   const handleOpenDialog = (requestId, newStatus) => {
     setDialogData({ requestId, newStatus });
@@ -77,6 +86,30 @@ function ProfessorRequestsPanel() {
       handleCloseDialog();
     }
   };
+
+  const checkAuth = useCallback(async () => {
+    const token = getToken();
+    if (!token) return navigate("/login");
+    const user = getUserFromToken(token);
+    setUser(user);
+
+    let apiUrl = "";
+    if (user.role === "professor") {
+      apiUrl = `http://localhost:8000/requests/professor/${user?.user_email}`;
+    } else if (user.role === "secretary") {
+      apiUrl = `http://localhost:8000/requests/${user?.user_email}`;
+    } else {
+      return navigate("/home");
+    }
+
+    try {
+      const response = await axios.get(apiUrl);
+      setRequests(response.data);
+    } catch (err) {
+      console.error("Error fetching requests:", err);
+    }
+  }, [navigate]);
+
   const handleResponseSubmit = async (e) => {
     e.preventDefault();
 
@@ -106,54 +139,53 @@ function ProfessorRequestsPanel() {
     }
   };
 
-  /*const handleStatusChange = async (requestId, newStatus) => {
-        try {
-            await axios.post("http://localhost:8000/update_status", { request_id: requestId, status: newStatus });
-            await checkAuth();
-            // Update the local state to reflect the status change
-            setRequests((prevRequests) =>
-                prevRequests.map((req) =>
-                    req.id === requestId ? { ...req, status: newStatus } : req
-                )
-            );
-            // Update the selected request state if it's the one currently selected
-            if (selectedRequest && selectedRequest.id === requestId) {
-                setSelectedRequest({ ...selectedRequest, status: newStatus });
-            }
-            alert("Status updated successfully");
-        } catch (err) {
-            console.error("Error updating status:", err);
-            alert("An error has occurred");
-        }
-    };*/
-
-  const checkAuth = async () => {
-    const token = getToken();
-    if (!token) return navigate("/login");
-    const user = getUserFromToken(token);
-    setUser(user);
-
-    let apiUrl = "";
-    if (user.role === "professor") {
-      apiUrl = `http://localhost:8000/requests/professor/${user?.user_email}`;
-    } else if (user.role === "secretary") {
-      apiUrl = `http://localhost:8000/requests/${user?.user_email}`;
-    } else {
-      return navigate("/home");
-    }
-
+  const loadTemplates = async () => {
     try {
-      const response = await axios.get(apiUrl);
-      setRequests(response.data);
-      console.log(response.data);
-    } catch (err) {
-      console.error("Error fetching requests:", err);
+      const token = getToken();
+      const response = await axios.get("http://localhost:8000/comment_templates", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTemplates(response.data);
+    } catch (error) {
+      console.error("Error loading templates:", error);
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    try {
+      const token = getToken();
+      await axios.post("http://localhost:8000/comment_templates", newTemplate, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowTemplateDialog(false);
+      setNewTemplate({ title: "", content: "" });
+      loadTemplates();
+    } catch (error) {
+      console.error("Error saving template:", error);
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId) => {
+    try {
+      const token = getToken();
+      await axios.delete(`http://localhost:8000/comment_templates/${templateId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      loadTemplates();
+    } catch (error) {
+      console.error("Error deleting template:", error);
     }
   };
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (user?.role === "professor") {
+      loadTemplates();
+    }
+  }, [user]);
 
   useEffect(() => {
     const sorted = [...requests].sort((a, b) => {
@@ -388,7 +420,58 @@ function ProfessorRequestsPanel() {
                 <>
                   <hr />
                   <h5 className="mt-3">Reply :</h5>
-                  <form onSubmit={handleResponseSubmit}>
+                  <form onSubmit={handleResponseSubmit} method="POST">
+                    {user?.role === "professor" && (
+                      <div className="mb-3">
+                        <Grid container spacing={2} alignItems="center">
+                          <Grid item xs>
+                            <FormControl fullWidth>
+                              <InputLabel id="template-select-label">Select Template</InputLabel>
+                              <Select
+                                labelId="template-select-label"
+                                label="Select Template"
+                                value=""
+                                onChange={(e) => {
+                                  const template = templates.find(t => t.id === e.target.value);
+                                  if (template) setResponseText(template.content);
+                                }}
+                              >
+                                {templates.map((template) => (
+                                  <MenuItem key={template.id} value={template.id}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                      <span>{template.title}</span>
+                                      <Button
+                                        size="small"
+                                        variant="text"
+                                        color="error"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (window.confirm('Are you sure you want to delete this template?')) {
+                                            handleDeleteTemplate(template.id);
+                                          }
+                                        }}
+                                        sx={{ ml: 2 }}
+                                      >
+                                        Delete
+                                      </Button>
+                                    </Box>
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid item>
+                            <Button
+                              variant="contained"
+                              onClick={() => setShowTemplateDialog(true)}
+                              sx={{ whiteSpace: 'nowrap' }}
+                            >
+                              Create New Template
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </div>
+                    )}
                     <div className="mb-3">
                       <textarea
                         className="form-control"
@@ -397,6 +480,7 @@ function ProfessorRequestsPanel() {
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
                         required
+                        style={{ direction: isRTL(responseText) ? 'rtl' : 'ltr' }}
                       ></textarea>
                     </div>
                     <div className="mb-3 file-upload-section">
@@ -527,6 +611,34 @@ function ProfessorRequestsPanel() {
                   >
                     Approve
                   </Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog open={showTemplateDialog} onClose={() => setShowTemplateDialog(false)}>
+                <DialogTitle>Create New Comment Template</DialogTitle>
+                <DialogContent>
+                  <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Template Title"
+                    fullWidth
+                    value={newTemplate.title}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
+                    inputProps={{ style: { direction: isRTL(newTemplate.title) ? 'rtl' : 'ltr' } }}
+                  />
+                  <TextField
+                    margin="dense"
+                    label="Template Content"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={newTemplate.content}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
+                    inputProps={{ style: { direction: isRTL(newTemplate.content) ? 'rtl' : 'ltr' } }}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
+                  <Button onClick={handleSaveTemplate} color="primary">Save</Button>
                 </DialogActions>
               </Dialog>
             </div>
