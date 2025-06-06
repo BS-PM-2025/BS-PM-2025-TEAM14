@@ -615,21 +615,60 @@ async def reload_files(userEmail: str):
 @app.get("/downloadFile/{userId}/{file_path:path}")
 async def download_file(userId: str, file_path: str):
     start_time = time.time()
-    print(file_path)
-    decoded_path = urllib.parse.unquote(file_path)
-
-    full_path = os.path.abspath(decoded_path)
-    print(f"Downloading file from: {full_path}")
-
-    if not os.path.isfile(full_path):
+    print(f"Download request - userId: {userId}, file_path: {file_path}")
+    
+    # Decode both the user ID and filename from URL encoding
+    decoded_user_id = urllib.parse.unquote(userId)
+    decoded_filename = urllib.parse.unquote(file_path)
+    print(f"Decoded user ID: {decoded_user_id}")
+    print(f"Decoded filename: {decoded_filename}")
+    
+    # List of possible file types where files might be stored
+    possible_file_types = [
+        "gradeAppeal",
+        "militaryService", 
+        "scheduleChange",
+        "examAccommodation",
+        "general",
+        "requests"
+    ]
+    
+    # Try to find the file in different possible locations
+    file_found = False
+    absolute_path = None
+    
+    for file_type in possible_file_types:
+        # Construct the full file path: Documents/{userEmail}/{fileType}/{filename}
+        full_path = os.path.join("Documents", decoded_user_id, file_type, decoded_filename)
+        absolute_path = os.path.abspath(full_path)
+        print(f"Trying path: {absolute_path}")
+        
+        if os.path.isfile(absolute_path):
+            file_found = True
+            print(f"File found at: {absolute_path}")
+            break
+    
+    # If not found in fileType subdirectories, try direct path
+    if not file_found:
+        direct_path = os.path.join("Documents", decoded_user_id, decoded_filename)
+        direct_absolute = os.path.abspath(direct_path)
+        print(f"Trying direct path: {direct_absolute}")
+        
+        if os.path.isfile(direct_absolute):
+            absolute_path = direct_absolute
+            file_found = True
+            print(f"File found at direct path: {absolute_path}")
+    
+    # If still not found, return 404
+    if not file_found:
         end_time = time.time()
         print(f"download_file run-time is {end_time - start_time:.3f} sec")
-        print("File not found!")
-        return {"error": "File not found"}
+        print(f"File not found in any location!")
+        raise HTTPException(status_code=404, detail="File not found")
 
     end_time = time.time()
     print(f"download_file run-time is {end_time - start_time:.3f} sec")
-    return FileResponse(full_path, filename=os.path.basename(full_path))
+    return FileResponse(absolute_path, filename=os.path.basename(absolute_path))
 
 
 @app.get("/requests/{user_email}")

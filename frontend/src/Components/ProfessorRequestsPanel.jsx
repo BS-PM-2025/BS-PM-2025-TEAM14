@@ -472,9 +472,9 @@ function ProfessorRequestsPanel() {
                         </span>
                         <a
                           className="btn btn-sm btn-outline-primary"
-                          href={`http://localhost:8000/downloadFile/${
+                          href={`http://localhost:8000/downloadFile/${encodeURIComponent(
                             selectedRequest.student_email
-                          }/${encodeURIComponent(doc)}`}
+                          )}/${encodeURIComponent(doc)}`}
                           download
                         >
                           Download
