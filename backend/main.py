@@ -1647,39 +1647,82 @@ class ResponseRequest(BaseModel):
 
 @app.post("/submit_response")
 async def submit_response(
-    response_data: ResponseRequest,
-    db: AsyncSession = Depends(get_session)
+    request_id: int = Form(...),
+    professor_email: str = Form(...),
+    response_text: str = Form(...),
+    files: Optional[List[UploadFile]] = File(None),
+    session: AsyncSession = Depends(get_session)
 ):
-    start_time = time.time()
     # Get the request
-    result = await db.execute(select(Requests).where(Requests.id == response_data.request_id))
-    request = result.scalar_one_or_none()
+    result = await session.execute(select(Requests).where(Requests.id == request_id))
+    request_obj = result.scalar_one_or_none()
     
-    if not request:
-        end_time = time.time()
-        print(f"submit_response run-time is {end_time - start_time:.3f} sec")
+    if not request_obj:
         raise HTTPException(status_code=404, detail="Request not found")
     
-    db.add(response)
+    # Handle file uploads
+    file_metadata = []
+    if files:
+        save_dir = Path("Documents") / "responses" / str(request_id)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        for file in files:
+            file_path = save_dir / file.filename
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            file_metadata.append({"filename": file.filename, "path": str(file_path)})
+
+    # Create new response entry
+    new_response = Responses(
+        request_id=request_id,
+        professor_email=professor_email,
+        response_text=response_text,
+        files=file_metadata if file_metadata else None,
+        created_date=datetime.now().date()
+    )
+    session.add(new_response)
+
+    # Update request timeline with the response
+    if not request_obj.timeline:
+        request_obj.timeline = {}
     
-    # Update request timeline
-    if not request.timeline:
-        request.timeline = {}
-    if "responses" not in request.timeline:
-        request.timeline["responses"] = []
+    if "responses" not in request_obj.timeline:
+        request_obj.timeline["responses"] = []
     
-    request.timeline["responses"].append({
-        "professor_email": response_data.professor_email,
+    request_obj.timeline["responses"].append({
+        "professor_email": professor_email,
+        "response_text": response_text,
+        "files": file_metadata,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    # Also update request status
+    old_status = request_obj.status
+    request_obj.status = "responded"
+
+    # And add a status change to timeline
+    if "status_changes" not in request_obj.timeline:
+        request_obj.timeline["status_changes"] = []
+
+    request_obj.timeline["status_changes"].append({
+        "from": old_status,
+        "to": "responded",
         "timestamp": datetime.utcnow().isoformat()
     })
     
-    flag_modified(request, "timeline")
-    await db.commit()
+    flag_modified(request_obj, "timeline")
     
-    end_time = time.time()
-    print(f"submit_response run-time is {end_time - start_time:.3f} sec")
-    return {"message": "Response submitted and timeline updated"}
+    # Create notification for the student
+    await create_notification(
+        session=session,
+        user_email=request_obj.student_email,
+        request_id=request_id,
+        message=f"You have a new response for your request '{request_obj.title}' from {professor_email}",
+        type="response"
+    )
 
+    await session.commit()
+    
+    return {"message": "Response submitted successfully"}
 
 @app.get("/request/responses/{request_id}")
 async def get_request_responses(request_id: int, db: AsyncSession = Depends(get_session)):
@@ -2418,4 +2461,73 @@ async def get_request_template_by_name_endpoint(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class CommentTemplateCreate(BaseModel):
+    title: str
+    content: str
+
+class CommentTemplateResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+@app.get("/comment_templates", response_model=List[CommentTemplateResponse])
+async def get_comment_templates(
+    token_data: dict = Depends(verify_token_professor),
+    session: AsyncSession = Depends(get_session)
+):
+    professor_email = token_data.get("user_email")
+    result = await session.execute(
+        select(CommentTemplate)
+        .where(CommentTemplate.professor_email == professor_email)
+        .order_by(CommentTemplate.created_at.desc())
+    )
+    templates = result.scalars().all()
+    return templates
+
+@app.post("/comment_templates", response_model=CommentTemplateResponse)
+async def create_comment_template(
+    template: CommentTemplateCreate,
+    token_data: dict = Depends(verify_token_professor),
+    session: AsyncSession = Depends(get_session)
+):
+    professor_email = token_data.get("user_email")
+    new_template = CommentTemplate(
+        professor_email=professor_email,
+        title=template.title,
+        content=template.content
+    )
+    session.add(new_template)
+    await session.commit()
+    await session.refresh(new_template)
+    return new_template
+
+@app.delete("/comment_templates/{template_id}")
+async def delete_comment_template(
+    template_id: int,
+    token_data: dict = Depends(verify_token_professor),
+    session: AsyncSession = Depends(get_session)
+):
+    professor_email = token_data.get("user_email")
+    result = await session.execute(
+        select(CommentTemplate)
+        .where(
+            and_(
+                CommentTemplate.id == template_id,
+                CommentTemplate.professor_email == professor_email
+            )
+        )
+    )
+    template = result.scalar_one_or_none()
+    
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    await session.delete(template)
+    await session.commit()
+    return {"message": "Template deleted successfully"}
 
