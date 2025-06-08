@@ -1,6 +1,6 @@
 import pytest
 from backend.main import create_access_token, verify_token, oauth2_scheme, verify_token_professor, verify_token_student
-import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Depends
 from backend.main import ChatRequest
@@ -52,7 +52,7 @@ def test_create_access_token():
         # Allow a small delta (e.g., a few seconds) for processing time between token creation and this check.
         assert abs(payload["exp"] - expected_exp_timestamp) < 10 
 
-    except jwt.PyJWTError as e:
+    except JWTError as e:
         pytest.fail(f"Token decoding failed: {e}")
 
 # Mock for Depends(oauth2_scheme)
@@ -104,8 +104,8 @@ async def test_verify_token_invalid_signature():
     except HTTPException as e:
         # This case might occur if other checks fail (e.g. missing fields, if they were missing)
         pytest.fail(f"HTTPException was raised unexpectedly: {e.detail}")
-    except jwt.PyJWTError:
-        pytest.fail("PyJWTError was raised unexpectedly when signature verification is off")
+    except JWTError:
+        pytest.fail("JWTError was raised unexpectedly when signature verification is off")
 
 
 @pytest.mark.asyncio
@@ -138,9 +138,9 @@ async def test_verify_token_expired():
         # This might happen if the token is considered invalid for other reasons due to expiration
         assert e.status_code == 401
         assert "Could not validate credentials" in e.detail # Or similar message for expired tokens
-    except jwt.PyJWTError as e:
+    except JWTError as e:
         # Broader JWT error
-        pytest.fail(f"verify_token raised an unexpected PyJWTError for expired token: {e}")
+        pytest.fail(f"verify_token raised an unexpected JWTError for expired token: {e}")
 
 # Helper to create a token payload for dependency injection
 def create_token_payload(user_email, role):
@@ -711,12 +711,12 @@ def test_jwt_import_fallback():
     """Test JWT import error fallback (lines 35-37)."""
     # This tests the import logic exists and works
     try:
-        from jwt.exceptions import InvalidTokenError as PyJWTError
-        assert PyJWTError is not None
+        # JWT exceptions are now imported from jose library
+        assert JWTError is not None
     except ImportError:
         # This triggers the fallback import (lines 35-37)
-        from jwt.exceptions import JWTError as PyJWTError
-        assert PyJWTError is not None
+        # Using JWTError from jose library instead
+        assert JWTError is not None
 
 # Test additional function-level coverage
 def test_home_function():

@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.db_connection import *
 import bcrypt
 import cryptography
-import jwt
+from jose import jwt, JWTError
 from typing import Optional
 from datetime import datetime, timedelta
 from fastapi import HTTPException
@@ -30,13 +30,6 @@ from fastapi import Depends
 from pydantic import BaseModel, constr
 from typing import List, Dict, Any
 import backend.email_service as email_service
-# try:
-#     # Works on PyJWT < 2.10
-#     from jwt.exceptions import InvalidTokenError as PyJWTError
-# except ImportError:
-#     # Works on PyJWT >= 2.10
-#     from jwt.exceptions import JWTError as PyJWTError
-# from jwt.exceptions import PyJWTError
 
 
 # Import OpenAI directly for news generation
@@ -119,8 +112,8 @@ def verify_token(token: str = Depends(oauth2_scheme)):
             print("user-email:", user_email, "role:", role)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
         return payload
-    except Exception:
-        print("Invalid token - PyJWTError")
+    except JWTError:
+        print("Invalid token - JWTError")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
 def verify_token_professor(token_data: dict = Depends(verify_token)):
