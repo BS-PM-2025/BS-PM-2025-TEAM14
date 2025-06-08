@@ -30,12 +30,14 @@ from fastapi import Depends
 from pydantic import BaseModel, constr
 from typing import List, Dict, Any
 import backend.email_service as email_service
-try:
-    # Works on PyJWT < 2.10
-    from jwt.exceptions import InvalidTokenError as PyJWTError
-except ImportError:
-    # Works on PyJWT >= 2.10
-    from jwt.exceptions import JWTError as PyJWTError
+# try:
+#     # Works on PyJWT < 2.10
+#     from jwt.exceptions import InvalidTokenError as PyJWTError
+# except ImportError:
+#     # Works on PyJWT >= 2.10
+#     from jwt.exceptions import JWTError as PyJWTError
+from jwt.exceptions import PyJWTError
+
 
 # Import OpenAI directly for news generation
 try:
