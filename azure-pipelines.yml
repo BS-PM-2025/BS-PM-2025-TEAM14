@@ -94,3 +94,4 @@ stages:
               codeCoverageTool: Cobertura
               summaryFileLocation: "backend/tests/coverage.xml"
               reportDirectory: "backend/tests/coverage_html"
+
