@@ -131,7 +131,7 @@ async def test_verify_token_expired():
         payload = verify_token(token=token)
         assert payload["user_email"] == "test@example.com"
         assert payload["role"] == "student"
-    except jwt.ExpiredSignatureError:
+    except JWTError:
         # This is what *should* happen if `exp` is checked even with `verify_signature=False`
         pass # Expected outcome if `exp` is checked
     except HTTPException as e:

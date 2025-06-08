@@ -1,4 +1,5 @@
-import io, pytest, jwt
+import io, pytest
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from starlette.testclient import TestClient
 import backend.main as main
