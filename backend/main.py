@@ -36,7 +36,7 @@ import backend.email_service as email_service
 # except ImportError:
 #     # Works on PyJWT >= 2.10
 #     from jwt.exceptions import JWTError as PyJWTError
-from jwt.exceptions import PyJWTError
+# from jwt.exceptions import PyJWTError
 
 
 # Import OpenAI directly for news generation
@@ -119,7 +119,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
             print("user-email:", user_email, "role:", role)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
         return payload
-    except PyJWTError:
+    except Exception:
         print("Invalid token - PyJWTError")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
