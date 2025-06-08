@@ -11,7 +11,7 @@ variables:
   pythonVersion: "3.11"
   nodeVersion: "20.x"
   CI: "true"
-  DISABLE_ESLINT_PLUGIN: "true" 
+  DISABLE_ESLINT_PLUGIN: "true" # Temporarily disable ESLint plugin
   SKIP_PREFLIGHT_CHECK: "true" # Skip preflight checks
 
 stages:
@@ -21,22 +21,22 @@ stages:
       - job: BuildAndTest
         displayName: "Build And Test Application"
         steps:
-           Frontend Build - COMMENTED OUT
-           - task: NodeTool@0
-             displayName: "Install Node.js"
-             inputs:
-               versionSpec: "$(nodeVersion)"
+          # Frontend Build
+          - task: NodeTool@0
+            displayName: "Install Node.js"
+            inputs:
+              versionSpec: "$(nodeVersion)"
 
-           - script: |
-               cd frontend
-               npm install --legacy-peer-deps
-               npm install react-scripts --save-dev
-               npm run build
-             displayName: "Build Frontend"
-             timeoutInMinutes: 10
-             env:
-               CI: "false"                           # Prevent treating warnings as errors
-               NODE_ENV: "test"
+          - script: |
+              cd frontend
+              npm install --legacy-peer-deps
+              npm install react-scripts --save-dev
+              npm run build
+            displayName: "Build Frontend"
+            timeoutInMinutes: 10
+            env:
+              CI: "false"                           # Prevent treating warnings as errors
+              NODE_ENV: "test"
 
           # Backend Build and Test
           - task: UsePythonVersion@0
@@ -94,4 +94,3 @@ stages:
               codeCoverageTool: Cobertura
               summaryFileLocation: "backend/tests/coverage.xml"
               reportDirectory: "backend/tests/coverage_html"
-
