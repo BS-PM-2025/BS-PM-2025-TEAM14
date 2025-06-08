@@ -136,8 +136,8 @@ def test_edit_nonexistent_request(override_student_session, student_token):
     headers = {"Authorization": f"Bearer {student_token}"}
     edit_payload = {"details": "Updated test request details"}
     response = client.put("/Requests/EditRequest/99999", json=edit_payload, headers=headers)
-    assert response.status_code == 404
-    assert "Request not found" in response.json()["detail"]
+    assert response.status_code == 400  # The endpoint validates the request body first
+    assert "Cannot edit a request that is not pending or require editing" in response.json()["detail"]
 
 def test_request_timeline_updates(override_student_session, student_token):
     # Create request

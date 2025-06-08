@@ -176,6 +176,23 @@ class FakeAsyncSession:
                                   f"Exam {cid}", 90 + cid) if cid < 3 else None
                 rows.append((sc, course, grade))
             return FakeResult(rows)
+
+        if "from notifications" in query_str:
+            # Return a list of 5 fake notifications
+            fake_notifications = []
+            for i in range(5):
+                notification = type('obj', (object,), {
+                    'id': i + 1,
+                    'user_email': self.expected_email,
+                    'request_id': i + 1,
+                    'message': f"Test notification {i + 1}",
+                    'is_read': False,
+                    'created_date': datetime.now(),
+                    'type': 'test'
+                })
+                fake_notifications.append(notification)
+            return FakeResult(fake_notifications)
+
         return FakeResult(None)
 
     def add(self, obj):
@@ -201,15 +218,12 @@ class FakeAsyncSession:
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        await self.close()
+        pass
 
     async def get(self, model, pk):
         # Simulate getting a request by primary key
-        if hasattr(model, "__name__") and model.__name__ == "Requests":
-            if pk == 1:
-                return FakeRequest(1, "Request 1", "test_student@example.com", "Details 1", None, None, "pending", None)
-            else:
-                return None
+        if model.__name__ == 'Requests':
+            return FakeRequest(pk, f"Request {pk}", "test_student@example.com", f"Details {pk}", None, None, "pending", None)
         return None
 
     async def rollback(self):

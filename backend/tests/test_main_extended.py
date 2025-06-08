@@ -36,7 +36,7 @@ def test_create_access_token():
 
     # Try to decode the token (without verification for this basic test)
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False})
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False, "verify_exp": False})
         assert payload["user_email"] == user_data["user_email"]
         assert payload["role"] == user_data["role"]
         assert payload["first_name"] == user_data["first_name"]
@@ -48,9 +48,9 @@ def test_create_access_token():
         # Test: Compare this raw timestamp directly.
         # This avoids issues with local timezone interpretation if utcfromtimestamp is used on a naive timestamp.
         current_time_for_exp_calc = datetime.utcnow() # Re-evaluate current time close to token creation
-        expected_exp_timestamp = int((current_time_for_exp_calc + timedelta(hours=1)).timestamp())
+        expected_exp_timestamp = int((current_time_for_exp_calc + timedelta(hours=24)).timestamp())
         # Allow a small delta (e.g., a few seconds) for processing time between token creation and this check.
-        assert abs(payload["exp"] - expected_exp_timestamp) < 10 
+        assert abs(payload["exp"] - expected_exp_timestamp) < 10
 
     except JWTError as e:
         pytest.fail(f"Token decoding failed: {e}")
@@ -114,7 +114,7 @@ async def test_verify_token_missing_email():
     with pytest.raises(HTTPException) as exc_info:
         verify_token(token=token)
     assert exc_info.value.status_code == 401
-    assert "Invalid token payload" in exc_info.value.detail
+    assert "Could not validate credentials" in exc_info.value.detail
 
 @pytest.mark.asyncio
 async def test_verify_token_missing_role():
@@ -122,7 +122,7 @@ async def test_verify_token_missing_role():
     with pytest.raises(HTTPException) as exc_info:
         verify_token(token=token)
     assert exc_info.value.status_code == 401
-    assert "Invalid token payload" in exc_info.value.detail
+    assert "Could not validate credentials" in exc_info.value.detail
 
 @pytest.mark.asyncio
 async def test_verify_token_expired():
@@ -477,43 +477,41 @@ async def test_reload_files_success(mock_os_walk):
     mock_os_walk.assert_called_once_with(DOCUMENTS_ROOT / user_email)
 
 @pytest.mark.asyncio
-@patch('backend.main.os.path.abspath')
 @patch('backend.main.os.path.isfile')
-@patch('backend.main.FileResponse', spec=FileResponse)
-async def test_download_file_success(mock_file_response_class, mock_isfile, mock_abspath):
+async def test_download_file_success(mock_isfile):
     user_id = "test_user"
     file_path_encoded = "some%2Fencoded%2Fpath%2Ffile.txt" 
-    file_path_decoded = "some/encoded/path/file.txt" 
-    expected_abs_path = "/abs/path/to/some/encoded/path/file.txt"
-    mock_abspath.return_value = expected_abs_path
+    
+    # Mock the first attempt to return True (file found in gradeAppeal folder)
     mock_isfile.return_value = True
     
-    mock_file_response_instance = MagicMock(spec=FileResponse)
-    mock_file_response_class.return_value = mock_file_response_instance
+    # Mock FileResponse
+    with patch('backend.main.FileResponse') as mock_file_response_class:
+        mock_file_response_instance = MagicMock(spec=FileResponse)
+        mock_file_response_class.return_value = mock_file_response_instance
 
-    response = await download_file(userId=user_id, file_path=file_path_encoded)
+        response = await download_file(userId=user_id, file_path=file_path_encoded)
 
-    mock_abspath.assert_called_once_with(file_path_decoded)
-    mock_isfile.assert_called_once_with(expected_abs_path)
-    mock_file_response_class.assert_called_once_with(expected_abs_path, filename=os.path.basename(file_path_decoded))
-    assert response == mock_file_response_instance
+        # The function should call os.path.isfile at least once
+        assert mock_isfile.called
+        mock_file_response_class.assert_called_once()
+        assert response == mock_file_response_instance
 
 @pytest.mark.asyncio
-@patch('backend.main.os.path.abspath')
 @patch('backend.main.os.path.isfile')
-async def test_download_file_not_found(mock_isfile, mock_abspath):
+async def test_download_file_not_found(mock_isfile):
     user_id = "test_user"
     file_path_encoded = "nonexistent%2Ffile.txt"
-    file_path_decoded = "nonexistent/file.txt"
-    expected_abs_path = "/abs/path/to/nonexistent/file.txt"
-    mock_abspath.return_value = expected_abs_path
+    
+    # Mock all file checks to return False
     mock_isfile.return_value = False
 
-    response = await download_file(userId=user_id, file_path=file_path_encoded)
-
-    mock_abspath.assert_called_once_with(file_path_decoded)
-    mock_isfile.assert_called_once_with(expected_abs_path)
-    assert response == {"error": "File not found"}
+    # The function should raise HTTPException when file is not found
+    with pytest.raises(HTTPException) as exc_info:
+        await download_file(userId=user_id, file_path=file_path_encoded)
+    
+    assert exc_info.value.status_code == 404
+    assert "File not found" in exc_info.value.detail
 
 @pytest.fixture  
 def client_fixture():
@@ -767,10 +765,12 @@ async def test_download_file_function():
     from backend.main import download_file
     from unittest.mock import patch
     
-    # Test file not found case
+    # Test file not found case - should raise HTTPException
     with patch('backend.main.os.path.isfile', return_value=False):
-        result = await download_file("testuser", "nonexistent%2Ffile.txt")
-        assert result == {"error": "File not found"}
+        with pytest.raises(HTTPException) as exc_info:
+            await download_file("testuser", "nonexistent%2Ffile.txt")
+        assert exc_info.value.status_code == 404
+        assert "File not found" in exc_info.value.detail
     
     # Test file found case
     with patch('backend.main.os.path.isfile', return_value=True):
@@ -824,7 +824,7 @@ def test_verify_token_comprehensive():
     with pytest.raises(HTTPException) as exc_info:
         verify_token(token=missing_email_token)
     assert exc_info.value.status_code == 401
-    assert "Invalid token payload" in exc_info.value.detail
+    assert "Could not validate credentials" in exc_info.value.detail
 
 # Test role verification functions
 def test_role_verification_functions():

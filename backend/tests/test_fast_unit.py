@@ -9,7 +9,7 @@ SECRET, ALGO = main.SECRET_KEY, main.ALGORITHM
 
 # ---------- helpers ----------
 def make_token(role="student"):
-    exp = int((datetime.utcnow() + timedelta(hours=1)).timestamp())
+    exp = int((datetime.utcnow() + timedelta(hours=24)).timestamp())
     return jwt.encode({"user_email": "u@x", "role": role, "exp": exp},
                       SECRET, algorithm=ALGO)
 
@@ -44,22 +44,31 @@ def test_reload_files_empty(tmp_path, monkeypatch):
 # ---------- bulk-read notifications ----------
 def test_mark_all_notifications(monkeypatch):
     #FIX THIS TEST
+    async def mock_mark_all_notifications_as_read(*_, **__):
+        return 5
+    
     monkeypatch.setattr(
         main,
         "mark_all_notifications_as_read",
-        lambda *_, **__: 5        # accept any args
+        mock_mark_all_notifications_as_read
     )
     from backend.tests.test_main_utils import FakeAsyncSession
     from backend.main import app, get_session                 # the original object!
+    
+    # Create a session that will be used by the endpoint
+    session = FakeAsyncSession(expected_email="u@x", expected_role="student")
+    
+    # Override the get_session dependency to return our fake session
     monkeypatch.setitem(
         app.dependency_overrides,
         get_session,
-        lambda: FakeAsyncSession()
+        lambda: session
     )
+    
     tok = make_token()
     r = client.put(
         "/notifications/read-all",
         headers={"Authorization": f"Bearer {tok}"}
     )
-    assert r.status_code == 500
-    #assert r.json()["message"].startswith("5 notifications")
+    assert r.status_code == 200  # Should now work with valid token and mocked session
+    assert r.json()["message"] == "5 notifications marked as read"

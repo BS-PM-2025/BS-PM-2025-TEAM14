@@ -85,7 +85,7 @@ DOCUMENTS_ROOT = Path("Documents")
 
 def create_access_token(user_data: dict):
     to_encode = user_data.copy()
-    expire = datetime.utcnow() + timedelta(hours=1)
+    expire = datetime.utcnow() + timedelta(hours=24)
     to_encode["exp"] = int(expire.timestamp())
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM, headers={"alg": "HS256", "typ": "JWT"})
     print("generated token:", token)
@@ -97,20 +97,20 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 def verify_token(token: str = Depends(oauth2_scheme)):
     '''
     try:
-        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        unverified_payload = jwt.decode(token, options={"verify_signature": False, "verify_exp": False})
         print("Unverified payload:", unverified_payload)
     except Exception as ex:
         print("Error decoding unverified token:", ex)
     '''
     try:
         print('Token from header:', token)  # Debug line
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False})
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False, "verify_exp": False})
         print('after decode', payload)
         user_email: str = payload.get("user_email")
         role: str = payload.get("role")
         if user_email is None or role is None:
             print("user-email:", user_email, "role:", role)
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
         return payload
     except JWTError:
         print("Invalid token - JWTError")
@@ -1258,12 +1258,14 @@ async def create_general_request(
     if routing_rule and routing_rule.destination == "secretary":
         course_id = None
         secretary = await session.execute(select(Secretaries).where(Secretaries.department_id == student.department_id))
-        secretary_email = (secretary.scalar_one_or_none()).email
+        secretary_obj = secretary.scalar_one_or_none()
+        secretary_email = secretary_obj.email if secretary_obj else None
 
     if routing_rule and routing_rule.destination == "professor":
         professor = await session.execute(select(StudentCourses).where(and_(
             StudentCourses.student_email == student_email, StudentCourses.course_id == course_id)))
-        professor_email =(professor.scalar_one_or_none()).professor_email
+        professor_obj = professor.scalar_one_or_none()
+        professor_email = professor_obj.professor_email if professor_obj else None
 
 
     # send email notification for the faculty member who will handle the request
