@@ -11,7 +11,7 @@ variables:
   pythonVersion: "3.11"
   nodeVersion: "20.x"
   CI: "true"
-  DISABLE_ESLINT_PLUGIN: "true" # Temporarily disable ESLint plugin
+  DISABLE_ESLINT_PLUGIN: "true" 
   SKIP_PREFLIGHT_CHECK: "true" # Skip preflight checks
 
 stages:
