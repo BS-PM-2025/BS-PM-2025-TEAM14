@@ -1,72 +1,140 @@
-# פרויקט Full-Stack עם FastAPI ו-React
+# Student System Project
 
-## תיאור הפרויקט
-הפרויקט הזה כולל Backend ב-FastAPI ו-Frontend ב-React. הוא מיועד להפעלת אפליקציה אינטרנטית שבה ניתן לעבוד עם API של נתונים, כמו למשל ניהול משתמשים ומוצרים, עם ממשק משתמש נוח ומתקדם.
+A full-stack web application built with FastAPI and React, featuring a modern architecture and comprehensive testing suite.
 
----
+## 🚀 Features
 
-## הסבר על הקבצים והספריות
+- RESTful API backend with FastAPI
+- Modern React frontend
+- Database integration with SQLAlchemy
+- Comprehensive test coverage
+- CI/CD pipeline with Azure DevOps
+- Email service integration
+- AI service integration
+- Database migrations with Alembic
 
-### 1. **`backend/`** - צד השרת (Backend) של הפרויקט
-החלק הזה אחראי על ניהול המסלולים (API routes), חיבור למסד הנתונים, וטיפול בלוגיקה בצד השרת.
+## 🛠️ Tech Stack
 
-- **`main.py`**  
-  קובץ זה הוא נקודת הכניסה לאפליקציה שלך ב-FastAPI. כאן תתחיל את השרת ותגדיר את כל המסלולים (routes) של ה-API.
+### Backend
 
-- **`db_connection.py`**  
-  קובץ זה אחראי על התחברות למסד הנתונים. הוא מכיל את הגדרות החיבור ומטפל בשגיאות חיבור.
+- FastAPI
+- SQLAlchemy
+- Pytest
+- Alembic
+- Python 3.x
 
-- **`queries.py`**  
-  הקובץ יכיל את כל השאילתות או פונקציות שמבצעות גישה למסד נתונים בענן.
+### Frontend
 
+- React
+- CSS
+- npm
 
-- **`config.py`**  
-  קובץ זה שומר את הגדרות הקונפיגורציה של האפליקציה, כולל הגדרות חיבור למסד הנתונים, פורטים ומידע נוסף שקשור לסביבה.
+### DevOps
 
-- **`requirements.txt`**  
-  קובץ זה מכיל את כל התלויות של פרויקט ה-Python שלך. כל חבילה או ספרייה שאתה משתמש בה בפרויקט מופיעה כאן, כך שכולם יכולים להתקין את כל התלויות באמצעות הפקודה `pip install -r requirements.txt`.
-```bash
-pip install -r requirements.txt
-npm install
+- Azure DevOps
+- Docker
+- Git
 
-```
----
+## 📋 Prerequisites
 
-### 2. **`frontend/`** - צד הלקוח (Frontend) של הפרויקט
-החלק הזה אחראי על הממשק הגרפי למשתמש (UI) של האפליקציה.
+- Python 3.x
+- npm 6.x or higher
+- Git
 
-- **`src/`**  
-  תיקייה זו מכילה את כל קוד ה-React שלך. כאן נמצאים הרכיבים (components), הדפים (pages) והלוגיקה שמחוברת לממשק המשתמש.
+## 🚀 Getting Started
 
-- **`public/`**  
-  תיקייה זו מכילה קבצים סטטיים, כמו תמונות, פונטות והקובץ הראשי `index.html` של React.
+### Backend Setup
 
-- **`package.json`**  
-  קובץ זה מכיל את כל התלויות של פרויקט ה-React שלך, את הסקריפטים להפעלת הפרויקט, ומידע נוסף על הפרויקט.
+1. Navigate to the backend directory and install dependencies:
 
----
-
-### 3. **סקריפטי Shell**
-
-- **`start.sh`**  
-  סקריפט ב-Shell שמתחיל את השרתים של ה-Backend (FastAPI) וה-Frontend (React). כל מה שצריך כדי להפעיל את הפרויקט כולו נמצא בסקריפט זה.
-
-- **`stop.sh`**  
-  סקריפט ב-Shell שמפסיק את השרתים שהופעלו באמצעות `start.sh`. זה חשוב להפסיק את השרתים בצורה מסודרת.
-
----
-
-## איך להריץ את הפרויקט
-
-### 1. **הרצת הקוד**
 ```bash
 cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000
+pip install -r requirements.txt
+cd ..
 ```
+
+2. Run the development server:
+
+```bash
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+
 ```bash
 cd frontend
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the development server:
+
+```bash
 npm start
 ```
 
+## 🧪 Testing
 
+### Backend Tests
 
+```bash
+cd backend
+pytest
+```
+
+### Frontend Tests
+
+```bash
+cd frontend
+npm test
+```
+
+## 📦 Project Structure
+
+```
+├── backend/
+│   ├── AIService/         # AI service integration
+│   ├── migrations/        # Database migrations
+│   ├── tests/            # Backend tests
+│   ├── main.py           # FastAPI application entry
+│   ├── db_connection.py  # Database connection handling
+│   ├── email_service.py  # Email service integration
+│   ├── config.py         # Configuration settings
+│   └── requirements.txt  # Python dependencies
+│
+├── frontend/
+│   ├── src/              # React source code
+│   ├── public/           # Static assets
+│   └── package.json      # Frontend dependencies
+│
+├── Documents/            # Project documentation
+└── azure-pipelines.yml   # Azure DevOps pipeline
+```
+
+## 🔄 CI/CD
+
+The project uses Azure DevOps for continuous integration and deployment:
+
+- Pipeline configuration in `azure-pipelines.yml`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 👥 Team
+
+- Team 14 - BS-PM-2025
+
+## 📞 Support
+
+For support, please open an issue in the repository or contact the team directly.
