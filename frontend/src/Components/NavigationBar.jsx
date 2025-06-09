@@ -69,11 +69,15 @@ const NavigationBar = ({ darkMode, setDarkMode, onLogoutClick }) => {
             <>
               {navItem("/assignProfessorToCourse", "Assign Professors")}
               {navItem("/AssignStudentsToCourse", "Assign Students")}
+
             </>
           )}
 
           {(user?.role === "secretary" || user?.role === "admin") && (
-            <>{navItem("/transfer-requests", "Transfer Requests")}</>
+            <>{navItem("/transfer-requests", "Transfer Requests")}
+                {navItem("/reports", "Reports")}
+            </>
+
           )}
 
           {user?.role === "secretary" && (

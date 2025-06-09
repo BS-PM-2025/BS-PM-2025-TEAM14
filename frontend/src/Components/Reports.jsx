@@ -79,7 +79,7 @@ const Reports = () => {
     if (!token) return navigate("/login");
 
     const user = getUserFromToken(token);
-    if (user.role !== "professor") {
+    if (user.role == "student") {
       return navigate("/home");
     }
     setUser(user);
@@ -104,7 +104,7 @@ const Reports = () => {
         params.append("end_date", endDate.toISOString().split("T")[0]);
 
       const response = await axios.get(
-        `http://localhost:8000/reports/professor/${
+        `http://localhost:8000/reports/${user.role}/${
           user.user_email
         }?${params.toString()}`
       );
@@ -121,7 +121,6 @@ const Reports = () => {
     selectedRequestType,
     selectedStatus,
     selectedStudent,
-    startDate,
     endDate,
   ]);
 

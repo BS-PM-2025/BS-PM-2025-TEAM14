@@ -2784,36 +2784,57 @@ async def get_department_students(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching department students: {str(e)}")
 
-@app.get("/reports/professor/{professor_email}")
-async def get_professor_reports(
-    professor_email: str,
-    course_id: Optional[str] = None,
-    request_type: Optional[str] = None,
-    status: Optional[str] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    student_email: Optional[str] = None,
-    session: AsyncSession = Depends(get_session)
+@app.get("/reports/{role}/{email}")
+async def get_reports(
+        role: str,
+        email: str,
+        course_id: Optional[str] = None,
+        request_type: Optional[str] = None,
+        status: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        student_email: Optional[str] = None,
+        session: AsyncSession = Depends(get_session)
 ):
-    """Get comprehensive analytics data for a professor's courses and requests."""
+    """
+    Get custom reports for users by role: professor, admin, secretary.
+    """
+    from datetime import datetime, timedelta
+    from collections import defaultdict
+    import time
+
+    start_time = time.time()
+    print(f"get_reports called with role: {role}, email: {email}")
+
     try:
-        from datetime import datetime, timedelta
-        from collections import defaultdict
-        import time
+        # --- Step 1: Determine course access by role ---
+        if role == "professor":
+            courses_result = await session.execute(
+                select(Courses).where(Courses.professor_email == email)
+            )
+        elif role == "admin":
+            courses_result = await session.execute(select(Courses))
+        elif role == "secretary":
+            secretary_result = await session.execute(
+                select(Secretaries).where(Secretaries.email == email)
+            )
+            secretary = secretary_result.scalar()
 
-        start_time = time.time()
-        print(f"get_professor_reports called with professor_email: {professor_email}")
+            if not secretary or not secretary.department_id:
+                raise HTTPException(status_code=404, detail="Secretary not found or missing department")
 
-        # Get professor's courses
-        professor_courses_result = await session.execute(
-            select(Courses)
-            .where(Courses.professor_email == professor_email)
-        )
-        professor_courses = professor_courses_result.scalars().all()
-        course_ids = [course.id for course in professor_courses]
+            courses_result = await session.execute(
+                select(Courses).where(Courses.department_id == secretary.department_id)
+            )
+
+        else:
+            raise HTTPException(status_code=400, detail="Invalid role")
+
+        courses = courses_result.scalars().all()
+        course_ids = [course.id for course in courses]
 
         if not course_ids:
-            print(f"get_professor_reports run-time is {time.time() - start_time:.3f} sec")
+            print(f"get_reports run-time is {time.time() - start_time:.3f} sec")
             return {
                 "summary": {
                     "totalRequests": 0,
@@ -2835,9 +2856,9 @@ async def get_professor_reports(
                 "studentLatestRequests": []
             }
 
-        # Build query for requests based on filters
+        # --- Step 2: Filter requests ---
         query = select(Requests).where(Requests.course_id.in_(course_ids))
-        
+
         if course_id:
             query = query.where(Requests.course_id == course_id)
         if request_type:
@@ -2856,7 +2877,7 @@ async def get_professor_reports(
         requests_result = await session.execute(query.order_by(Requests.created_date.desc()))
         requests = requests_result.scalars().all()
 
-        # Get all students who have submitted requests to this professor
+        # --- Step 3: Gather student data ---
         students_result = await session.execute(
             select(Users.email, Users.first_name, Users.last_name)
             .join(Requests, Users.email == Requests.student_email)
@@ -2866,20 +2887,16 @@ async def get_professor_reports(
         )
         students = students_result.all()
 
-        # Get student and course details for requests
+        # --- Step 4: Detailed request info ---
         detailed_requests = []
         for req in requests:
-            # Get student details
             student_result = await session.execute(
-                select(Users.first_name, Users.last_name)
-                .where(Users.email == req.student_email)
+                select(Users.first_name, Users.last_name).where(Users.email == req.student_email)
             )
             student = student_result.first()
-            
-            # Get course details
+
             course_result = await session.execute(
-                select(Courses.name)
-                .where(Courses.id == req.course_id)
+                select(Courses.name).where(Courses.id == req.course_id)
             )
             course = course_result.first()
 
@@ -2893,33 +2910,26 @@ async def get_professor_reports(
                 "status": req.status,
                 "details": req.details,
                 "created_date": req.created_date.isoformat() if req.created_date else None,
-                "last_updated": None  # Could be enhanced with response dates
+                "last_updated": None
             })
 
-        # Get latest requests by student (for student-focused view)
+        # --- Step 5: Student latest requests ---
         student_latest_requests = []
         if student_email:
-            # Get the latest 5 requests for the selected student
             latest_requests_result = await session.execute(
                 select(Requests)
-                .where(
-                    and_(
-                        Requests.student_email == student_email,
-                        Requests.course_id.in_(course_ids)
-                    )
-                )
+                .where(and_(Requests.student_email == student_email, Requests.course_id.in_(course_ids)))
                 .order_by(Requests.created_date.desc())
                 .limit(5)
             )
             latest_requests = latest_requests_result.scalars().all()
-            
+
             for req in latest_requests:
                 course_result = await session.execute(
-                    select(Courses.name)
-                    .where(Courses.id == req.course_id)
+                    select(Courses.name).where(Courses.id == req.course_id)
                 )
                 course = course_result.first()
-                
+
                 student_latest_requests.append({
                     "id": req.id,
                     "title": req.title,
@@ -2931,109 +2941,66 @@ async def get_professor_reports(
                     "timeline": req.timeline
                 })
 
-        # Calculate summary statistics
+        # --- Step 6: Summary stats ---
         total_requests = len(requests)
         pending_requests = len([r for r in requests if r.status == "pending"])
         approved_requests = len([r for r in requests if r.status == "approved"])
-        
-        # Calculate average response time (simplified - using creation to current date)
+
         avg_response_time = 0
         if total_requests > 0:
             days_sum = sum(
-                (datetime.now().date() - req.created_date).days 
-                for req in requests if req.created_date
+                (datetime.now().date() - r.created_date).days for r in requests if r.created_date
             )
-            avg_response_time = days_sum / total_requests if total_requests > 0 else 0
+            avg_response_time = days_sum / total_requests
 
-        # Generate chart data
-        # Requests by course
+        # --- Step 7: Chart data ---
         course_counts = defaultdict(int)
         for req in requests:
-            course_name = next(
-                (course.name for course in professor_courses if course.id == req.course_id),
-                "Unknown"
-            )
+            course_name = next((c.name for c in courses if c.id == req.course_id), "Unknown")
             course_counts[course_name] += 1
+        requests_by_course = [{"courseName": name, "count": count} for name, count in course_counts.items()]
 
-        requests_by_course = [
-            {"courseName": course_name, "count": count}
-            for course_name, count in course_counts.items()
-        ]
-
-        # Requests by student
         student_counts = defaultdict(int)
-        student_names = {}
         for req in requests:
             student_result = await session.execute(
-                select(Users.first_name, Users.last_name)
-                .where(Users.email == req.student_email)
+                select(Users.first_name, Users.last_name).where(Users.email == req.student_email)
             )
             student = student_result.first()
             student_name = f"{student.first_name} {student.last_name}" if student else "Unknown"
-            student_names[req.student_email] = student_name
             student_counts[student_name] += 1
+        requests_by_student = sorted(
+            [{"studentName": name, "count": count} for name, count in student_counts.items()],
+            key=lambda x: x["count"],
+            reverse=True
+        )[:10]
 
-        requests_by_student = [
-            {"studentName": student_name, "count": count}
-            for student_name, count in student_counts.items()
-        ]
-        # Sort by count descending and take top 10
-        requests_by_student = sorted(requests_by_student, key=lambda x: x["count"], reverse=True)[:10]
-
-        # Student activity over time (last 30 days)
         today = datetime.now().date()
         student_activity = []
         if student_email:
             for i in range(30):
                 date = today - timedelta(days=i)
                 count = len([r for r in requests if r.created_date == date and r.student_email == student_email])
-                student_activity.append({
-                    "date": date.strftime("%d/%m"),
-                    "count": count
-                })
+                student_activity.append({"date": date.strftime("%d/%m"), "count": count})
             student_activity.reverse()
 
-        # Status distribution
         status_counts = defaultdict(int)
         for req in requests:
             status_counts[req.status or "unknown"] += 1
+        status_distribution = [{"name": status, "count": count} for status, count in status_counts.items()]
 
-        status_distribution = [
-            {"name": status, "count": count}
-            for status, count in status_counts.items()
-        ]
-
-        # Requests over time (last 30 days)
         time_data = []
         for i in range(30):
             date = today - timedelta(days=i)
             count = len([r for r in requests if r.created_date == date])
-            time_data.append({
-                "date": date.strftime("%d/%m"),
-                "count": count
-            })
-        time_data.reverse()  # Show chronologically
+            time_data.append({"date": date.strftime("%d/%m"), "count": count})
+        time_data.reverse()
 
-        # Get unique request types
-        request_types = list(set([req.title for req in requests if req.title]))
+        request_types = list(set(req.title for req in requests if req.title))
+        courses_data = [{"id": c.id, "name": c.name} for c in courses]
+        students_data = [{"email": s.email, "name": f"{s.first_name} {s.last_name}"} for s in students]
 
-        # Format courses for filter dropdown
-        courses_data = [
-            {"id": course.id, "name": course.name}
-            for course in professor_courses
-        ]
+        print(f"get_reports run-time is {time.time() - start_time:.3f} sec")
 
-        # Format students for filter dropdown
-        students_data = [
-            {
-                "email": student.email,
-                "name": f"{student.first_name} {student.last_name}"
-            }
-            for student in students
-        ]
-
-        print(f"get_professor_reports run-time is {time.time() - start_time:.3f} sec")
-        
         return {
             "summary": {
                 "totalRequests": total_requests,
@@ -3056,7 +3023,7 @@ async def get_professor_reports(
         }
 
     except Exception as e:
-        print(f"Error in get_professor_reports: {str(e)}")
+        print(f"Error in get_reports: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching report data: {str(e)}")
 
 
