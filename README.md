@@ -1,4 +1,4 @@
-# Student System Project
+# Students Requests System Project
 
 A full-stack web application built with FastAPI and React, featuring a modern architecture and comprehensive testing suite.
 
