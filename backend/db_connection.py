@@ -726,6 +726,7 @@ async def create_or_update_deadline_config(session: AsyncSession, request_type: 
         # Update existing
         existing_config.deadline_days = deadline_days
         existing_config.updated_date = datetime.now()
+        existing_config.is_active = True  # Ensure re-activation on update
         await session.commit()
         await session.refresh(existing_config)
         return existing_config
@@ -734,7 +735,8 @@ async def create_or_update_deadline_config(session: AsyncSession, request_type: 
         new_config = RequestDeadlineConfig(
             request_type=request_type,
             deadline_days=deadline_days,
-            created_by=created_by
+            created_by=created_by,
+            is_active=True  # Ensure active on create
         )
         session.add(new_config)
         await session.commit()

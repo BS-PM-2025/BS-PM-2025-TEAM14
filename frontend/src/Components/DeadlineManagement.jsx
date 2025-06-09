@@ -168,6 +168,11 @@ const DeadlineManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
+      console.log("Saving deadline config with data:", {
+        request_type: currentConfig.request_type,
+        deadline_days: deadlineDays,
+      });
+
       const response = await fetch(
         "http://localhost:8000/api/deadline_configs",
         {
@@ -182,6 +187,10 @@ const DeadlineManagement = () => {
           }),
         }
       );
+
+      console.log("API Response status:", response.status);
+      const responseData = await response.json();
+      console.log("API Response data:", responseData);
 
       if (response.ok) {
         await fetchDeadlineConfigs();
