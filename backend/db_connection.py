@@ -359,10 +359,6 @@ async def create_notification(session: AsyncSession, user_email: str, request_id
 async def get_user_notifications(session: AsyncSession, user_email: str, limit: int = 50):
     """Get notifications for a specific user."""
     try:
-        print(f"Executing query for user: {user_email}")
-        print(f"Session type: {type(session)}")
-        print(f"Session state: {session.is_active}")
-        
         # First verify the user exists
         user_result = await session.execute(select(Users).where(Users.email == user_email))
         user = user_result.scalar_one_or_none()
@@ -377,7 +373,6 @@ async def get_user_notifications(session: AsyncSession, user_email: str, limit: 
             .limit(limit)
         )
         notifications = result.scalars().all()
-        print(f"Query executed successfully, found {len(notifications)} notifications")
         return notifications
     except Exception as e:
         print(f"Error in get_user_notifications: {str(e)}")

@@ -103,9 +103,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
         print("Error decoding unverified token:", ex)
     '''
     try:
-        print('Token from header:', token)  # Debug line
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False, "verify_exp": False})
-        print('after decode', payload)
         user_email: str = payload.get("user_email")
         role: str = payload.get("role")
         if user_email is None or role is None:
@@ -2200,9 +2198,7 @@ async def get_notifications(
 ):
     start_time = time.time()
     try:
-        print(f"Getting notifications for user: {user_email}")
         notifications = await get_user_notifications(session, user_email)
-        print(f"Found {len(notifications)} notifications")
         end_time = time.time()
         print(f"get_notifications run-time is {end_time - start_time:.3f} sec")
         return [
@@ -2256,24 +2252,6 @@ async def mark_all_notifications_read(session: AsyncSession = Depends(get_sessio
         print(f"mark_all_notifications_read run-time is {end_time - start_time:.3f} sec")
         raise HTTPException(status_code=500, detail=str(e))
 
-'''
-@app.get("/requests/dashboard/{user_email}")
-async def get_requests_dashboard(user_email: str, session: AsyncSession = Depends(get_session)):
-    res_user = await session.execute(select(Users).where(Users.email == user_email))
-    user = res_user.scalars().first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    role = user.role
-
-    print("before fetching data" , role)
-
-    if role == "student" or role == "secretary":
-        return await get_requests(user_email)
-
-    if role == "professor":
-        return await get_professor_requests(user_email, session)
-'''
 
 @app.get("/api/request_routing_rules")
 async def get_request_routing_rules(session: AsyncSession = Depends(get_session)):
