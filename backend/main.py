@@ -88,26 +88,17 @@ def create_access_token(user_data: dict):
     expire = datetime.utcnow() + timedelta(hours=24)
     to_encode["exp"] = int(expire.timestamp())
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM, headers={"alg": "HS256", "typ": "JWT"})
-    print("generated token:", token)
     return token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 def verify_token(token: str = Depends(oauth2_scheme)):
-    '''
-    try:
-        unverified_payload = jwt.decode(token, options={"verify_signature": False, "verify_exp": False})
-        print("Unverified payload:", unverified_payload)
-    except Exception as ex:
-        print("Error decoding unverified token:", ex)
-    '''
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False, "verify_exp": False})
         user_email: str = payload.get("user_email")
         role: str = payload.get("role")
         if user_email is None or role is None:
-            print("user-email:", user_email, "role:", role)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
         return payload
     except JWTError:
@@ -118,21 +109,18 @@ def verify_token_professor(token_data: dict = Depends(verify_token)):
     if token_data.get("role") != "professor":
         print("Bad role in token")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Professor role required")
-    print("Authorized as professor!!!!!!!!")
     return token_data
 
 def verify_token_student(token_data: dict = Depends(verify_token)):
     if token_data.get("role") != "student":
         print("Bad role in token")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Student role required")
-    print("Authorized as student")
     return token_data
 
 def verify_token_admin(token_data: dict = Depends(verify_token)):
     if token_data.get("role") not in ["admin", "secretary"]:  # Allow both admin and secretary to manage announcements
         print("Bad role in token")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized: Admin or Secretary role required")
-    print("Authorized as admin/secretary")
     return token_data
 
 ###
@@ -145,8 +133,6 @@ background_task_running = False
 async def auto_generate_news_task():
     """Background task that automatically generates news when expired ones are found"""
     global background_task_running
-    print("🤖 Auto news generation task started!")
-    
     while background_task_running:
         try:
             # Check every hour for expired news
@@ -166,18 +152,13 @@ async def auto_generate_news_task():
                     )
                 )
                 active_ai_news = result.scalars().all()
-                
-                print(f"🔍 Found {len(active_ai_news)} active AI news items")
-                
                 # If less than 3 active AI news, generate new ones
                 if len(active_ai_news) < 3:
-                    print("⚡ Generating new AI news automatically...")
                     await generate_ai_news_batch(session)
                     
         except Exception as e:
             print(f"❌ Error in auto news generation: {str(e)}")
-            
-    print("🛑 Auto news generation task stopped!")
+
 
 async def generate_ai_news_batch(session: AsyncSession):
     """Generate 10 AI news items"""
@@ -224,8 +205,7 @@ async def generate_ai_news_batch(session: AsyncSession):
             except Exception as e:
                 print(f"❌ Error auto-generating news for category {category}: {str(e)}")
                 continue
-        
-        print(f"🎉 Auto-generated {created_count} news items successfully!")
+
         return created_count
         
     except Exception as e:
@@ -241,13 +221,11 @@ async def lifespan(app: FastAPI):
     # Start background task for auto news generation
     background_task_running = True
     asyncio.create_task(auto_generate_news_task())
-    print("🚀 Background news generation task started!")
-    
     yield
     
     # Clean up on shutdown
     background_task_running = False
-    print("🛑 Background news generation task stopped!")
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -302,12 +280,8 @@ async def login(request: Request, session: AsyncSession = Depends(get_session)):
 async def ai_chat(chat_request: ChatRequest):
     start_time = time.time()
     try:
-        print(f"\nAPI DEBUG: Received chat request - message: '{chat_request.message}', language: {chat_request.language}")
-        
         # Process the message through the AI service
         response = await processMessage(chat_request.message, chat_request.language)
-        
-        print(f"API DEBUG: AI response - source: {response.get('source')}, success: {response.get('success')}")
         end_time = time.time()
         print(f"ai_chat run-time is {end_time - start_time:.3f} sec")
         return response
@@ -326,6 +300,7 @@ class AnnouncementRequest(BaseModel):
     title: str
     message: str
     expires_date: Optional[str] = None
+
 
 @app.post("/api/admin/announcements")
 async def create_announcement(
@@ -494,9 +469,6 @@ async def generate_ai_news(
                         "content": news_response['content'],
                         "source": news_response.get('source', 'unknown')
                     })
-                    
-                    print(f"Generated news {i}/10: {category} (source: {news_response.get('source', 'unknown')})")
-                    
                 else:
                     print(f"Failed to generate news for category: {category}")
                     
@@ -538,9 +510,6 @@ def list_tables(database_name: str):
     end_time = time.time()
     print(f"list_tables run-time is {end_time - start_time:.3f} sec")
     return {"tables": None}
-
-
-
 
 
 @app.post("/uploadfile/{userEmail}")
@@ -592,14 +561,9 @@ async def reload_files(userEmail: str):
     file_paths = []
     for root, _, filenames in os.walk(root_path):
         for filename in filenames:
-            print("filename:", filename)
-            print("root:", root)
-
             file_path = os.path.relpath(os.path.join(root, filename), root_path)
-            print("file_path:", file_path)
             files.append(filename)
             file_paths.append(file_path)
-    print({"files": files, "file_paths": file_paths})
     end_time = time.time()
     print(f"reload_files run-time is {end_time - start_time:.3f} sec")
     return {"files": files, "file_paths": file_paths}
@@ -608,14 +572,9 @@ async def reload_files(userEmail: str):
 @app.get("/downloadFile/{userId}/{file_path:path}")
 async def download_file(userId: str, file_path: str):
     start_time = time.time()
-    print(f"Download request - userId: {userId}, file_path: {file_path}")
-    
     # Decode both the user ID and filename from URL encoding
     decoded_user_id = urllib.parse.unquote(userId)
     decoded_filename = urllib.parse.unquote(file_path)
-    print(f"Decoded user ID: {decoded_user_id}")
-    print(f"Decoded filename: {decoded_filename}")
-    
     # List of possible file types where files might be stored
     possible_file_types = [
         "gradeAppeal",
@@ -634,24 +593,20 @@ async def download_file(userId: str, file_path: str):
         # Construct the full file path: Documents/{userEmail}/{fileType}/{filename}
         full_path = os.path.join("Documents", decoded_user_id, file_type, decoded_filename)
         absolute_path = os.path.abspath(full_path)
-        print(f"Trying path: {absolute_path}")
-        
+
         if os.path.isfile(absolute_path):
             file_found = True
-            print(f"File found at: {absolute_path}")
             break
     
     # If not found in fileType subdirectories, try direct path
     if not file_found:
         direct_path = os.path.join("Documents", decoded_user_id, decoded_filename)
         direct_absolute = os.path.abspath(direct_path)
-        print(f"Trying direct path: {direct_absolute}")
-        
+
         if os.path.isfile(direct_absolute):
             absolute_path = direct_absolute
             file_found = True
-            print(f"File found at direct path: {absolute_path}")
-    
+
     # If still not found, return 404
     if not file_found:
         end_time = time.time()
@@ -1007,7 +962,6 @@ async def get_courses(professor_email: bool = None, session: AsyncSession = Depe
     query = select(Courses)
     if professor_email:
         query = query.where(Courses.professor_email is not None)
-    print(query)
     result = await session.execute(select(Courses))
     end_time = time.time()
     print(f"get_courses run-time is {end_time - start_time:.3f} sec")
@@ -1016,7 +970,6 @@ async def get_courses(professor_email: bool = None, session: AsyncSession = Depe
 @app.post("/Users/setRole")
 async def set_role(request: Request, session: AsyncSession = Depends(get_session)):
     start_time = time.time()
-    print("in the set role function")
     data = await request.json()
     user_email = data.get("user_email")
     role = data.get("role")
@@ -1038,7 +991,6 @@ async def set_role(request: Request, session: AsyncSession = Depends(get_session
 @app.post("/Users/getUsers")
 async def get_users(request: Request, session: AsyncSession = Depends(get_session)):
     start_time = time.time()
-    print("in the get users function")
     res = await session.execute(select(Users))
     users = res.scalars().all()
     end_time = time.time()
@@ -1049,7 +1001,6 @@ async def get_users(request: Request, session: AsyncSession = Depends(get_sessio
 @app.post("/Users/getUser/{UserEmail}")
 async def get_user(UserEmail : str, session: AsyncSession = Depends(get_session)):
     start_time = time.time()
-    print("in the func", UserEmail)
     res_user = await session.execute(select(Users).where(Users.email == UserEmail))
     user = res_user.scalars().first()
     if not user:
@@ -1114,7 +1065,6 @@ async def submit_grades(
         token_data: dict = Depends(verify_token_professor)
 ):
     start_time = time.time()
-    print(course_id, data)
     grade_component = data.get("gradeComponent")
     grades = data.get("grades")  # dict: { "student@email.com": 95 }
 
@@ -1192,7 +1142,6 @@ async def create_general_request(
         session: AsyncSession = Depends(get_session)
 ):
     start_time = time.time()
-    print("in submit request")
     data = await request.json()
     title = data.get("title")
     student_email = data.get("student_email")
@@ -1201,7 +1150,6 @@ async def create_general_request(
     grade_appeal = data.get("grade_appeal")
     schedule_change = data.get("schedule_change")
     course_id = data.get("course_id")
-    print(data)
     if not title or not student_email or not details:
         end_time = time.time()
         print(f"create_general_request run-time is {end_time - start_time:.3f} sec")
@@ -1467,8 +1415,6 @@ async def get_student_courses(student_email: str, session: AsyncSession = Depend
 
     # Convert the dictionary to a list of courses
     courses_list = list(courses_data.values())
-
-    print(courses_list)
     end_time = time.time()
     print(f"get_student_courses run-time is {end_time - start_time:.3f} sec")
     return {"courses": courses_list}
@@ -1517,8 +1463,6 @@ async def assign_students(
     existing_students = result.scalars().all()
 
     new_students_emails = set(data.student_emails)
-    print(f"New students emails: {new_students_emails}")
-    print(f"Existing students: {existing_students}")
 
     for student in existing_students:
         if student.student_email not in new_students_emails:
@@ -1590,7 +1534,7 @@ def fetch_data():
 
 def main():
     data = fetch_data()
-    print(data)
+
 
 if __name__ == '__main__':
     main()
@@ -2782,7 +2726,6 @@ async def get_reports(
     import time
 
     start_time = time.time()
-    print(f"get_reports called with role: {role}, email: {email}")
 
     try:
         # --- Step 1: Determine course access by role ---
