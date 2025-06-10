@@ -1,1351 +1,133 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="37" skipped="0" tests="326" time="106.598" timestamp="2025-06-10T19:43:37.126699+03:00" hostname="Ariel_PC"><testcase classname="tests.test_additional_coverage_fixed.TestSubmitResponseEndpoint" name="test_submit_response_success" time="0.557"><failure message="AttributeError: 'obj' object has no attribute '_modified_token'">self = &lt;backend.tests.test_additional_coverage_fixed.TestSubmitResponseEndpoint object at 0x0000015CE067B770&gt;, override_session_with_data = None
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="320" time="334.287" timestamp="2025-06-10T20:25:14.175431+03:00" hostname="Ariel_PC"><testcase classname="tests.test_additional_coverage_fixed.TestSubmitResponseEndpoint" name="test_submit_response_success" time="0.529" /><testcase classname="tests.test_additional_coverage_fixed.TestSubmitResponseEndpoint" name="test_submit_response_no_files" time="0.447" /><testcase classname="tests.test_additional_coverage_fixed.TestFileDownloadEndpoint" name="test_download_file_not_found" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestFileDownloadEndpoint" name="test_download_file_encoded_params" time="0.011" /><testcase classname="tests.test_additional_coverage_fixed.TestCreateRequestEndpoint" name="test_create_request_with_timeline_update" time="2.107" /><testcase classname="tests.test_additional_coverage_fixed.TestCreateRequestEndpoint" name="test_create_request_invalid_data_types" time="2.132" /><testcase classname="tests.test_additional_coverage_fixed.TestCreateRequestEndpoint" name="test_create_request_missing_required_fields" time="0.006" /><testcase classname="tests.test_additional_coverage_fixed.TestAuthenticationEdgeCases" name="test_verify_token_admin_invalid_role" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestAuthenticationEdgeCases" name="test_verify_token_admin_missing_role" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestAuthenticationEdgeCases" name="test_create_access_token_edge_cases" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases" name="test_create_announcement_invalid_date_format" time="0.016" /><testcase classname="tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases" name="test_create_announcement_empty_title" time="0.007" /><testcase classname="tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases" name="test_deactivate_nonexistent_announcement" time="0.231" /><testcase classname="tests.test_additional_coverage_fixed.TestGradesEndpoint" name="test_submit_grades_invalid_course" time="0.227" /><testcase classname="tests.test_additional_coverage_fixed.TestGradesEndpoint" name="test_submit_grades_invalid_grade_values" time="0.228" /><testcase classname="tests.test_additional_coverage_fixed.TestGradesEndpoint" name="test_submit_grades_missing_data" time="0.007" /><testcase classname="tests.test_additional_coverage_fixed.TestRequestStatusUpdate" name="test_update_status_missing_fields" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestRequestStatusUpdate" name="test_update_status_invalid_request_id" time="2.283" /><testcase classname="tests.test_additional_coverage_fixed.TestRequestStatusUpdate" name="test_update_status_nonexistent_request" time="2.102" /><testcase classname="tests.test_additional_coverage_fixed.TestCoursesEndpoint" name="test_get_courses_with_professor_filter" time="0.226" /><testcase classname="tests.test_additional_coverage_fixed.TestCoursesEndpoint" name="test_get_courses_with_false_professor_filter" time="0.231" /><testcase classname="tests.test_additional_coverage_fixed.TestCoursesEndpoint" name="test_get_courses_no_filter" time="0.227" /><testcase classname="tests.test_additional_coverage_fixed.TestUserManagementEdgeCases" name="test_set_role_nonexistent_user" time="0.231" /><testcase classname="tests.test_additional_coverage_fixed.TestUserManagementEdgeCases" name="test_get_user_invalid_email_format" time="0.228" /><testcase classname="tests.test_additional_coverage_fixed.TestUserManagementEdgeCases" name="test_get_users_with_role_filter" time="0.235" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_chat_request_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_unavailability_period_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_assign_professor_request_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_assign_students_request_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestConstants" name="test_constants_exist" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestConstants" name="test_oauth2_scheme_exists" time="0.002" /><testcase classname="tests.test_additional_coverage_fixed.TestImportHandling" name="test_openai_import_handling" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestImportHandling" name="test_ai_endpoint_when_openai_unavailable" time="179.030" /><testcase classname="tests.test_additional_coverage_fixed.TestDatabaseFunctions" name="test_fetch_data_function" time="0.002" /><testcase classname="tests.test_additional_coverage_fixed.TestDatabaseFunctions" name="test_main_function_exists" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestErrorHandlingPaths" name="test_login_with_malformed_json" time="1.758" /><testcase classname="tests.test_additional_coverage_fixed.TestErrorHandlingPaths" name="test_upload_file_with_no_file" time="0.006" /><testcase classname="tests.test_additional_coverage_fixed.TestFileOperations" name="test_reload_files_basic" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestFileOperations" name="test_upload_file_basic" time="0.008" /><testcase classname="tests.test_additional_coverage_fixed.TestBackgroundTaskVariables" name="test_background_task_variable_exists" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestBackgroundTaskVariables" name="test_openai_available_variable_exists" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_english" time="0.002" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew" time="0.002" /><testcase classname="tests.test_ai_service" name="test_process_keywords_empty_string" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_stop_words_only" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_mixed_case" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew_empty_string" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew_stop_words_only" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew_mixed_case" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_exact" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_partial" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_no_match" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_empty_query" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_empty_pattern" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_empty_both" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_query_in_pattern" time="0.002" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_pattern_in_query_hebrew" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_query_in_pattern_hebrew" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_keyword_hebrew_partial_match" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_no_keywords_query" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_no_keywords_pattern" time="0.002" /><testcase classname="tests.test_ai_service" name="test_process_message_english" time="0.211" /><testcase classname="tests.test_ai_service" name="test_process_message_hebrew" time="0.233" /><testcase classname="tests.test_ai_service" name="test_process_message_empty" time="0.003" /><testcase classname="tests.test_ai_service" name="test_process_message_special_characters" time="21.258" /><testcase classname="tests.test_ai_service" name="test_process_message_error_handling" time="0.003" /><testcase classname="tests.test_ai_service" name="test_process_message_language_detection" time="0.423" /><testcase classname="tests.test_ai_service" name="test_process_message_exact_faq_match" time="0.019" /><testcase classname="tests.test_ai_service" name="test_process_message_partial_faq_match" time="0.225" /><testcase classname="tests.test_ai_service" name="test_process_message_hebrew_faq" time="0.216" /><testcase classname="tests.test_ai_service" name="test_process_message_openai_fallback" time="20.965"><failure message="assert False is True">@pytest.mark.asyncio
+    async def test_process_message_openai_fallback():
+        # Test OpenAI fallback for unknown queries
+        response = await processMessage("What is the meaning of life?", "en")
+&gt;       assert response["success"] is True
+E       assert False is True
 
-    def test_submit_response_success(self, override_session_with_data):
-        data = {
-            "request_id": "1",
-            "professor_email": "prof@example.com",
-            "response_text": "This is my response"
-        }
-    
-&gt;       response = client.post("/submit_response", data=data)
+tests\test_ai_service.py:239: AssertionError</failure></testcase><testcase classname="tests.test_ai_service" name="test_openai_api_call" time="20.992"><failure message="assert False is True">@pytest.mark.asyncio
+    async def test_openai_api_call():
+        # Test direct OpenAI API call
+        response = await call_openai_api("How do I submit my assignment?", "en")
+&gt;       assert response["success"] is True
+E       assert False is True
 
-tests\test_additional_coverage_fixed.py:21: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
+tests\test_ai_service.py:257: AssertionError</failure></testcase><testcase classname="tests.test_ai_service" name="test_load_faq_data_success" time="0.004" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_file_not_found" time="0.002" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_json_decode_error" time="0.004" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_empty_json_object" time="0.004" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_missing_faqs_key" time="0.004" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_not_available" time="0.029" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_openai_error" time="0.004" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_openai_not_available" time="0.024" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_attribute_error" time="0.030" /><testcase classname="tests.test_ai_service" name="test_process_message_with_none_language" time="21.054"><failure message="assert False is True">@pytest.mark.asyncio
+    async def test_process_message_with_none_language():
+        """Test processMessage with None language parameter."""
+        response = await processMessage("Hello, how are you?", None)
+        assert isinstance(response, dict)
+        assert "text" in response
+        assert "source" in response
+        assert "success" in response
+&gt;       assert response["success"] is True
+E       assert False is True
+
+tests\test_ai_service.py:381: AssertionError</failure></testcase><testcase classname="tests.test_db_connection" name="test_add_user_and_duplicate" time="0.216" /><testcase classname="tests.test_db_connection" name="test_add_user_professor" time="0.085" /><testcase classname="tests.test_db_connection" name="test_direct_add_and_update" time="0.099" /><testcase classname="tests.test_db_connection" name="test_requests_and_notifications_flow" time="0.123" /><testcase classname="tests.test_db_connection" name="test_course_student_course_and_response_and_assign" time="0.164" /><testcase classname="tests.test_email_service" name="test_send_email_success" time="0.006" /><testcase classname="tests.test_email_service" name="test_send_email_failure" time="0.005" /><testcase classname="tests.test_email_service" name="test_send_email_no_config" time="0.022" /><testcase classname="tests.test_email_service" name="test_send_email_html_content" time="0.028" /><testcase classname="tests.test_fast_unit" name="test_verify_token_ok" time="0.001" /><testcase classname="tests.test_fast_unit" name="test_verify_token_prof_guard" time="0.002" /><testcase classname="tests.test_fast_unit" name="test_upload_too_large" time="0.076" /><testcase classname="tests.test_fast_unit" name="test_reload_files_empty" time="0.010" /><testcase classname="tests.test_fast_unit" name="test_mark_all_notifications" time="0.008" /><testcase classname="tests.test_imports" name="test_import_everything" time="0.001" /><testcase classname="tests.test_integration_api" name="test_full_flow" time="2.374" /><testcase classname="tests.test_integration_api" name="test_ai_service_integration" time="0.210" /><testcase classname="tests.test_integration_api" name="test_file_upload_download_integration" time="0.449" /><testcase classname="tests.test_integration_api" name="test_professor_student_assignment_integration" time="0.975" /><testcase classname="tests.test_integration_api" name="test_grade_management_integration" time="1.126" /><testcase classname="tests.test_integration_api" name="test_professor_availability_integration" time="0.424" /><testcase classname="tests.test_main" name="test_login_matrix[override_session_with_data-student1@sce.ac.il-password-200]" time="0.443" /><testcase classname="tests.test_main" name="test_login_matrix[override_session_without_data-nosuch@sce.ac.il-password-404]" time="0.224" /><testcase classname="tests.test_main" name="test_login_matrix[override_session_with_data-student1@sce.ac.il-BAD-401]" time="0.452" /><testcase classname="tests.test_main" name="test_login_success" time="0.446" /><testcase classname="tests.test_main" name="test_login_fail" time="0.445" /><testcase classname="tests.test_main" name="test_create_access_token" time="0.001" /><testcase classname="tests.test_main" name="test_verify_token_professor" time="0.001" /><testcase classname="tests.test_main" name="test_home" time="0.005" /><testcase classname="tests.test_main" name="test_list_databases" time="0.007" /><testcase classname="tests.test_main" name="test_list_tables" time="0.007" /><testcase classname="tests.test_main" name="test_get_users" time="0.229" /><testcase classname="tests.test_main" name="test_create_user" time="0.446" /><testcase classname="tests.test_main" name="test_create_user_duplicate" time="0.221" /><testcase classname="tests.test_main" name="test_set_role" time="0.232" /><testcase classname="tests.test_main" name="test_get_user_student" time="0.445" /><testcase classname="tests.test_main" name="test_get_user_professor" time="0.448" /><testcase classname="tests.test_main" name="test_get_courses" time="0.448" /><testcase classname="tests.test_main" name="test_get_student_courses_invalid_email" time="0.005" /><testcase classname="tests.test_main" name="test_get_student_courses_empty_email" time="0.007" /><testcase classname="tests.test_main" name="test_upload_missing_filetype" time="0.005" /><testcase classname="tests.test_main" name="test_upload_file_success" time="0.012" /><testcase classname="tests.test_main" name="test_reload_files" time="0.010" /><testcase classname="tests.test_main" name="test_create_general_request" time="2.222" /><testcase classname="tests.test_main" name="test_create_grade_appeal_request" time="2.165" /><testcase classname="tests.test_main" name="test_create_schedule_change_request" time="2.095" /><testcase classname="tests.test_main" name="test_create_request_missing_title" time="0.005" /><testcase classname="tests.test_main" name="test_create_request_missing_student_email" time="0.011" /><testcase classname="tests.test_main" name="test_create_request_invalid_grade_appeal" time="0.008" /><testcase classname="tests.test_main" name="test_create_request_invalid_schedule_change" time="0.009" /><testcase classname="tests.test_main_extended" name="test_create_access_token" time="0.001" /><testcase classname="tests.test_main_extended" name="test_verify_token_valid" time="0.006" /><testcase classname="tests.test_main_extended" name="test_verify_token_invalid_signature" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_missing_email" time="0.006" /><testcase classname="tests.test_main_extended" name="test_verify_token_missing_role" time="0.004" /><testcase classname="tests.test_main_extended" name="test_verify_token_expired" time="0.015" /><testcase classname="tests.test_main_extended" name="test_verify_token_professor_valid" time="0.015" /><testcase classname="tests.test_main_extended" name="test_verify_token_professor_invalid_role" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_professor_missing_role_in_payload" time="0.006" /><testcase classname="tests.test_main_extended" name="test_verify_token_student_valid" time="0.015" /><testcase classname="tests.test_main_extended" name="test_verify_token_student_invalid_role" time="0.004" /><testcase classname="tests.test_main_extended" name="test_verify_token_student_missing_role_in_payload" time="0.009" /><testcase classname="tests.test_main_extended" name="test_chat_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_chat_request_valid_no_language" time="0.001" /><testcase classname="tests.test_main_extended" name="test_chat_request_missing_message" time="0.001" /><testcase classname="tests.test_main_extended" name="test_chat_request_message_empty_string" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_no_reason" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_missing_start_date" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_missing_end_date" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_invalid_date_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_missing_email" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_missing_course_ids" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_invalid_course_ids_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_empty_course_ids" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_valid" time="0.002" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_missing_emails" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_missing_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_invalid_emails_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_empty_emails_list" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_missing_request_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_missing_professor_email" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_missing_response_text" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_invalid_request_id_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_valid_with_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_valid_no_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_valid_explicit_none_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_missing_reason" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_invalid_course_id_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_create_access_token_basic" time="0.001" /><testcase classname="tests.test_main_extended" name="test_verify_token_functions" time="0.001" /><testcase classname="tests.test_main_extended" name="test_verify_token_errors" time="0.001" /><testcase classname="tests.test_main_extended" name="test_home_endpoint" time="0.010" /><testcase classname="tests.test_main_extended" name="test_list_databases_endpoint" time="0.007" /><testcase classname="tests.test_main_extended" name="test_list_tables_endpoint" time="0.008" /><testcase classname="tests.test_main_extended" name="test_upload_file_success" time="0.026" /><testcase classname="tests.test_main_extended" name="test_reload_files_success" time="0.028" /><testcase classname="tests.test_main_extended" name="test_download_file_success" time="0.006" /><testcase classname="tests.test_main_extended" name="test_download_file_not_found" time="0.032" /><testcase classname="tests.test_main_extended" name="test_sqlite_functions" time="0.002" /><testcase classname="tests.test_main_extended" name="test_pydantic_model_edge_cases" time="0.001" /><testcase classname="tests.test_main_extended" name="test_simple_error_conditions" time="0.003" /><testcase classname="tests.test_main_extended" name="test_main_constants_and_setup" time="0.002" /><testcase classname="tests.test_main_extended" name="test_oauth2_scheme" time="0.001" /><testcase classname="tests.test_main_extended" name="test_upload_file_size_validation" time="0.006" /><testcase classname="tests.test_main_extended" name="test_login_function_logic" time="0.008" /><testcase classname="tests.test_main_extended" name="test_login_invalid_password" time="0.484" /><testcase classname="tests.test_main_extended" name="test_ai_chat_function_error" time="0.005" /><testcase classname="tests.test_main_extended" name="test_jwt_import_fallback" time="0.002" /><testcase classname="tests.test_main_extended" name="test_home_function" time="0.001" /><testcase classname="tests.test_main_extended" name="test_list_databases_function" time="0.001" /><testcase classname="tests.test_main_extended" name="test_list_tables_function" time="0.001" /><testcase classname="tests.test_main_extended" name="test_reload_files_function" time="0.005" /><testcase classname="tests.test_main_extended" name="test_download_file_function" time="0.010" /><testcase classname="tests.test_main_extended" name="test_create_access_token_comprehensive" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_comprehensive" time="0.004" /><testcase classname="tests.test_main_extended" name="test_role_verification_functions" time="0.001" /><testcase classname="tests.test_main_extended" name="test_pydantic_models_comprehensive" time="0.001" /><testcase classname="tests.test_main_extended" name="test_lifespan_function_exists" time="0.001" /><testcase classname="tests.test_main_extended" name="test_app_configuration_comprehensive" time="0.002" /><testcase classname="tests.test_main_extended" name="test_constants_comprehensive" time="0.002" /><testcase classname="tests.test_main_extended" name="test_all_imports" time="0.001" /><testcase classname="tests.test_main_extended" name="test_get_requests_function" time="0.009" /><testcase classname="tests.test_main_extended" name="test_get_requests_secretary" time="0.008" /><testcase classname="tests.test_main_extended" name="test_get_professor_requests_function" time="0.008" /><testcase classname="tests.test_main_extended" name="test_create_user_function" time="0.251" /><testcase classname="tests.test_main_extended" name="test_get_users_coverage" time="0.004" /><testcase classname="tests.test_main_extended" name="test_get_courses_coverage" time="0.005" /><testcase classname="tests.test_main_extended" name="test_set_role_user_not_found" time="0.007" /><testcase classname="tests.test_main_extended" name="test_get_user_not_found" time="0.006" /><testcase classname="tests.test_main_extended" name="test_submit_grades_missing_data" time="0.007" /><testcase classname="tests.test_main_extended" name="test_get_students_course_not_found" time="0.011" /><testcase classname="tests.test_main_extended" name="test_create_general_request_missing_data" time="0.007" /><testcase classname="tests.test_main_extended" name="test_delete_request_not_found" time="0.008" /><testcase classname="tests.test_main_extended" name="test_edit_request_not_found" time="0.004" /><testcase classname="tests.test_main_extended" name="test_get_student_courses_empty_email" time="0.006" /><testcase classname="tests.test_main_extended" name="test_get_grades_no_grades" time="0.006" /><testcase classname="tests.test_main_extended" name="test_assign_students_coverage" time="0.007" /><testcase classname="tests.test_main_extended" name="test_assign_professor_coverage" time="0.007" /><testcase classname="tests.test_main_extended" name="test_get_assigned_students_coverage" time="0.009" /><testcase classname="tests.test_main_extended" name="test_simple_function_coverage" time="0.014" /><testcase classname="tests.test_main_extended" name="test_login_error_paths" time="0.005" /><testcase classname="tests.test_main_extended" name="test_upload_file_error_paths" time="0.006" /><testcase classname="tests.test_main_extended" name="test_app_and_constants" time="0.001" /><testcase classname="tests.test_main_extended" name="test_function_existence" time="0.001" /><testcase classname="tests.test_main_extended" name="test_lifespan_function_simple" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_create_announcement_success" time="0.011" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_create_announcement_unauthorized" time="0.008" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_get_active_announcements" time="0.243" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_get_all_announcements_admin" time="0.236" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_deactivate_announcement" time="0.237" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_generate_ai_news_unavailable" time="0.010" /><testcase classname="tests.test_missing_coverage_fixed.TestAIChatEndpoint" name="test_ai_chat_success" time="0.009" /><testcase classname="tests.test_missing_coverage_fixed.TestAIChatEndpoint" name="test_ai_chat_error" time="0.006" /><testcase classname="tests.test_missing_coverage_fixed.TestAIChatEndpoint" name="test_ai_chat_invalid_request" time="0.006" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_submit_grades_success" time="0.237" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_submit_grades_unauthorized" time="0.008" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_get_course_students" time="0.239" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_add_unavailability_period" time="0.231" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_get_unavailability_periods" time="0.457" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_delete_unavailability_period" time="0.006" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_check_professor_availability" time="0.461" /><testcase classname="tests.test_missing_coverage_fixed.TestStudentEndpoints" name="test_get_student_professors" time="0.227" /><testcase classname="tests.test_missing_coverage_fixed.TestStudentEndpoints" name="test_get_student_professor_for_course" time="0.230" /><testcase classname="tests.test_missing_coverage_fixed.TestStudentEndpoints" name="test_get_grades_endpoint" time="0.232" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_update_status_endpoint" time="2.116" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_get_professor_requests" time="0.229" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_delete_request" time="0.006" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_edit_request_unauthorized" time="0.010" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_get_student_courses_for_request" time="0.453" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_get_request_responses" time="0.235" /><testcase classname="tests.test_missing_coverage_fixed.TestAssignmentEndpoints" name="test_assign_students" time="1.569" /><testcase classname="tests.test_missing_coverage_fixed.TestAssignmentEndpoints" name="test_assign_professor" time="2.289" /><testcase classname="tests.test_missing_coverage_fixed.TestAssignmentEndpoints" name="test_get_assigned_students" time="0.229" /><testcase classname="tests.test_missing_coverage_fixed.TestTransferEndpoints" name="test_transfer_request" time="0.442" /><testcase classname="tests.test_missing_coverage_fixed.TestTransferEndpoints" name="test_get_department_transfer_requests" time="0.233" /><testcase classname="tests.test_missing_coverage_fixed.TestTransferEndpoints" name="test_get_all_transfer_requests" time="0.686" /><testcase classname="tests.test_missing_coverage_fixed.TestNotificationEndpoints" name="test_get_notifications" time="0.468" /><testcase classname="tests.test_missing_coverage_fixed.TestNotificationEndpoints" name="test_mark_notification_read" time="0.230" /><testcase classname="tests.test_missing_coverage_fixed.TestNotificationEndpoints" name="test_mark_all_notifications_read" time="0.228" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_templates" time="0.226" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_template_by_id" time="0.226" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_create_request_template" time="0.232" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_template_names" time="0.228" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_template_by_name" time="0.229" /><testcase classname="tests.test_missing_coverage_fixed.TestCommentTemplateEndpoints" name="test_get_comment_templates" time="0.228" /><testcase classname="tests.test_missing_coverage_fixed.TestCommentTemplateEndpoints" name="test_delete_comment_template" time="0.228" /><testcase classname="tests.test_missing_coverage_fixed.TestDepartmentEndpoints" name="test_get_department_students" time="0.229" /><testcase classname="tests.test_missing_coverage_fixed.TestReportEndpoints" name="test_get_reports_student" time="0.006" /><testcase classname="tests.test_missing_coverage_fixed.TestReportEndpoints" name="test_get_reports_professor" time="1.106" /><testcase classname="tests.test_missing_coverage_fixed.TestReportEndpoints" name="test_get_reports_with_filters" time="1.115" /><testcase classname="tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints" name="test_get_deadline_configs" time="0.225" /><testcase classname="tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints" name="test_create_deadline_config" time="0.239" /><testcase classname="tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints" name="test_delete_deadline_config" time="0.229" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestRoutingEndpoints" name="test_get_request_routing_rules" time="0.227" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestRoutingEndpoints" name="test_update_request_routing_rule" time="0.005" /><testcase classname="tests.test_missing_coverage_fixed.TestUtilityFunctions" name="test_fetch_data_function" time="0.002" /><testcase classname="tests.test_missing_coverage_fixed.TestUtilityFunctions" name="test_main_function" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestUtilityFunctions" name="test_verify_token_admin_secretary_role" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestErrorConditions" name="test_invalid_json_login" time="0.007"><failure message="AttributeError: 'NoneType' object has no attribute 'send'">async def get_session() -&gt; AsyncSession:
+        async with async_session() as session:
+&gt;           yield session
+
+db_connection.py:803: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
     raw_response = await run_endpoint_function(
 C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
     return await dependant.call(**values)
-main.py:1929: in submit_response
-    flag_modified(request_obj, "timeline")
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+main.py:280: in login
+    res_user = await session.execute(select(Users).where(Users.email == email))
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\ext\asyncio\session.py:463: in execute
+    result = await greenlet_spawn(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py:201: in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py:2365: in execute
+    return self._execute_internal(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py:2251: in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\context.py:306: in orm_execute_statement
+    result = conn.execute(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1416: in execute
+    return meth(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\sql\elements.py:523: in _execute_on_connection
+    return connection._execute_clauseelement(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1638: in _execute_clauseelement
+    ret = self._execute_context(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1843: in _execute_context
+    return self._exec_single_context(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1983: in _exec_single_context
+    self._handle_dbapi_exception(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:2355: in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1964: in _exec_single_context
+    self.dialect.do_execute(
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:945: in do_execute
+    cursor.execute(statement, parameters)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\dialects\mysql\aiomysql.py:97: in execute
+    return self.await_(self._execute_async(operation, parameters))
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py:132: in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py:196: in greenlet_spawn
+    value = await result
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\dialects\mysql\aiomysql.py:106: in _execute_async
+    result = await self._cursor.execute(operation, parameters)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\cursors.py:239: in execute
+    await self._query(query)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\cursors.py:457: in _query
+    await conn.query(q)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\connection.py:468: in query
+    await self._execute_command(COMMAND.COM_QUERY, sql)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\connection.py:724: in _execute_command
+    self._write_bytes(prelude + sql[:chunk_size - 1])
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\connection.py:669: in _write_bytes
+    return self._writer.write(data)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\asyncio\streams.py:343: in write
+    self._transport.write(data)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py:366: in write
+    self._loop_writing(data=bytes(data))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-instance = &lt;backend.tests.test_main_utils.FakeRequest object at 0x0000015CE08CD910&gt;, key = 'timeline'
+self = &lt;_ProactorSocketTransport fd=1132 read=&lt;_OverlappedFuture cancelled&gt;&gt;, f = None
+data = b'\x8c\x00\x00\x00\x03SELECT users.email, users.id, users.first_name, users.last_name, users.hashed_password, users.`role` \nFROM users \nWHERE users.email IS NULL'
 
-    def flag_modified(instance: object, key: str) -&gt; None:
-        """Mark an attribute on an instance as 'modified'.
-    
-        This sets the 'modified' flag on the instance and
-        establishes an unconditional change event for the given attribute.
-        The attribute must have a value present, else an
-        :class:`.InvalidRequestError` is raised.
-    
-        To mark an object "dirty" without referring to any specific attribute
-        so that it is considered within a flush, use the
-        :func:`.attributes.flag_dirty` call.
-    
-        .. seealso::
-    
-            :func:`.attributes.flag_dirty`
-    
-        """
-        state, dict_ = instance_state(instance), instance_dict(instance)
-        impl = state.manager[key].impl
-&gt;       impl.dispatch.modified(state, impl._modified_token)
-E       AttributeError: 'obj' object has no attribute '_modified_token'
-
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\attributes.py:2810: AttributeError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestSubmitResponseEndpoint" name="test_submit_response_no_files" time="0.509"><failure message="AttributeError: 'obj' object has no attribute '_modified_token'">self = &lt;backend.tests.test_additional_coverage_fixed.TestSubmitResponseEndpoint object at 0x0000015CE058A2A0&gt;, override_session_with_data = None
-
-    def test_submit_response_no_files(self, override_session_with_data):
-        data = {
-            "request_id": "1",
-            "professor_email": "prof@example.com",
-            "response_text": "Response without files"
-        }
-    
-&gt;       response = client.post("/submit_response", data=data)
-
-tests\test_additional_coverage_fixed.py:31: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-main.py:1929: in submit_response
-    flag_modified(request_obj, "timeline")
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-instance = &lt;backend.tests.test_main_utils.FakeRequest object at 0x0000015CE0A7AFF0&gt;, key = 'timeline'
-
-    def flag_modified(instance: object, key: str) -&gt; None:
-        """Mark an attribute on an instance as 'modified'.
-    
-        This sets the 'modified' flag on the instance and
-        establishes an unconditional change event for the given attribute.
-        The attribute must have a value present, else an
-        :class:`.InvalidRequestError` is raised.
-    
-        To mark an object "dirty" without referring to any specific attribute
-        so that it is considered within a flush, use the
-        :func:`.attributes.flag_dirty` call.
-    
-        .. seealso::
-    
-            :func:`.attributes.flag_dirty`
-    
-        """
-        state, dict_ = instance_state(instance), instance_dict(instance)
-        impl = state.manager[key].impl
-&gt;       impl.dispatch.modified(state, impl._modified_token)
-E       AttributeError: 'obj' object has no attribute '_modified_token'
-
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\attributes.py:2810: AttributeError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestFileDownloadEndpoint" name="test_download_file_not_found" time="0.021" /><testcase classname="tests.test_additional_coverage_fixed.TestFileDownloadEndpoint" name="test_download_file_encoded_params" time="0.015" /><testcase classname="tests.test_additional_coverage_fixed.TestCreateRequestEndpoint" name="test_create_request_with_timeline_update" time="2.322" /><testcase classname="tests.test_additional_coverage_fixed.TestCreateRequestEndpoint" name="test_create_request_invalid_data_types" time="2.405"><failure message="assert 200 in [422, 400]&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">self = &lt;backend.tests.test_additional_coverage_fixed.TestCreateRequestEndpoint object at 0x0000015CE06A9A60&gt;, override_session_with_data = None
-
-    def test_create_request_invalid_data_types(self, override_session_with_data):
-        payload = {
-            "title": 123,  # Invalid type - should be string
-            "student_email": "test@example.com",
-            "details": "Test details"
-        }
-    
-        response = client.post("/submit_request/create", json=payload)
-&gt;       assert response.status_code in [422, 400]
-E       assert 200 in [422, 400]
-E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
-
-tests\test_additional_coverage_fixed.py:79: AssertionError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestCreateRequestEndpoint" name="test_create_request_missing_required_fields" time="0.007" /><testcase classname="tests.test_additional_coverage_fixed.TestAuthenticationEdgeCases" name="test_verify_token_admin_invalid_role" time="0.004" /><testcase classname="tests.test_additional_coverage_fixed.TestAuthenticationEdgeCases" name="test_verify_token_admin_missing_role" time="0.002" /><testcase classname="tests.test_additional_coverage_fixed.TestAuthenticationEdgeCases" name="test_create_access_token_edge_cases" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases" name="test_create_announcement_invalid_date_format" time="0.016"><failure message="assert 500 in [200, 400, 422]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases object at 0x0000015CE06A91C0&gt;, override_admin_session = None
-
-    def test_create_announcement_invalid_date_format(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        payload = {
-            "title": "Test Announcement",
-            "message": "Test message",
-            "expires_date": "invalid-date-format"
-        }
-    
-        response = client.post("/api/admin/announcements", json=payload, headers=headers)
-&gt;       assert response.status_code in [200, 400, 422]
-E       assert 500 in [200, 400, 422]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_additional_coverage_fixed.py:140: AssertionError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases" name="test_create_announcement_empty_title" time="0.015" /><testcase classname="tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases" name="test_deactivate_nonexistent_announcement" time="0.279"><failure message="assert 500 in [404, 200]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_additional_coverage_fixed.TestAnnouncementEdgeCases object at 0x0000015CE06AA510&gt;, override_admin_session = None
-
-    def test_deactivate_nonexistent_announcement(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        response = client.delete("/api/admin/announcements/99999", headers=headers)
-&gt;       assert response.status_code in [404, 200]
-E       assert 500 in [404, 200]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_additional_coverage_fixed.py:161: AssertionError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestGradesEndpoint" name="test_submit_grades_invalid_course" time="0.269" /><testcase classname="tests.test_additional_coverage_fixed.TestGradesEndpoint" name="test_submit_grades_invalid_grade_values" time="0.261"><failure message="assert 404 in [200, 400, 422]&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">self = &lt;backend.tests.test_additional_coverage_fixed.TestGradesEndpoint object at 0x0000015CE06AA9C0&gt;, override_professor_session = None
-
-    def test_submit_grades_invalid_grade_values(self, override_professor_session):
-        professor_data = {"user_email": "prof@example.com", "role": "professor", "first_name": "Prof", "last_name": "User"}
-        prof_token = create_access_token(professor_data)
-        headers = {"Authorization": f"Bearer {prof_token}"}
-    
-        payload = {
-            "gradeComponent": "exam1",
-            "grades": {"student@example.com": "invalid_grade"}  # Invalid grade type
-        }
-    
-        response = client.post("/courses/CS101/submit_grades", json=payload, headers=headers)
-&gt;       assert response.status_code in [200, 400, 422]
-E       assert 404 in [200, 400, 422]
-E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
-
-tests\test_additional_coverage_fixed.py:191: AssertionError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestGradesEndpoint" name="test_submit_grades_missing_data" time="0.009" /><testcase classname="tests.test_additional_coverage_fixed.TestRequestStatusUpdate" name="test_update_status_missing_fields" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestRequestStatusUpdate" name="test_update_status_invalid_request_id" time="2.171"><failure message="AttributeError: 'obj' object has no attribute '_modified_token'">self = &lt;backend.tests.test_additional_coverage_fixed.TestRequestStatusUpdate object at 0x0000015CE06AB050&gt;, override_session_with_data = None
-
-    def test_update_status_invalid_request_id(self, override_session_with_data):
-        payload = {
-            "request_id": "invalid",  # Should be integer
-            "status": "approved",
-            "response": "Approved"
-        }
-    
-&gt;       response = client.post("/update_status", json=payload)
-
-tests\test_additional_coverage_fixed.py:226: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-main.py:883: in update_status
-    flag_modified(request_obj, "timeline")
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-instance = &lt;backend.tests.test_main_utils.FakeRequest object at 0x0000015CE1022EA0&gt;, key = 'timeline'
-
-    def flag_modified(instance: object, key: str) -&gt; None:
-        """Mark an attribute on an instance as 'modified'.
-    
-        This sets the 'modified' flag on the instance and
-        establishes an unconditional change event for the given attribute.
-        The attribute must have a value present, else an
-        :class:`.InvalidRequestError` is raised.
-    
-        To mark an object "dirty" without referring to any specific attribute
-        so that it is considered within a flush, use the
-        :func:`.attributes.flag_dirty` call.
-    
-        .. seealso::
-    
-            :func:`.attributes.flag_dirty`
-    
-        """
-        state, dict_ = instance_state(instance), instance_dict(instance)
-        impl = state.manager[key].impl
-&gt;       impl.dispatch.modified(state, impl._modified_token)
-E       AttributeError: 'obj' object has no attribute '_modified_token'
-
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\attributes.py:2810: AttributeError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestRequestStatusUpdate" name="test_update_status_nonexistent_request" time="2.834"><failure message="AttributeError: 'obj' object has no attribute '_modified_token'">self = &lt;backend.tests.test_additional_coverage_fixed.TestRequestStatusUpdate object at 0x0000015CE06AB230&gt;, override_session_with_data = None
-
-    def test_update_status_nonexistent_request(self, override_session_with_data):
-        payload = {
-            "request_id": 99999,  # Non-existent request
-            "status": "approved",
-            "response": "Approved"
-        }
-    
-&gt;       response = client.post("/update_status", json=payload)
-
-tests\test_additional_coverage_fixed.py:236: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-main.py:883: in update_status
-    flag_modified(request_obj, "timeline")
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-instance = &lt;backend.tests.test_main_utils.FakeRequest object at 0x0000015CE1544C80&gt;, key = 'timeline'
-
-    def flag_modified(instance: object, key: str) -&gt; None:
-        """Mark an attribute on an instance as 'modified'.
-    
-        This sets the 'modified' flag on the instance and
-        establishes an unconditional change event for the given attribute.
-        The attribute must have a value present, else an
-        :class:`.InvalidRequestError` is raised.
-    
-        To mark an object "dirty" without referring to any specific attribute
-        so that it is considered within a flush, use the
-        :func:`.attributes.flag_dirty` call.
-    
-        .. seealso::
-    
-            :func:`.attributes.flag_dirty`
-    
-        """
-        state, dict_ = instance_state(instance), instance_dict(instance)
-        impl = state.manager[key].impl
-&gt;       impl.dispatch.modified(state, impl._modified_token)
-E       AttributeError: 'obj' object has no attribute '_modified_token'
-
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\attributes.py:2810: AttributeError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestCoursesEndpoint" name="test_get_courses_with_professor_filter" time="0.253" /><testcase classname="tests.test_additional_coverage_fixed.TestCoursesEndpoint" name="test_get_courses_with_false_professor_filter" time="0.296" /><testcase classname="tests.test_additional_coverage_fixed.TestCoursesEndpoint" name="test_get_courses_no_filter" time="0.325" /><testcase classname="tests.test_additional_coverage_fixed.TestUserManagementEdgeCases" name="test_set_role_nonexistent_user" time="0.377" /><testcase classname="tests.test_additional_coverage_fixed.TestUserManagementEdgeCases" name="test_get_user_invalid_email_format" time="0.308"><failure message="assert 200 in [404, 400]&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">self = &lt;backend.tests.test_additional_coverage_fixed.TestUserManagementEdgeCases object at 0x0000015CE06ABE60&gt;, override_session_with_data = None
-
-    def test_get_user_invalid_email_format(self, override_session_with_data):
-        response = client.post("/Users/getUser/invalid-email-format")
-&gt;       assert response.status_code in [404, 400]
-E       assert 200 in [404, 400]
-E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
-
-tests\test_additional_coverage_fixed.py:273: AssertionError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestUserManagementEdgeCases" name="test_get_users_with_role_filter" time="0.268" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_chat_request_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_unavailability_period_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_assign_professor_request_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestPydanticModelsValidation" name="test_assign_students_request_validation" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestConstants" name="test_constants_exist" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestConstants" name="test_oauth2_scheme_exists" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestImportHandling" name="test_openai_import_handling" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestImportHandling" name="test_ai_endpoint_when_openai_unavailable" time="0.011"><failure message="assert 200 == 503&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">self = &lt;backend.tests.test_additional_coverage_fixed.TestImportHandling object at 0x0000015CE06E8A10&gt;, override_admin_session = None
-
-    @patch('backend.main.OPENAI_AVAILABLE', False)
-    def test_ai_endpoint_when_openai_unavailable(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        response = client.post("/api/admin/generate-ai-news", headers=headers)
-&gt;       assert response.status_code == 503
-E       assert 200 == 503
-E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
-
-tests\test_additional_coverage_fixed.py:364: AssertionError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestDatabaseFunctions" name="test_fetch_data_function" time="0.002"><failure message="sqlite3.OperationalError: no such table: my_table">self = &lt;backend.tests.test_additional_coverage_fixed.TestDatabaseFunctions object at 0x0000015CE06E8D40&gt;
-
-    def test_fetch_data_function(self):
-        from backend.main import fetch_data
-&gt;       result = fetch_data()
-
-tests\test_additional_coverage_fixed.py:372: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-    def fetch_data():
-        # Opens a connection using sqlite3.
-        connection = sqlite3.connect('mydb.db')
-        cursor = connection.cursor()
-&gt;       cursor.execute("SELECT * FROM my_table")
-E       sqlite3.OperationalError: no such table: my_table
-
-main.py:1587: OperationalError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestDatabaseFunctions" name="test_main_function_exists" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestErrorHandlingPaths" name="test_login_with_malformed_json" time="0.006"><failure message="json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">self = &lt;backend.tests.test_additional_coverage_fixed.TestErrorHandlingPaths object at 0x0000015CE06E91C0&gt;
-
-    def test_login_with_malformed_json(self):
-&gt;       response = client.post("/login",
-                              content="malformed json {invalid}",
-                              headers={"Content-Type": "application/json"})
-
-tests\test_additional_coverage_fixed.py:385: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-main.py:276: in login
-    data = await request.json()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\requests.py:249: in json
-    self._json = json.loads(body)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:346: in loads
-    return _default_decoder.decode(s)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py:337: in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = &lt;json.decoder.JSONDecoder object at 0x0000015CD9462C00&gt;, s = 'malformed json {invalid}', idx = 0
-
-    def raw_decode(self, s, idx=0):
-        """Decode a JSON document from ``s`` (a ``str`` beginning with
-        a JSON document) and return a 2-tuple of the Python
-        representation and the index in ``s`` where the document ended.
-    
-        This can be used to decode a JSON document from a string that may
-        have extraneous data at the end.
-    
-        """
+    def _loop_writing(self, f=None, data=None):
         try:
-            obj, end = self.scan_once(s, idx)
-        except StopIteration as err:
-&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
-E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py:355: JSONDecodeError</failure></testcase><testcase classname="tests.test_additional_coverage_fixed.TestErrorHandlingPaths" name="test_upload_file_with_no_file" time="0.005" /><testcase classname="tests.test_additional_coverage_fixed.TestFileOperations" name="test_reload_files_basic" time="0.008" /><testcase classname="tests.test_additional_coverage_fixed.TestFileOperations" name="test_upload_file_basic" time="0.006" /><testcase classname="tests.test_additional_coverage_fixed.TestBackgroundTaskVariables" name="test_background_task_variable_exists" time="0.001" /><testcase classname="tests.test_additional_coverage_fixed.TestBackgroundTaskVariables" name="test_openai_available_variable_exists" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_english" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew" time="0.002" /><testcase classname="tests.test_ai_service" name="test_process_keywords_empty_string" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_stop_words_only" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_mixed_case" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew_empty_string" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew_stop_words_only" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_keywords_hebrew_mixed_case" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_exact" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_partial" time="0.002" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_no_match" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_empty_query" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_empty_pattern" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_empty_both" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_query_in_pattern" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_pattern_in_query_hebrew" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_query_in_pattern_hebrew" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_keyword_hebrew_partial_match" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_no_keywords_query" time="0.001" /><testcase classname="tests.test_ai_service" name="test_calculate_match_score_no_keywords_pattern" time="0.001" /><testcase classname="tests.test_ai_service" name="test_process_message_english" time="0.245" /><testcase classname="tests.test_ai_service" name="test_process_message_hebrew" time="0.232" /><testcase classname="tests.test_ai_service" name="test_process_message_empty" time="0.006" /><testcase classname="tests.test_ai_service" name="test_process_message_special_characters" time="1.238" /><testcase classname="tests.test_ai_service" name="test_process_message_error_handling" time="0.025" /><testcase classname="tests.test_ai_service" name="test_process_message_language_detection" time="0.432" /><testcase classname="tests.test_ai_service" name="test_process_message_exact_faq_match" time="0.004" /><testcase classname="tests.test_ai_service" name="test_process_message_partial_faq_match" time="0.244" /><testcase classname="tests.test_ai_service" name="test_process_message_hebrew_faq" time="0.217" /><testcase classname="tests.test_ai_service" name="test_process_message_openai_fallback" time="2.704" /><testcase classname="tests.test_ai_service" name="test_openai_api_call" time="3.478" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_success" time="0.006" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_file_not_found" time="0.002" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_json_decode_error" time="0.005" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_empty_json_object" time="0.004" /><testcase classname="tests.test_ai_service" name="test_load_faq_data_missing_faqs_key" time="0.006" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_not_available" time="0.004" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_openai_error" time="0.007" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_openai_not_available" time="0.006" /><testcase classname="tests.test_ai_service" name="test_call_openai_api_attribute_error" time="0.004" /><testcase classname="tests.test_ai_service" name="test_process_message_with_none_language" time="21.886" /><testcase classname="tests.test_db_connection" name="test_add_user_and_duplicate" time="0.132" /><testcase classname="tests.test_db_connection" name="test_add_user_professor" time="0.064" /><testcase classname="tests.test_db_connection" name="test_direct_add_and_update" time="0.140" /><testcase classname="tests.test_db_connection" name="test_requests_and_notifications_flow" time="0.120" /><testcase classname="tests.test_db_connection" name="test_course_student_course_and_response_and_assign" time="0.116" /><testcase classname="tests.test_email_service" name="test_send_email_success" time="0.004" /><testcase classname="tests.test_email_service" name="test_send_email_failure" time="0.005" /><testcase classname="tests.test_email_service" name="test_send_email_no_config" time="0.007" /><testcase classname="tests.test_email_service" name="test_send_email_html_content" time="0.006" /><testcase classname="tests.test_fast_unit" name="test_verify_token_ok" time="0.001" /><testcase classname="tests.test_fast_unit" name="test_verify_token_prof_guard" time="0.001" /><testcase classname="tests.test_fast_unit" name="test_upload_too_large" time="0.142" /><testcase classname="tests.test_fast_unit" name="test_reload_files_empty" time="0.024" /><testcase classname="tests.test_fast_unit" name="test_mark_all_notifications" time="0.010" /><testcase classname="tests.test_imports" name="test_import_everything" time="0.001" /><testcase classname="tests.test_integration_api" name="test_full_flow" time="2.327" /><testcase classname="tests.test_integration_api" name="test_ai_service_integration" time="0.150" /><testcase classname="tests.test_integration_api" name="test_file_upload_download_integration" time="0.389" /><testcase classname="tests.test_integration_api" name="test_professor_student_assignment_integration" time="0.893" /><testcase classname="tests.test_integration_api" name="test_grade_management_integration" time="1.112" /><testcase classname="tests.test_integration_api" name="test_professor_availability_integration" time="0.409" /><testcase classname="tests.test_main" name="test_login_matrix[override_session_with_data-student1@sce.ac.il-password-200]" time="0.461" /><testcase classname="tests.test_main" name="test_login_matrix[override_session_without_data-nosuch@sce.ac.il-password-404]" time="0.227" /><testcase classname="tests.test_main" name="test_login_matrix[override_session_with_data-student1@sce.ac.il-BAD-401]" time="0.446" /><testcase classname="tests.test_main" name="test_login_success" time="0.445" /><testcase classname="tests.test_main" name="test_login_fail" time="0.443" /><testcase classname="tests.test_main" name="test_create_access_token" time="0.001" /><testcase classname="tests.test_main" name="test_verify_token_professor" time="0.001" /><testcase classname="tests.test_main" name="test_home" time="0.006" /><testcase classname="tests.test_main" name="test_list_databases" time="0.006" /><testcase classname="tests.test_main" name="test_list_tables" time="0.009" /><testcase classname="tests.test_main" name="test_list_users" time="1.884" /><testcase classname="tests.test_main" name="test_get_users" time="0.232" /><testcase classname="tests.test_main" name="test_create_user" time="0.443" /><testcase classname="tests.test_main" name="test_create_user_duplicate" time="0.225" /><testcase classname="tests.test_main" name="test_set_role" time="0.237" /><testcase classname="tests.test_main" name="test_get_user_student" time="0.452" /><testcase classname="tests.test_main" name="test_get_user_professor" time="0.453" /><testcase classname="tests.test_main" name="test_get_courses" time="0.459" /><testcase classname="tests.test_main" name="test_get_student_courses" time="0.226" /><testcase classname="tests.test_main" name="test_get_student_courses_invalid_email" time="0.008" /><testcase classname="tests.test_main" name="test_get_student_courses_empty_email" time="0.005" /><testcase classname="tests.test_main" name="test_upload_missing_filetype" time="0.006" /><testcase classname="tests.test_main" name="test_upload_file_success" time="0.013" /><testcase classname="tests.test_main" name="test_reload_files" time="0.018" /><testcase classname="tests.test_main" name="test_create_general_request" time="2.181" /><testcase classname="tests.test_main" name="test_create_grade_appeal_request" time="2.147" /><testcase classname="tests.test_main" name="test_create_schedule_change_request" time="2.028" /><testcase classname="tests.test_main" name="test_create_request_missing_title" time="0.005" /><testcase classname="tests.test_main" name="test_create_request_missing_student_email" time="0.008" /><testcase classname="tests.test_main" name="test_create_request_invalid_grade_appeal" time="0.009" /><testcase classname="tests.test_main" name="test_create_request_invalid_schedule_change" time="0.007" /><testcase classname="tests.test_main_extended" name="test_create_access_token" time="0.001" /><testcase classname="tests.test_main_extended" name="test_verify_token_valid" time="0.005" /><testcase classname="tests.test_main_extended" name="test_verify_token_invalid_signature" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_missing_email" time="0.021" /><testcase classname="tests.test_main_extended" name="test_verify_token_missing_role" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_expired" time="0.004" /><testcase classname="tests.test_main_extended" name="test_verify_token_professor_valid" time="0.025" /><testcase classname="tests.test_main_extended" name="test_verify_token_professor_invalid_role" time="0.027" /><testcase classname="tests.test_main_extended" name="test_verify_token_professor_missing_role_in_payload" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_student_valid" time="0.003" /><testcase classname="tests.test_main_extended" name="test_verify_token_student_invalid_role" time="0.004" /><testcase classname="tests.test_main_extended" name="test_verify_token_student_missing_role_in_payload" time="0.005" /><testcase classname="tests.test_main_extended" name="test_chat_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_chat_request_valid_no_language" time="0.001" /><testcase classname="tests.test_main_extended" name="test_chat_request_missing_message" time="0.001" /><testcase classname="tests.test_main_extended" name="test_chat_request_message_empty_string" time="0.002" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_valid" time="0.002" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_no_reason" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_missing_start_date" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_missing_end_date" time="0.001" /><testcase classname="tests.test_main_extended" name="test_unavailability_period_invalid_date_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_missing_email" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_missing_course_ids" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_invalid_course_ids_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_professor_request_empty_course_ids" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_missing_emails" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_missing_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_invalid_emails_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_assign_students_request_empty_emails_list" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_valid" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_missing_request_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_missing_professor_email" time="0.002" /><testcase classname="tests.test_main_extended" name="test_response_request_missing_response_text" time="0.001" /><testcase classname="tests.test_main_extended" name="test_response_request_invalid_request_id_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_valid_with_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_valid_no_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_valid_explicit_none_course_id" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_missing_reason" time="0.001" /><testcase classname="tests.test_main_extended" name="test_transfer_request_invalid_course_id_type" time="0.001" /><testcase classname="tests.test_main_extended" name="test_create_access_token_basic" time="0.001" /><testcase classname="tests.test_main_extended" name="test_verify_token_functions" time="0.001" /><testcase classname="tests.test_main_extended" name="test_verify_token_errors" time="0.001" /><testcase classname="tests.test_main_extended" name="test_home_endpoint" time="0.007" /><testcase classname="tests.test_main_extended" name="test_list_databases_endpoint" time="0.009" /><testcase classname="tests.test_main_extended" name="test_list_tables_endpoint" time="0.006" /><testcase classname="tests.test_main_extended" name="test_upload_file_success" time="0.007" /><testcase classname="tests.test_main_extended" name="test_reload_files_success" time="0.024" /><testcase classname="tests.test_main_extended" name="test_download_file_success" time="0.030" /><testcase classname="tests.test_main_extended" name="test_download_file_not_found" time="0.004" /><testcase classname="tests.test_main_extended" name="test_sqlite_functions" time="0.003" /><testcase classname="tests.test_main_extended" name="test_pydantic_model_edge_cases" time="0.001" /><testcase classname="tests.test_main_extended" name="test_simple_error_conditions" time="0.001" /><testcase classname="tests.test_main_extended" name="test_main_constants_and_setup" time="0.001" /><testcase classname="tests.test_main_extended" name="test_oauth2_scheme" time="0.001" /><testcase classname="tests.test_main_extended" name="test_upload_file_size_validation" time="0.008" /><testcase classname="tests.test_main_extended" name="test_login_function_logic" time="0.008" /><testcase classname="tests.test_main_extended" name="test_login_invalid_password" time="0.445" /><testcase classname="tests.test_main_extended" name="test_ai_chat_function_error" time="0.004" /><testcase classname="tests.test_main_extended" name="test_jwt_import_fallback" time="0.001" /><testcase classname="tests.test_main_extended" name="test_home_function" time="0.001" /><testcase classname="tests.test_main_extended" name="test_list_databases_function" time="0.001" /><testcase classname="tests.test_main_extended" name="test_list_tables_function" time="0.001" /><testcase classname="tests.test_main_extended" name="test_reload_files_function" time="0.003" /><testcase classname="tests.test_main_extended" name="test_download_file_function" time="0.006" /><testcase classname="tests.test_main_extended" name="test_create_access_token_comprehensive" time="0.002" /><testcase classname="tests.test_main_extended" name="test_verify_token_comprehensive" time="0.002" /><testcase classname="tests.test_main_extended" name="test_role_verification_functions" time="0.001" /><testcase classname="tests.test_main_extended" name="test_pydantic_models_comprehensive" time="0.001" /><testcase classname="tests.test_main_extended" name="test_lifespan_function_exists" time="0.001" /><testcase classname="tests.test_main_extended" name="test_app_configuration_comprehensive" time="0.001" /><testcase classname="tests.test_main_extended" name="test_constants_comprehensive" time="0.001" /><testcase classname="tests.test_main_extended" name="test_all_imports" time="0.001" /><testcase classname="tests.test_main_extended" name="test_get_requests_function" time="0.006" /><testcase classname="tests.test_main_extended" name="test_get_requests_secretary" time="0.004" /><testcase classname="tests.test_main_extended" name="test_get_professor_requests_function" time="0.039" /><testcase classname="tests.test_main_extended" name="test_create_user_function" time="0.227" /><testcase classname="tests.test_main_extended" name="test_get_users_coverage" time="0.004" /><testcase classname="tests.test_main_extended" name="test_get_courses_coverage" time="0.006" /><testcase classname="tests.test_main_extended" name="test_set_role_user_not_found" time="0.008" /><testcase classname="tests.test_main_extended" name="test_get_user_not_found" time="0.006" /><testcase classname="tests.test_main_extended" name="test_submit_grades_missing_data" time="0.002" /><testcase classname="tests.test_main_extended" name="test_get_students_course_not_found" time="0.003" /><testcase classname="tests.test_main_extended" name="test_create_general_request_missing_data" time="0.004" /><testcase classname="tests.test_main_extended" name="test_delete_request_not_found" time="0.005" /><testcase classname="tests.test_main_extended" name="test_edit_request_not_found" time="0.005" /><testcase classname="tests.test_main_extended" name="test_get_student_courses_empty_email" time="0.006" /><testcase classname="tests.test_main_extended" name="test_get_grades_no_grades" time="0.005" /><testcase classname="tests.test_main_extended" name="test_assign_students_coverage" time="0.006" /><testcase classname="tests.test_main_extended" name="test_assign_professor_coverage" time="0.004" /><testcase classname="tests.test_main_extended" name="test_get_assigned_students_coverage" time="0.035" /><testcase classname="tests.test_main_extended" name="test_simple_function_coverage" time="0.014" /><testcase classname="tests.test_main_extended" name="test_login_error_paths" time="0.004" /><testcase classname="tests.test_main_extended" name="test_upload_file_error_paths" time="0.005" /><testcase classname="tests.test_main_extended" name="test_app_and_constants" time="0.001" /><testcase classname="tests.test_main_extended" name="test_function_existence" time="0.001" /><testcase classname="tests.test_main_extended" name="test_lifespan_function_simple" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_create_announcement_success" time="0.009" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_create_announcement_unauthorized" time="0.008" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_get_active_announcements" time="0.231" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_get_all_announcements_admin" time="0.232" /><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_deactivate_announcement" time="0.228"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints object at 0x0000015CE07C34D0&gt;, override_admin_session = None
-
-    def test_deactivate_announcement(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        response = client.delete("/api/admin/announcements/1", headers=headers)
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:63: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints" name="test_generate_ai_news_unavailable" time="0.009"><failure message="assert 200 == 503&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestAnnouncementsEndpoints object at 0x0000015CE07C36B0&gt;, override_admin_session = None
-
-    @patch('backend.main.OPENAI_AVAILABLE', False)
-    def test_generate_ai_news_unavailable(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        response = client.post("/api/admin/generate-ai-news", headers=headers)
-&gt;       assert response.status_code == 503
-E       assert 200 == 503
-E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:72: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestAIChatEndpoint" name="test_ai_chat_success" time="0.009" /><testcase classname="tests.test_missing_coverage_fixed.TestAIChatEndpoint" name="test_ai_chat_error" time="0.005" /><testcase classname="tests.test_missing_coverage_fixed.TestAIChatEndpoint" name="test_ai_chat_invalid_request" time="0.005" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_submit_grades_success" time="0.235" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_submit_grades_unauthorized" time="0.007" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_get_course_students" time="0.232"><failure message="AttributeError: 'FakeCourse' object has no attribute 'students'">self = &lt;backend.tests.test_missing_coverage_fixed.TestProfessorEndpoints object at 0x0000015CE07E4440&gt;, override_professor_session = None
-
-    def test_get_course_students(self, override_professor_session):
-        professor_data = {"user_email": "prof@example.com", "role": "professor", "first_name": "Prof", "last_name": "User"}
-        prof_token = create_access_token(professor_data)
-        headers = {"Authorization": f"Bearer {prof_token}"}
-    
-&gt;       response = client.get("/course/CS101/students", headers=headers)
-
-tests\test_missing_coverage_fixed.py:156: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:465: in get
-    return super().get(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1053: in get
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-course_id = 'CS101', session = &lt;backend.tests.test_main_utils.FakeAsyncSession object at 0x0000015CE15909E0&gt;
-token_data = {'exp': 1749649486, 'first_name': 'Prof', 'last_name': 'User', 'role': 'professor', ...}
-
-    @app.get("/course/{course_id}/students")
-    async def get_students(course_id: str, session: AsyncSession = Depends(get_session),
-                           token_data: dict = Depends(verify_token_professor)):
-        start_time = time.time()
-        result = await session.execute(
-            select(Courses)
-            .filter(Courses.id == course_id)
-            .options(selectinload(Courses.students))
-        )
-        course = result.scalars().first()
-    
-        if not course:
-            end_time = time.time()
-            print(f"get_students run-time is {end_time - start_time:.3f} sec")
-            raise HTTPException(status_code=404, detail="Course not found")
-    
-        end_time = time.time()
-        print(f"get_students run-time is {end_time - start_time:.3f} sec")
-&gt;       return jsonable_encoder(course.students)
-E       AttributeError: 'FakeCourse' object has no attribute 'students'
-
-main.py:1185: AttributeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_add_unavailability_period" time="0.247" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_get_unavailability_periods" time="0.465" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_delete_unavailability_period" time="0.006" /><testcase classname="tests.test_missing_coverage_fixed.TestProfessorEndpoints" name="test_check_professor_availability" time="0.443" /><testcase classname="tests.test_missing_coverage_fixed.TestStudentEndpoints" name="test_get_student_professors" time="0.221"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestStudentEndpoints object at 0x0000015CE07C0A70&gt;, override_session_with_data = None
-
-    def test_get_student_professors(self, override_session_with_data):
-        response = client.get("/student/student@example.com/professors")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:187: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestStudentEndpoints" name="test_get_student_professor_for_course" time="0.231" /><testcase classname="tests.test_missing_coverage_fixed.TestStudentEndpoints" name="test_get_grades_endpoint" time="0.227" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_update_status_endpoint" time="2.065"><failure message="AttributeError: 'obj' object has no attribute '_modified_token'">self = &lt;backend.tests.test_missing_coverage_fixed.TestRequestEndpoints object at 0x0000015CE07E4E00&gt;, override_session_with_data = None
-
-    def test_update_status_endpoint(self, override_session_with_data):
-        payload = {
-            "request_id": 1,
-            "status": "approved",
-            "response": "Request approved"
-        }
-    
-&gt;       response = client.post("/update_status", json=payload)
-
-tests\test_missing_coverage_fixed.py:208: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-main.py:883: in update_status
-    flag_modified(request_obj, "timeline")
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-instance = &lt;backend.tests.test_main_utils.FakeRequest object at 0x0000015CE156FB60&gt;, key = 'timeline'
-
-    def flag_modified(instance: object, key: str) -&gt; None:
-        """Mark an attribute on an instance as 'modified'.
-    
-        This sets the 'modified' flag on the instance and
-        establishes an unconditional change event for the given attribute.
-        The attribute must have a value present, else an
-        :class:`.InvalidRequestError` is raised.
-    
-        To mark an object "dirty" without referring to any specific attribute
-        so that it is considered within a flush, use the
-        :func:`.attributes.flag_dirty` call.
-    
-        .. seealso::
-    
-            :func:`.attributes.flag_dirty`
-    
-        """
-        state, dict_ = instance_state(instance), instance_dict(instance)
-        impl = state.manager[key].impl
-&gt;       impl.dispatch.modified(state, impl._modified_token)
-E       AttributeError: 'obj' object has no attribute '_modified_token'
-
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\attributes.py:2810: AttributeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_get_professor_requests" time="0.229"><failure message="assert 500 == 200&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestRequestEndpoints object at 0x0000015CE07E4FB0&gt;, override_session_with_data = None
-
-    def test_get_professor_requests(self, override_session_with_data):
-        response = client.get("/requests/professor/prof@example.com")
-&gt;       assert response.status_code == 200
-E       assert 500 == 200
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:213: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_delete_request" time="0.007"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestRequestEndpoints object at 0x0000015CE07E5190&gt;, override_session_with_data = None
-
-    def test_delete_request(self, override_session_with_data):
-        response = client.delete("/Requests/1")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:218: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_edit_request_unauthorized" time="0.009" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_get_student_courses_for_request" time="0.448"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestRequestEndpoints object at 0x0000015CE07E5550&gt;, override_session_with_data = None
-
-    def test_get_student_courses_for_request(self, override_session_with_data):
-        response = client.get("/request/1/student_courses")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:235: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestRequestEndpoints" name="test_get_request_responses" time="0.222" /><testcase classname="tests.test_missing_coverage_fixed.TestAssignmentEndpoints" name="test_assign_students" time="0.223"><failure message="AttributeError: 'tuple' object has no attribute 'student_email'">self = &lt;backend.tests.test_missing_coverage_fixed.TestAssignmentEndpoints object at 0x0000015CE07E5AF0&gt;, override_session_with_data = None
-
-    def test_assign_students(self, override_session_with_data):
-        payload = {
-            "student_emails": ["student1@example.com", "student2@example.com"],
-            "course_id": "CS101"
-        }
-    
-&gt;       response = client.post("/assign_student", json=payload)
-
-tests\test_missing_coverage_fixed.py:251: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-data = AssignStudentsRequest(student_emails=['student1@example.com', 'student2@example.com'], course_id='CS101')
-db = &lt;backend.tests.test_main_utils.FakeAsyncSession object at 0x0000015CE1554620&gt;
-
-    @app.post("/assign_student")
-    async def assign_students(
-            data: AssignStudentsRequest,
-            db: AsyncSession = Depends(get_session)
-    ):
-        start_time = time.time()
-        stmt = select(StudentCourses).filter(StudentCourses.course_id == data.course_id)
-        result = await db.execute(stmt)
-        existing_students = result.scalars().all()
-    
-        new_students_emails = set(data.student_emails)
-        print(f"New students emails: {new_students_emails}")
-        print(f"Existing students: {existing_students}")
-    
-        for student in existing_students:
-&gt;           if student.student_email not in new_students_emails:
-E           AttributeError: 'tuple' object has no attribute 'student_email'
-
-main.py:1524: AttributeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestAssignmentEndpoints" name="test_assign_professor" time="2.157" /><testcase classname="tests.test_missing_coverage_fixed.TestAssignmentEndpoints" name="test_get_assigned_students" time="0.231" /><testcase classname="tests.test_missing_coverage_fixed.TestTransferEndpoints" name="test_transfer_request" time="0.446"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestTransferEndpoints object at 0x0000015CE07E61B0&gt;, override_session_with_data = None
-
-    def test_transfer_request(self, override_session_with_data):
-        payload = {
-            "new_course_id": "CS102",
-            "reason": "Schedule conflict"
-        }
-    
-        response = client.put("/request/1/transfer", json=payload)
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:278: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestTransferEndpoints" name="test_get_department_transfer_requests" time="0.225" /><testcase classname="tests.test_missing_coverage_fixed.TestTransferEndpoints" name="test_get_all_transfer_requests" time="0.669"><failure message="AttributeError: 'FakeRequest' object has no attribute 'course_component'">self = &lt;backend.tests.test_missing_coverage_fixed.TestTransferEndpoints object at 0x0000015CE07E6540&gt;, override_admin_session = None
-
-    def test_get_all_transfer_requests(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-&gt;       response = client.get("/admin/transfer-requests", headers=headers)
-
-tests\test_missing_coverage_fixed.py:293: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:465: in get
-    return super().get(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1053: in get
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-session = &lt;backend.tests.test_main_utils.FakeAsyncSession object at 0x0000015CE1557EC0&gt;
-token_data = {'exp': 1749649496, 'first_name': 'Admin', 'last_name': 'User', 'role': 'admin', ...}
-
-    @app.get("/admin/transfer-requests")
-    async def get_all_transfer_requests(
-        session: AsyncSession = Depends(get_session),
-        token_data: dict = Depends(verify_token)
-    ):
-        start_time = time.time()
-        # Verify the user is an admin
-        if token_data["role"] != "admin":
-            end_time = time.time()
-            print(f"get_all_transfer_requests run-time is {end_time - start_time:.3f} sec")
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only admin can access this endpoint"
-            )
-    
-        # Get all pending requests
-        requests = await session.execute(
-            select(Requests)
-            .where(Requests.status == "pending")
-            .order_by(Requests.created_date.desc())
-        )
-        requests = requests.scalars().all()
-    
-        # Format the response
-        formatted_requests = []
-        for request in requests:
-            # Get student details
-            student = await session.execute(
-                select(Users).where(Users.email == request.student_email)
-            )
-            student = student.scalar_one_or_none()
-    
-            # Get student's department
-            student_dept = await session.execute(
-                select(Students).where(Students.email == request.student_email)
-            )
-            student_dept = student_dept.scalar_one_or_none()
-    
-            formatted_request = {
-                "id": request.id,
-                "title": request.title,
-                "student_email": request.student_email,
-                "student_name": f"{student.first_name} {student.last_name}" if student else "Unknown",
-                "details": request.details,
-                "course_id": request.course_id,
-&gt;               "course_component": request.course_component,
-                "files": request.files,
-                "status": request.status,
-                "created_date": request.created_date,
-                "timeline": request.timeline,
-                "department_id": student_dept.department_id if student_dept else None
-            }
-E           AttributeError: 'FakeRequest' object has no attribute 'course_component'
-
-main.py:2179: AttributeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestNotificationEndpoints" name="test_get_notifications" time="0.437" /><testcase classname="tests.test_missing_coverage_fixed.TestNotificationEndpoints" name="test_mark_notification_read" time="0.227" /><testcase classname="tests.test_missing_coverage_fixed.TestNotificationEndpoints" name="test_mark_all_notifications_read" time="0.228" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_templates" time="0.228" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_template_by_id" time="0.228"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestTemplateEndpoints object at 0x0000015CE07E4FE0&gt;, override_session_with_data = None
-
-    def test_get_request_template_by_id(self, override_session_with_data):
-        response = client.get("/api/request_templates/1")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:337: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_create_request_template" time="0.226" /><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_template_names" time="0.225"><failure message="assert 500 == 200&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestTemplateEndpoints object at 0x0000015CE07E6BA0&gt;, override_session_with_data = None
-
-    def test_get_request_template_names(self, override_session_with_data):
-        response = client.get("/api/request_template_names")
-&gt;       assert response.status_code == 200
-E       assert 500 == 200
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:363: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestTemplateEndpoints" name="test_get_request_template_by_name" time="0.221" /><testcase classname="tests.test_missing_coverage_fixed.TestCommentTemplateEndpoints" name="test_get_comment_templates" time="0.231" /><testcase classname="tests.test_missing_coverage_fixed.TestCommentTemplateEndpoints" name="test_create_comment_template" time="0.008"><failure message="fastapi.exceptions.ResponseValidationError: 2 validation errors:&#10;  {'type': 'int_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid integer', 'input': None}&#10;  {'type': 'datetime_type', 'loc': ('response', 'created_at'), 'msg': 'Input should be a valid datetime', 'input': None}">self = &lt;backend.tests.test_missing_coverage_fixed.TestCommentTemplateEndpoints object at 0x0000015CE07E7290&gt;, override_professor_session = None
-
-    def test_create_comment_template(self, override_professor_session):
-        professor_data = {"user_email": "prof@example.com", "role": "professor", "first_name": "Prof", "last_name": "User"}
-        prof_token = create_access_token(professor_data)
-        headers = {"Authorization": f"Bearer {prof_token}"}
-    
-        payload = {
-            "title": "Test Comment Template",
-            "content": "This is a test comment template"
-        }
-    
-&gt;       response = client.post("/comment_templates", json=payload, headers=headers)
-
-tests\test_missing_coverage_fixed.py:393: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:327: in app
-    content = await serialize_response(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-    async def serialize_response(
-        *,
-        field: Optional[ModelField] = None,
-        response_content: Any,
-        include: Optional[IncEx] = None,
-        exclude: Optional[IncEx] = None,
-        by_alias: bool = True,
-        exclude_unset: bool = False,
-        exclude_defaults: bool = False,
-        exclude_none: bool = False,
-        is_coroutine: bool = True,
-    ) -&gt; Any:
-        if field:
-            errors = []
-            if not hasattr(field, "serialize"):
-                # pydantic v1
-                response_content = _prepare_response_content(
-                    response_content,
-                    exclude_unset=exclude_unset,
-                    exclude_defaults=exclude_defaults,
-                    exclude_none=exclude_none,
-                )
-            if is_coroutine:
-                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            if f is not None and self._write_fut is None and self._closing:
+                # XXX most likely self._force_close() has been called, and
+                # it has set self._write_fut to None.
+                return
+            assert f is self._write_fut
+            self._write_fut = None
+            self._pending_write = 0
+            if f:
+                f.result()
+            if data is None:
+                data = self._buffer
+                self._buffer = None
+            if not data:
+                if self._closing:
+                    self._loop.call_soon(self._call_connection_lost, None)
+                if self._eof_written:
+                    self._sock.shutdown(socket.SHUT_WR)
+                # Now that we've reduced the buffer size, tell the
+                # protocol to resume writing if it was paused.  Note that
+                # we do this last since the callback is called immediately
+                # and it may add more data to the buffer (even causing the
+                # protocol to be paused again).
+                self._maybe_resume_protocol()
             else:
-                value, errors_ = await run_in_threadpool(
-                    field.validate, response_content, {}, loc=("response",)
-                )
-            if isinstance(errors_, list):
-                errors.extend(errors_)
-            elif errors_:
-                errors.append(errors_)
-            if errors:
-&gt;               raise ResponseValidationError(
-                    errors=_normalize_errors(errors), body=response_content
-                )
-E               fastapi.exceptions.ResponseValidationError: 2 validation errors:
-E                 {'type': 'int_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid integer', 'input': None}
-E                 {'type': 'datetime_type', 'loc': ('response', 'created_at'), 'msg': 'Input should be a valid datetime', 'input': None}
+&gt;               self._write_fut = self._loop._proactor.send(self._sock, data)
+E               AttributeError: 'NoneType' object has no attribute 'send'
 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:176: ResponseValidationError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestCommentTemplateEndpoints" name="test_delete_comment_template" time="0.233" /><testcase classname="tests.test_missing_coverage_fixed.TestDepartmentEndpoints" name="test_get_department_students" time="0.229"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestDepartmentEndpoints object at 0x0000015CE07E7800&gt;, override_session_with_data = None
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py:402: AttributeError
 
-    def test_get_department_students(self, override_session_with_data):
-        response = client.get("/secretary/department-students/secretary@example.com")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
+During handling of the above exception, another exception occurred:
 
-tests\test_missing_coverage_fixed.py:410: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestReportEndpoints" name="test_get_reports_student" time="0.007"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestReportEndpoints object at 0x0000015CE07E7B00&gt;, override_session_with_data = None
-
-    def test_get_reports_student(self, override_session_with_data):
-        response = client.get("/reports/student/student@example.com")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:418: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestReportEndpoints" name="test_get_reports_professor" time="1.092"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestReportEndpoints object at 0x0000015CE07E7CB0&gt;, override_session_with_data = None
-
-    def test_get_reports_professor(self, override_session_with_data):
-        response = client.get("/reports/professor/prof@example.com")
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:422: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestReportEndpoints" name="test_get_reports_with_filters" time="1.085"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestReportEndpoints object at 0x0000015CE07E7E90&gt;, override_session_with_data = None
-
-    def test_get_reports_with_filters(self, override_session_with_data):
-        params = {
-            "course_id": "CS101",
-            "request_type": "grade_appeal",
-            "status": "pending",
-            "start_date": "2024-01-01",
-            "end_date": "2024-12-31"
-        }
-    
-        response = client.get("/reports/professor/prof@example.com", params=params)
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:434: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints" name="test_get_deadline_configs" time="0.232" /><testcase classname="tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints" name="test_create_deadline_config" time="0.232"><failure message="assert 500 in [200, 409]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints object at 0x0000015CE08083E0&gt;, override_admin_session = None
-
-    def test_create_deadline_config(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        payload = {
-            "request_type": "grade_appeal",
-            "deadline_days": 30
-        }
-    
-        response = client.post("/api/deadline_configs", json=payload, headers=headers)
-&gt;       assert response.status_code in [200, 409]
-E       assert 500 in [200, 409]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:460: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints" name="test_delete_deadline_config" time="0.233"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestDeadlineConfigEndpoints object at 0x0000015CE08085C0&gt;, override_admin_session = None
-
-    def test_delete_deadline_config(self, override_admin_session):
-        admin_data = {"user_email": "admin@example.com", "role": "admin", "first_name": "Admin", "last_name": "User"}
-        admin_token = create_access_token(admin_data)
-        headers = {"Authorization": f"Bearer {admin_token}"}
-    
-        response = client.delete("/api/deadline_configs/grade_appeal", headers=headers)
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:468: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestRequestRoutingEndpoints" name="test_get_request_routing_rules" time="0.230" /><testcase classname="tests.test_missing_coverage_fixed.TestRequestRoutingEndpoints" name="test_update_request_routing_rule" time="0.005"><failure message="assert 500 in [200, 404]&#10; +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code">self = &lt;backend.tests.test_missing_coverage_fixed.TestRequestRoutingEndpoints object at 0x0000015CE07E7A10&gt;, override_session_with_data = None
-
-    def test_update_request_routing_rule(self, override_session_with_data):
-        payload = {
-            "routing_logic": "department",
-            "department_id": "CS"
-        }
-    
-        response = client.put("/api/request_routing_rules/grade_appeal", json=payload)
-&gt;       assert response.status_code in [200, 404]
-E       assert 500 in [200, 404]
-E        +  where 500 = &lt;Response [500 Internal Server Error]&gt;.status_code
-
-tests\test_missing_coverage_fixed.py:486: AssertionError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestUtilityFunctions" name="test_fetch_data_function" time="0.002"><failure message="sqlite3.OperationalError: no such table: my_table">self = &lt;backend.tests.test_missing_coverage_fixed.TestUtilityFunctions object at 0x0000015CE07E5A30&gt;
-
-    def test_fetch_data_function(self):
-        from backend.main import fetch_data
-&gt;       result = fetch_data()
-
-tests\test_missing_coverage_fixed.py:494: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-    def fetch_data():
-        # Opens a connection using sqlite3.
-        connection = sqlite3.connect('mydb.db')
-        cursor = connection.cursor()
-&gt;       cursor.execute("SELECT * FROM my_table")
-E       sqlite3.OperationalError: no such table: my_table
-
-main.py:1587: OperationalError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestUtilityFunctions" name="test_main_function" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestUtilityFunctions" name="test_verify_token_admin_secretary_role" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestErrorConditions" name="test_invalid_json_login" time="0.006"><failure message="json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">self = &lt;backend.tests.test_missing_coverage_fixed.TestErrorConditions object at 0x0000015CE0808B60&gt;
+self = &lt;backend.tests.test_missing_coverage_fixed.TestErrorConditions object at 0x000001EE70CEF4A0&gt;
 
     def test_invalid_json_login(self):
-&gt;       response = client.post("/login", data="invalid json")
+&gt;       response = client.post("/login", json={})
 
-tests\test_missing_coverage_fixed.py:514: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests\test_missing_coverage_fixed.py:521: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
     return super().post(
 C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
@@ -1368,7 +150,7 @@ C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlet
     portal.call(self.app, scope, receive, send)
 c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
     return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:449: in result
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:456: in result
     return self.__get_result()
 C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
     raise self._exception
@@ -1404,136 +186,95 @@ C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlet
     await app(scope, receive, sender)
 C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
     response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-main.py:276: in login
-    data = await request.json()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\requests.py:249: in json
-    self._json = json.loads(body)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:346: in loads
-    return _default_decoder.decode(s)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py:337: in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:290: in app
+    async with AsyncExitStack() as async_exit_stack:
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\contextlib.py:754: in __aexit__
+    raise exc_details[1]
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\contextlib.py:737: in __aexit__
+    cb_suppress = await cb(*exc_details)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\contextlib.py:231: in __aexit__
+    await self.gen.athrow(value)
+db_connection.py:802: in get_session
+    async with async_session() as session:
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\ext\asyncio\session.py:1086: in __aexit__
+    await asyncio.shield(task)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\ext\asyncio\session.py:1031: in close
+    await greenlet_spawn(self.sync_session.close)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py:201: in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py:2521: in close
+    self._close_impl(invalidate=False)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py:2590: in _close_impl
+    transaction.close(invalidate)
+&lt;string&gt;:2: in close
+    ???
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py:1419: in close
+    transaction.close()
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:2586: in close
+    self._do_close()
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:2724: in _do_close
+    self._close_impl()
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:2710: in _close_impl
+    self._connection_rollback_impl()
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:2702: in _connection_rollback_impl
+    self.connection._rollback_impl()
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1127: in _rollback_impl
+    self._handle_dbapi_exception(e, None, None, None, None)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:2355: in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py:1125: in _rollback_impl
+    self.engine.dialect.do_rollback(self.connection)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:703: in do_rollback
+    dbapi_connection.rollback()
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\dialects\mysql\aiomysql.py:203: in rollback
+    self.await_(self._connection.rollback())
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py:132: in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py:196: in greenlet_spawn
+    value = await result
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\connection.py:398: in rollback
+    await self._execute_command(COMMAND.COM_QUERY, "ROLLBACK")
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\connection.py:724: in _execute_command
+    self._write_bytes(prelude + sql[:chunk_size - 1])
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\aiomysql\connection.py:669: in _write_bytes
+    return self._writer.write(data)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\asyncio\streams.py:343: in write
+    self._transport.write(data)
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py:366: in write
+    self._loop_writing(data=bytes(data))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = &lt;json.decoder.JSONDecoder object at 0x0000015CD9462C00&gt;, s = 'invalid json', idx = 0
+self = &lt;_ProactorSocketTransport fd=1132 read=&lt;_OverlappedFuture cancelled&gt;&gt;, f = None, data = b'\t\x00\x00\x00\x03ROLLBACK'
 
-    def raw_decode(self, s, idx=0):
-        """Decode a JSON document from ``s`` (a ``str`` beginning with
-        a JSON document) and return a 2-tuple of the Python
-        representation and the index in ``s`` where the document ended.
-    
-        This can be used to decode a JSON document from a string that may
-        have extraneous data at the end.
-    
-        """
+    def _loop_writing(self, f=None, data=None):
         try:
-            obj, end = self.scan_once(s, idx)
-        except StopIteration as err:
-&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
-E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+            if f is not None and self._write_fut is None and self._closing:
+                # XXX most likely self._force_close() has been called, and
+                # it has set self._write_fut to None.
+                return
+            assert f is self._write_fut
+            self._write_fut = None
+            self._pending_write = 0
+            if f:
+                f.result()
+            if data is None:
+                data = self._buffer
+                self._buffer = None
+            if not data:
+                if self._closing:
+                    self._loop.call_soon(self._call_connection_lost, None)
+                if self._eof_written:
+                    self._sock.shutdown(socket.SHUT_WR)
+                # Now that we've reduced the buffer size, tell the
+                # protocol to resume writing if it was paused.  Note that
+                # we do this last since the callback is called immediately
+                # and it may add more data to the buffer (even causing the
+                # protocol to be paused again).
+                self._maybe_resume_protocol()
+            else:
+&gt;               self._write_fut = self._loop._proactor.send(self._sock, data)
+E               AttributeError: 'NoneType' object has no attribute 'send'
 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py:355: JSONDecodeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestErrorConditions" name="test_missing_fields_create_user" time="0.005"><failure message="AttributeError: 'NoneType' object has no attribute 'encode'">self = &lt;backend.tests.test_missing_coverage_fixed.TestErrorConditions object at 0x0000015CE0808D40&gt;, override_session_without_data = None
-
-    def test_missing_fields_create_user(self, override_session_without_data):
-        payload = {"email": "test@example.com"}
-&gt;       response = client.post("/create_user", json=payload)
-
-tests\test_missing_coverage_fixed.py:519: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:538: in post
-    return super().post(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1144: in post
-    return self.request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:437: in request
-    return super().request(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:825: in request
-    return self.send(request, auth=auth, follow_redirects=follow_redirects)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:914: in send
-    response = self._send_handling_auth(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:942: in _send_handling_auth
-    response = self._send_handling_redirects(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:979: in _send_handling_redirects
-    response = self._send_single_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\httpx\_client.py:1014: in _send_single_request
-    response = transport.handle_request(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:340: in handle_request
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\testclient.py:337: in handle_request
-    portal.call(self.app, scope, receive, send)
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:290: in call
-    return cast(T_Retval, self.start_task_soon(func, *args).result())
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:449: in result
-    return self.__get_result()
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:401: in __get_result
-    raise self._exception
-c:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\anyio\from_thread.py:221: in _call_func
-    retval = await retval_or_awaitable
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\applications.py:1054: in __call__
-    await super().__call__(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:187: in __call__
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\errors.py:165: in __call__
-    await self.app(scope, receive, _send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\cors.py:85: in __call__
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\middleware\exceptions.py:62: in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:714: in __call__
-    await self.middleware_stack(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:734: in app
-    await route.handle(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:288: in handle
-    await self.app(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:76: in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
-    raise exc
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
-    await app(scope, receive, sender)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\starlette\routing.py:73: in app
-    response = await f(request)
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:301: in app
-    raw_response = await run_endpoint_function(
-C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-request = &lt;starlette.requests.Request object at 0x0000015CE15A5460&gt;, session = &lt;backend.tests.test_main_utils.FakeAsyncSession object at 0x0000015CE15A4740&gt;
-
-    @app.post("/create_user")
-    async def create_user(request: Request, session: AsyncSession = Depends(get_session)):
-        start_time = time.time()
-        data = await request.json()
-        first_name = data.get("first_name")
-        last_name = data.get("last_name")
-        email = data.get("email")
-        password = data.get("password")
-&gt;       hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-E       AttributeError: 'NoneType' object has no attribute 'encode'
-
-main.py:981: AttributeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_chat_request_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_unavailability_period_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_assign_professor_request_validation" time="0.000" /><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_assign_students_request_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestConstants" name="test_constants_exist" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestConstants" name="test_oauth2_scheme_exists" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestImportHandling" name="test_openai_import_handling" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestDatabaseFunctions" name="test_fetch_data_function" time="0.002"><failure message="sqlite3.OperationalError: no such table: my_table">self = &lt;backend.tests.test_missing_coverage_fixed.TestDatabaseFunctions object at 0x0000015CE0809FD0&gt;
-
-    def test_fetch_data_function(self):
-        from backend.main import fetch_data
-&gt;       result = fetch_data()
-
-tests\test_missing_coverage_fixed.py:591: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-    def fetch_data():
-        # Opens a connection using sqlite3.
-        connection = sqlite3.connect('mydb.db')
-        cursor = connection.cursor()
-&gt;       cursor.execute("SELECT * FROM my_table")
-E       sqlite3.OperationalError: no such table: my_table
-
-main.py:1587: OperationalError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestDatabaseFunctions" name="test_main_function_exists" time="0.001" /><testcase classname="tests.test_request_endpoints" name="test_create_request" time="2.003" /><testcase classname="tests.test_request_endpoints" name="test_delete_request" time="2.009" /><testcase classname="tests.test_request_endpoints" name="test_edit_request" time="2.184" /><testcase classname="tests.test_request_endpoints" name="test_transfer_request" time="2.022" /><testcase classname="tests.test_request_endpoints" name="test_create_request_missing_fields" time="0.008" /><testcase classname="tests.test_request_endpoints" name="test_edit_nonexistent_request" time="0.008" /><testcase classname="tests.test_request_endpoints" name="test_request_timeline_updates" time="2.793" /><testcase classname="tests.test_request_endpoints" name="test_request_routing_rules" time="0.451" /><testcase classname="tests.test_request_endpoints" name="test_home" time="0.005" /><testcase classname="tests.test_request_endpoints" name="test_list_databases" time="0.007" /><testcase classname="tests.test_request_endpoints" name="test_list_tables" time="0.004" /><testcase classname="tests.test_request_endpoints" name="test_get_users" time="0.230" /><testcase classname="tests.test_request_endpoints" name="test_get_users_with_role" time="0.234" /><testcase classname="tests.test_request_endpoints" name="test_get_courses" time="0.232" /><testcase classname="tests.test_request_endpoints" name="test_get_routing_rules" time="0.227" /><testcase classname="tests.test_simple_endpoints" name="test_home" time="0.004" /><testcase classname="tests.test_simple_endpoints" name="test_list_databases" time="0.004" /><testcase classname="tests.test_simple_endpoints" name="test_list_tables" time="0.006" /><testcase classname="tests.test_simple_endpoints" name="test_get_users" time="0.234" /><testcase classname="tests.test_simple_endpoints" name="test_get_users_with_role" time="0.226" /><testcase classname="tests.test_simple_endpoints" name="test_get_courses" time="0.231" /><testcase classname="tests.test_simple_endpoints" name="test_get_routing_rules" time="0.230" /><testcase classname="tests.test_simple_endpoints" name="test_ai_chat_basic" time="1.562" /><testcase classname="tests.test_simple_endpoints" name="test_ai_chat_no_language" time="1.061" /><testcase classname="tests.test_simple_endpoints" name="test_reload_files" time="0.006" /><testcase classname="tests.test_simple_endpoints" name="test_download_file" time="0.007" /><testcase classname="tests.test_simple_endpoints" name="test_get_dashboard" time="0.006" /><testcase classname="tests.test_simple_endpoints" name="test_get_user_by_email" time="0.238" /><testcase classname="tests.test_simple_endpoints" name="test_get_professor_courses" time="0.459" /></testsuite></testsuites>
+C:\Users\mpota\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py:402: AttributeError</failure></testcase><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_chat_request_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_unavailability_period_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_assign_professor_request_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestPydanticModelsValidation" name="test_assign_students_request_validation" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestConstants" name="test_constants_exist" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestConstants" name="test_oauth2_scheme_exists" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestImportHandling" name="test_openai_import_handling" time="0.001" /><testcase classname="tests.test_missing_coverage_fixed.TestDatabaseFunctions" name="test_fetch_data_function" time="0.002" /><testcase classname="tests.test_missing_coverage_fixed.TestDatabaseFunctions" name="test_main_function_exists" time="0.002" /><testcase classname="tests.test_request_endpoints" name="test_create_request" time="2.522" /><testcase classname="tests.test_request_endpoints" name="test_delete_request" time="2.919" /><testcase classname="tests.test_request_endpoints" name="test_edit_request" time="2.203" /><testcase classname="tests.test_request_endpoints" name="test_transfer_request" time="2.095" /><testcase classname="tests.test_request_endpoints" name="test_create_request_missing_fields" time="0.006" /><testcase classname="tests.test_request_endpoints" name="test_edit_nonexistent_request" time="0.006" /><testcase classname="tests.test_request_endpoints" name="test_request_timeline_updates" time="2.925" /><testcase classname="tests.test_request_endpoints" name="test_request_routing_rules" time="0.451" /><testcase classname="tests.test_request_endpoints" name="test_home" time="0.005" /><testcase classname="tests.test_request_endpoints" name="test_list_databases" time="0.006" /><testcase classname="tests.test_request_endpoints" name="test_list_tables" time="0.007" /><testcase classname="tests.test_request_endpoints" name="test_get_users" time="0.230" /><testcase classname="tests.test_request_endpoints" name="test_get_users_with_role" time="0.229" /><testcase classname="tests.test_request_endpoints" name="test_get_courses" time="0.227" /><testcase classname="tests.test_request_endpoints" name="test_get_routing_rules" time="0.226" /><testcase classname="tests.test_simple_endpoints" name="test_home" time="0.005" /><testcase classname="tests.test_simple_endpoints" name="test_list_databases" time="0.005" /><testcase classname="tests.test_simple_endpoints" name="test_list_tables" time="0.007" /><testcase classname="tests.test_simple_endpoints" name="test_get_users" time="0.232" /><testcase classname="tests.test_simple_endpoints" name="test_get_users_with_role" time="0.228" /><testcase classname="tests.test_simple_endpoints" name="test_get_courses" time="0.232" /><testcase classname="tests.test_simple_endpoints" name="test_get_routing_rules" time="0.297" /><testcase classname="tests.test_simple_endpoints" name="test_reload_files" time="0.005" /><testcase classname="tests.test_simple_endpoints" name="test_download_file" time="0.006" /><testcase classname="tests.test_simple_endpoints" name="test_get_dashboard" time="0.006" /><testcase classname="tests.test_simple_endpoints" name="test_get_user_by_email" time="0.227" /><testcase classname="tests.test_simple_endpoints" name="test_get_professor_courses" time="0.446" /></testsuite></testsuites>
