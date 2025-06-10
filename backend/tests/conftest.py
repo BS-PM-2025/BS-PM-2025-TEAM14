@@ -15,6 +15,12 @@ for _, module_name, _ in pkgutil.iter_modules(backend.__path__):
     __import__(f"backend.{module_name}")
 
 
+# Add admin session function
+def get_fake_session_admin():
+    from backend.tests.test_main_utils import FakeAsyncSession
+    return FakeAsyncSession(expected_email="admin@example.com", expected_role="admin")
+
+
 @pytest.fixture
 def override_session_with_data(monkeypatch):
     app.dependency_overrides[get_session] = get_fake_session_with_expected_data
@@ -36,5 +42,11 @@ def override_student_session(monkeypatch):
 @pytest.fixture
 def override_professor_session(monkeypatch):
     app.dependency_overrides[get_session] = get_fake_session_professor
+    yield
+    app.dependency_overrides.pop(get_session, None)
+
+@pytest.fixture
+def override_admin_session(monkeypatch):
+    app.dependency_overrides[get_session] = get_fake_session_admin
     yield
     app.dependency_overrides.pop(get_session, None)
