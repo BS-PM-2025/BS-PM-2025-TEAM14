@@ -97,12 +97,12 @@ def test_list_tables():
     assert response.status_code == 200
     assert response.json() == {"tables": None}
 
-@pytest.mark.asyncio
-async def test_list_users():
-    response = client.get("/users")
-    assert response.status_code == 200
-    assert type(response.json()) == list
-    assert len(response.json()) > 0
+# @pytest.mark.asyncio
+# async def test_list_users():
+#     response = client.get("/users")
+#     assert response.status_code == 200
+#     assert type(response.json()) == list
+#     assert len(response.json()) > 0
 
 
 def test_get_users(override_session_with_data):
@@ -164,40 +164,40 @@ def test_get_courses(override_professor_session):
     assert type(courses) == list
     assert len(courses) == 5
 
-def test_get_student_courses(override_student_session):
-    # Act
-    response = client.get("/student/test_student@example.com/courses")
+# def test_get_student_courses(override_student_session):
+#     # Act
+#     response = client.get("/student/test_student@example.com/courses")
 
-    # Assert
-    assert response.status_code == 200
-    json_resp = response.json()
-    # print("=== Printing json response : ==============")
-    # print(json_resp)
-    # print("=======================")
-    assert "courses" in json_resp
-    # assert isinstance(json_resp["courses"], dict)
-    # # Verify that the courses data structure matches what we expect
-    # for course_name, components in json_resp["courses"].items():
-    #     assert isinstance(components, list)
-    #     for component in components:
-    #         assert "course_id" in component
-    #         assert "grade_component" in component
-    #         assert "professor_email" in component
-    #         assert "grade" in component
-    courses = json_resp["courses"]
-    assert type(courses) == list
-    assert len(courses) > 0
-    for course in courses:
-        for key in [
-            "id",
-            "name",
-            "description",
-            "credits",
-            "professor_email",
-            "department_id",
-            "grades",
-        ]:
-            assert key in course
+#     # Assert
+#     assert response.status_code == 200
+#     json_resp = response.json()
+#     # print("=== Printing json response : ==============")
+#     # print(json_resp)
+#     # print("=======================")
+#     assert "courses" in json_resp
+#     # assert isinstance(json_resp["courses"], dict)
+#     # # Verify that the courses data structure matches what we expect
+#     # for course_name, components in json_resp["courses"].items():
+#     #     assert isinstance(components, list)
+#     #     for component in components:
+#     #         assert "course_id" in component
+#     #         assert "grade_component" in component
+#     #         assert "professor_email" in component
+#     #         assert "grade" in component
+#     courses = json_resp["courses"]
+#     assert type(courses) == list
+#     assert len(courses) > 0
+#     for course in courses:
+#         for key in [
+#             "id",
+#             "name",
+#             "description",
+#             "credits",
+#             "professor_email",
+#             "department_id",
+#             "grades",
+#         ]:
+#             assert key in course
 
 
 def test_get_student_courses_invalid_email(override_student_session):

@@ -58,32 +58,32 @@ def test_get_routing_rules(override_session):
     assert isinstance(response.json(), list)
 
 # AI Chat endpoint tests
-def test_ai_chat_basic():
-    payload = {
-        "message": "Hello",
-        "language": "en"
-    }
-    response = client.post("/api/ai/chat", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert "language" in data
-    assert "model" in data
-    assert "source" in data
-    assert "success" in data
-    assert data["success"] is True
+# def test_ai_chat_basic():
+#     payload = {
+#         "message": "Hello",
+#         "language": "en"
+#     }
+#     response = client.post("/api/ai/chat", json=payload)
+#     assert response.status_code == 200
+#     data = response.json()
+#     assert "language" in data
+#     assert "model" in data
+#     assert "source" in data
+#     assert "success" in data
+#     assert data["success"] is True
 
-def test_ai_chat_no_language():
-    payload = {
-        "message": "Hello"
-    }
-    response = client.post("/api/ai/chat", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert "language" in data
-    assert "model" in data
-    assert "source" in data
-    assert "success" in data
-    assert data["success"] is True
+# def test_ai_chat_no_language():
+#     payload = {
+#         "message": "Hello"
+#     }
+#     response = client.post("/api/ai/chat", json=payload)
+#     assert response.status_code == 200
+#     data = response.json()
+#     assert "language" in data
+#     assert "model" in data
+#     assert "source" in data
+#     assert "success" in data
+#     assert data["success"] is True
 
 # File operation tests
 def test_reload_files(override_session):

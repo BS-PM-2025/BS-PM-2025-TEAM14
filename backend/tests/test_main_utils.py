@@ -53,6 +53,10 @@ class FakeRequest:
         self.created_date = created_date
         self.timeline = timeline
         self.course_id = course_id
+        # Add missing attributes that may be accessed
+        self.course_component = None
+        self.transfer_type = None
+        self.new_course_id = None
         
         # Create a proper SQLAlchemy state mock
         class State:
@@ -78,6 +82,8 @@ class FakeCourse:
         self.credits = credits
         self.professor_email = professor_email
         self.department_id = department_id
+        # Add missing attributes that may be accessed
+        self.students = []  # Add students attribute as empty list
 
 
 class FakeResult:
@@ -165,17 +171,12 @@ class FakeAsyncSession:
             return FakeResult(fake_courses)
 
         if "from student_courses" in query_str:
-            rows = []
+            # Return proper StudentCourse objects instead of tuples
+            student_courses = []
             for cid in range(1, 4):
                 sc = FakeStudentCourse("test_student@example.com", cid)
-                course = FakeCourse(cid, f"Course {cid}",
-                                    f"Description {cid}", cid,
-                                    "test_professor@example.com", cid)
-                # give a grade only to course 1 & 2
-                grade = FakeGrade(cid, "test_student@example.com",
-                                  f"Exam {cid}", 90 + cid) if cid < 3 else None
-                rows.append((sc, course, grade))
-            return FakeResult(rows)
+                student_courses.append(sc)
+            return FakeResult(student_courses)
 
         if "from notifications" in query_str:
             # Return a list of 5 fake notifications
